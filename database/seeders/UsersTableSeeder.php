@@ -1,0 +1,40 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Address;
+use App\Models\User;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+
+class UsersTableSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        if (User::count() == 0) {
+
+            $user = User::create([
+                'name'           => 'Jafrul Hossain',
+                'email'          => 'jafrultripto@gmail.com',
+                'password'       => Hash::make('Ewu2013368037'),
+                'nid'            => '6565656517',
+            ]);
+
+            $address = new Address([
+                'address'   => 'house-30, Dattapara, Tongi',
+                'phone'     => '01832958858',
+                'district'  => '41',
+                'division'  => '6',
+            ]);
+            $user->address()->save($address);
+            $user->assignRole(['SA']);
+        }
+    }
+}
