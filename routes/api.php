@@ -123,7 +123,10 @@ Route::group([
 
 
 
-Route::prefix('permissions')->group(function () {
+Route::group([
+    'middleware' => 'auth:sanctum',
+    'prefix' => 'permissions'
+],function () {
     Route::get('/getPermissions', [PermissionController::class, 'getAll']);
     Route::post('/createPermission', [PermissionController::class, 'store']);
     Route::post('/checkPermission', [PermissionController::class, 'check']);

@@ -8,7 +8,6 @@ use App\Models\Marketplace;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\OrderService;
-use HttpException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
@@ -104,7 +103,7 @@ class OrderController extends Controller
         try {
             $this->orderService->store($orderData);
         } catch (\Exception $e) {
-            throw new HttpException(500, $e->getMessage());
+            throw new \Exception($e->getMessage(), 500 );
         }
 
         return response()->json([
