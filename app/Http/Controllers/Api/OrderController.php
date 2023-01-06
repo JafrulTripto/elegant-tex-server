@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderResource;
+use App\Http\Resources\OrdersResource;
 use App\Models\Marketplace;
 use App\Models\Order;
 use App\Models\User;
@@ -38,10 +39,11 @@ class OrderController extends Controller
 
     public function getOrder($orderID)
     {
-        return Order::with(['customer.address','image', 'product'])->where('id', $orderID)->first();
+        $order = Order::with(['customer.address','image', 'product'])->where('id', $orderID)->first();
+        return OrderResource::make($order);
     }
 
-    public function getMarketplaceOrders($userID, Request $request)
+    public function getMarketplaceOrders($userID, Request $request) : ResourceCollection
     {
         $search = '';
         if ($request->has('search')) {
@@ -57,8 +59,7 @@ class OrderController extends Controller
             });
         })->orderBy('id', 'DESC')->paginate(10);
 
-
-        return OrderResource::collection($orders);
+        return OrdersResource::collection($orders);
     }
 
     /**
@@ -83,7 +84,7 @@ class OrderController extends Controller
         $orderData = [
             'orderType' => $request->orderType,
             'marketplaceId' => $request->marketplace,
-            'merchantId' => $request->merchantId,
+            'merchantId' => $request->merchant,
             'createdBy' => $request->createdBy,
             'deliveryChannel' => $request->deliveryChannel,
             'deliveryCharge' => $request->deliveryCharge,

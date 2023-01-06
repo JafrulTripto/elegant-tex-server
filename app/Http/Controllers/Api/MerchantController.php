@@ -9,13 +9,12 @@ use App\Services\MerchantService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class MerchantController extends Controller
+class  MerchantController extends Controller
 {
     private MerchantService $merchantService;
 
     public function __construct(MerchantService $merchantService)
     {
-        $this->middleware('auth:api', ['except' => ['login']]);
         $this->merchantService = $merchantService;
     }
 
@@ -38,7 +37,7 @@ class MerchantController extends Controller
         ];
         $this->merchantService->store($data);
         return response()->json([
-            "message" => "User created successfully."
+            "message" => "Merchant created successfully."
         ]);
     }
 

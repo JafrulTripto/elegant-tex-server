@@ -18,14 +18,23 @@ class OrderResource extends JsonResource
     public function toArray($request)
     {
         return [
+            'orderType' => $this->orderable_type,
             'id' => $this->id,
-            'orderedBy' => Marketplace::where('id', $this->orderable_id)->value('name'),
-            'createdBy' => User::where('id', $this->created_by)->value('name'),
             'status' => OrderStatus::from($this->status)->name,
-            'totalAmount' => $this->total_amount,
+            'customer' => CustomerResource::make($this->customer    ),
+            'products' => ProductResource::collection($this->product),
+            'payment' => [
+                'deliveryCharge' => $this->delivery_charge,
+                'amount' => $this->amount,
+                'totalAmount' => $this->total_amount
+            ],
             'createdAt' => $this->created_at,
-            'deliveryDate' => $this->delivery_date,
-            'orderType'=>$this->orderable_type
+            'createdBy' => $this->created_by,
+            'updatedBy' => $this->updatedBy,
+            'images' => $this->image,
+            'deliveryChannel' => $this->delivery_channel,
+            'deliveryDate' => $this->delivery_date
+
         ];
     }
 }

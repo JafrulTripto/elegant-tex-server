@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MarketplaceController;
+use App\Http\Controllers\Api\MerchantController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\ProductColorController;
@@ -87,6 +88,16 @@ Route::group([
     Route::get('/getOrder/{orderID}', [OrderController::class, 'getOrder']);
     Route::get('/getMerchants', [OrderController::class, 'getAllMerchants']);
     Route::get('/delete', [OrderController::class, 'destroy']);
+
+});
+
+Route::group([
+    'middleware' => ['auth:sanctum','permission:CREATE_MERCHANT_ORDER'],
+    'prefix' => 'merchants'
+], function ($router) {
+    Route::get('/index', [MerchantController::class, 'index']);
+    Route::get('/getMerchants', [MerchantController::class, 'getAllMerchants']);
+    Route::post('/store', [MerchantController::class, 'store']);
 
 });
 
