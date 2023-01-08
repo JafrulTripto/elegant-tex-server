@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\OrdersResource;
 use App\Models\Marketplace;
+use App\Models\Merchant;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\OrderService;
@@ -58,6 +59,23 @@ class OrderController extends Controller
                 $q->where("marketplace_user.user_id", $userID);
             });
         })->orderBy('id', 'DESC')->paginate(10);
+
+        return OrdersResource::collection($orders);
+    }
+
+    public function getMerchantOrders(Request $request)
+    {
+        $search = '';
+        if ($request->has('search')) {
+            $search = $request->input('search');
+        }
+
+        $orders = Order::when($search, function ($query, $search) {
+            return $query->where('id', $search);
+        })->whereHasMorph(
+            'orderable', [Merchant::class], function (Builder $query) {
+            return $query;
+        })->paginate(10);
 
         return OrdersResource::collection($orders);
     }

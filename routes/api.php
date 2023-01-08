@@ -85,6 +85,7 @@ Route::group([
     Route::post('/store', [OrderController::class, 'store']);
     Route::get('/index', [OrderController::class, 'index']);
     Route::get('/getMarketplaceOrders/{userId}', [OrderController::class, 'getMarketplaceOrders']);
+    Route::get('/getMerchantOrders', [OrderController::class, 'getMerchantOrders']);
     Route::get('/getOrder/{orderID}', [OrderController::class, 'getOrder']);
     Route::get('/getMerchants', [OrderController::class, 'getAllMerchants']);
     Route::get('/delete', [OrderController::class, 'destroy']);
