@@ -131,6 +131,14 @@ class OrderController extends Controller
 
     }
 
+    public function changeOrderStatus(Request $request)
+    {
+        $id = $request->orderId;
+        $status = $request->orderStatus;
+
+        return OrdersResource::make($this->orderService->changeOrderStatus($id, $status));
+    }
+
     /**
      * Display the specified resource.
      *

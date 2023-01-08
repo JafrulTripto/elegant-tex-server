@@ -89,7 +89,7 @@ Route::group([
     Route::get('/getOrder/{orderID}', [OrderController::class, 'getOrder']);
     Route::get('/getMerchants', [OrderController::class, 'getAllMerchants']);
     Route::get('/delete', [OrderController::class, 'destroy']);
-
+    Route::post('/changeOrderStatus', [OrderController::class, 'changeOrderStatus']);
 });
 
 Route::group([
