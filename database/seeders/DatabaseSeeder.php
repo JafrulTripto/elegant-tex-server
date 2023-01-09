@@ -22,5 +22,9 @@ class DatabaseSeeder extends Seeder
         // ]);
         $this->call(RolesAndPermissionsSeeder::class);
         $this->call(UsersTableSeeder::class);
+        $this->call(DistrictSeeder::class);
+        $this->call(DivisionSeeder::class);
+        $this->call(UpazilaSeeder::class);
+        $this->call(UnionSeeder::class);
     }
 }
