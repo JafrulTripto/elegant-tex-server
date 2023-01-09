@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Devfaysal\BangladeshGeocode\Models\District;
-use Devfaysal\BangladeshGeocode\Models\Division;
-use Devfaysal\BangladeshGeocode\Models\Upazila;
+use App\Models\District;
+use App\Models\Division;
+use App\Models\Upazila;
 use Illuminate\Http\Request;
 
 class BangladeshGeocodeController extends Controller
