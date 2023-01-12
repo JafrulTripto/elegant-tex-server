@@ -46,7 +46,7 @@ class StorageController extends Controller
     public function destroy(Request $request)
     {
         $imagePath = $request->imagePath;
-        $this->imageService->delete($imagePath);
+        $this->storageService->destroy($imagePath);
         return response()->json([
             "message" => "Image deleted successfully."
         ]);
