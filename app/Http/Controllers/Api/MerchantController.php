@@ -31,6 +31,7 @@ class  MerchantController extends Controller
             'nid'=> $request->nid,
             'phone'=> $request->phone,
             'address'=> $request->address,
+            'upazila'=> $request->upazila,
             'district'=> $request->district,
             'division'=> $request->division,
             'image'=> $request->image,

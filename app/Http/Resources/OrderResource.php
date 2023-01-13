@@ -19,6 +19,7 @@ class OrderResource extends JsonResource
     {
         return [
             'orderType' => $this->orderable_type,
+            'orderable' => $this->orderable,
             'id' => $this->id,
             'status' => OrderStatus::from($this->status)->name,
             'customer' => CustomerResource::make($this->customer    ),

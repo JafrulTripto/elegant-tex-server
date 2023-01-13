@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('addressable_type');
             $table->string('address');
             $table->string('phone');
+            $table->string('upazila')->nullable();
             $table->string('district');
             $table->string('division');
             $table->timestamps();

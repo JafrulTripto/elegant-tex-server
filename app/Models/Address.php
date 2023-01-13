@@ -25,6 +25,12 @@ class Address extends Model
             get: fn ($value) => District::find($value)->name,
         );
     }
+    protected function upazila(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => Upazila::find($value)->name,
+        );
+    }
     protected function division(): Attribute
     {
         return Attribute::make(

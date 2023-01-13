@@ -68,6 +68,7 @@ class OrderService
             'facebookId' => $orderData['facebookId'],
             'address' => $orderData['address'],
             'altPhone' => $orderData['altPhone'],
+            'upazila' => $orderData['upazila'],
             'district' => $orderData['district'],
             'division' => $orderData['division'],
         ];

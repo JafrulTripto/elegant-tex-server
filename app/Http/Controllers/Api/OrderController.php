@@ -114,6 +114,7 @@ class OrderController extends Controller
             'facebookId' => $request->facebookId,
             'address' => $request->address,
             'altPhone' => $request->altPhone,
+            'upazila' => $request->upazila,
             'district' => $request->district,
             'division' => $request->division,
             'products' => $request->products,

@@ -24,7 +24,7 @@ class UsersTableSeeder extends Seeder
                 'name'           => 'Jafrul Hossain',
                 'email'          => 'jafrultripto@gmail.com',
                 'password'       => Hash::make('Ewu2013368037'),
-                'nid'            => '6565656517',
+                'nid'            => '19943323021000036',
             ]);
 
             $address = new Address([
@@ -32,6 +32,7 @@ class UsersTableSeeder extends Seeder
                 'phone'     => '01832958858',
                 'district'  => '41',
                 'division'  => '6',
+                'upazila'  => '320',
             ]);
             $user->address()->save($address);
             $user->assignRole(['SA']);

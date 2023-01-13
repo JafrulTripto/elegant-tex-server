@@ -55,6 +55,7 @@ class UserController extends Controller
             'nid' => $request->nid,
             'address' => $request->address,
             'phone' => $request->phone,
+            'upazila' => $request->upazila,
             'district' => $request->district,
             'division' => $request->division,
             'image' => $request->image

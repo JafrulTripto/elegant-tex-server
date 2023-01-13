@@ -18,6 +18,7 @@ class CustomerService
         $customerAddress = [
             'phone' => $customerData['phone'],
             'address' => $customerData['address'],
+            'upazila' => $customerData['upazila'],
             'district' => $customerData['district'],
             'division' => $customerData['division'],
         ];
