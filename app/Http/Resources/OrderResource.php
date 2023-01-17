@@ -35,7 +35,6 @@ class OrderResource extends JsonResource
             'images' => $this->image,
             'deliveryChannel' => $this->delivery_channel,
             'deliveryDate' => $this->delivery_date
-
         ];
     }
 }
