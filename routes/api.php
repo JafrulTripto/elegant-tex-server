@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DeliveryChannelController;
 use App\Http\Controllers\Api\MarketplaceController;
 use App\Http\Controllers\Api\MerchantController;
 use App\Http\Controllers\Api\OrderController;
@@ -78,7 +79,7 @@ Route::prefix('settings/marketplace')->group(function () {
 });
 
 Route::group([
-    'middleware' => ['auth:sanctum','permission:CREATE_MARKETPLACE_ORDER'],
+    'middleware' => ['auth:sanctum'],
     'prefix' => 'orders'
 ], function ($router) {
 
@@ -162,6 +163,12 @@ Route::prefix('settings/productTypes')->group(function () {
     Route::post('/store', [ProductTypeController::class, 'store']);
     Route::post('/update', [ProductTypeController::class, 'update']);
     Route::get('/delete', [ProductTypeController::class, 'destroy']);
+});
+Route::prefix('settings/deliveryChannels')->group(function () {
+    Route::get('/index', [DeliveryChannelController::class, 'index']);
+    Route::post('/store', [DeliveryChannelController::class, 'store']);
+    Route::post('/update', [DeliveryChannelController::class, 'update']);
+    Route::get('/delete', [DeliveryChannelController::class, 'destroy']);
 });
 
 Route::get('/getDivisions', [BangladeshGeocodeController::class, 'getDivision']);

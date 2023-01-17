@@ -22,7 +22,7 @@ class OrderResource extends JsonResource
             'orderable' => $this->orderable,
             'id' => $this->id,
             'status' => OrderStatus::from($this->status)->name,
-            'customer' => CustomerResource::make($this->customer    ),
+            'customer' => CustomerResource::make($this->customer),
             'products' => ProductResource::collection($this->product),
             'payment' => [
                 'deliveryCharge' => $this->delivery_charge,
