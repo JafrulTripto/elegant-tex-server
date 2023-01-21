@@ -40,8 +40,7 @@ class OrderController extends Controller
 
     public function getOrder($orderID)
     {
-        $order = Order::with(['customer.address','image', 'product'])->where('id', $orderID)->first();
-        return OrderResource::make($order);
+        return $this->orderService->getOrder($orderID);
     }
 
     public function getMarketplaceOrders($userID, Request $request) : ResourceCollection

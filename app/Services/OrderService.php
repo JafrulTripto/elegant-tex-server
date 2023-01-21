@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Enums\OrderStatus;
 use App\Enums\OrderType;
+use App\Http\Resources\OrderResource;
 use App\Models\Marketplace;
 use App\Models\Merchant;
 use App\Models\Order;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 
 class OrderService
@@ -83,6 +85,16 @@ class OrderService
         }
 
         return $order;
+    }
+
+    public function getOrder($orderID)
+    {
+        try {
+            $order = Order::with(['customer.address','image', 'product'])->where('id', $orderID)->firstOrFail();
+            return OrderResource::make($order);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
     }
 
 }

@@ -35,7 +35,7 @@ class UsersTableSeeder extends Seeder
                 'upazila'  => '320',
             ]);
             $user->address()->save($address);
-            $user->assignRole(['SA']);
+            $user->assignRole(['SUDO']);
         }
     }
 }

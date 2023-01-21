@@ -25,11 +25,16 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // create permissions
         Permission::create(['guard_name' => 'sanctum','name' => 'CREATE_USER']);
-        Permission::create(['guard_name' => 'sanctum','name' => 'VIEW_USER']);
+        Permission::create(['guard_name' => 'sanctum','name' => 'VIEW_USERS']);
         Permission::create(['guard_name' => 'sanctum','name' => 'UPDATE_USER']);
         Permission::create(['guard_name' => 'sanctum','name' => 'DELETE_USER']);
         Permission::create(['guard_name' => 'sanctum','name' => 'CREATE_MARKETPLACE_ORDER']);
         Permission::create(['guard_name' => 'sanctum','name' => 'CREATE_MERCHANT_ORDER']);
+        Permission::create(['guard_name' => 'sanctum','name' => 'VIEW_PERMISSIONS']);
+        Permission::create(['guard_name' => 'sanctum','name' => 'VIEW_ROLES']);
+        Permission::create(['guard_name' => 'sanctum','name' => 'VIEW_MERCHANTS']);
+        Permission::create(['guard_name' => 'sanctum','name' => 'VIEW_ORDERS']);
+        Permission::create(['guard_name' => 'sanctum','name' => 'VIEW_SETTINGS']);
 
 
         // create roles and assign created permissions
@@ -38,7 +43,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $role = Role::create(['guard_name' => 'sanctum','name' => 'Admin']);
         $role->givePermissionTo('CREATE_USER');
 
-        $role = Role::create(['guard_name' => 'sanctum','name' => 'SA']);
+        $role = Role::create(['guard_name' => 'sanctum','name' => 'SUDO']);
         $role->givePermissionTo(Permission::all());
     }
 }
