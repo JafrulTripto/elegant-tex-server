@@ -30,5 +30,7 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
-
+    'discord' => [
+        'token' => 'MTA2ODc4OTA2OTQ5NDExMjM0Nw.GEz6uZ.E-maae1vp4YW6qRSIV6VBv7gmlhq7hM1s0liJM',
+    ],
 ];

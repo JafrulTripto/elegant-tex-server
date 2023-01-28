@@ -198,6 +198,7 @@ return [
          * Permission Service Providers...
         */
         Spatie\Permission\PermissionServiceProvider::class,
+        NotificationChannels\Discord\DiscordServiceProvider::class,
 
     ],
 
