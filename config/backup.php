@@ -192,7 +192,7 @@ return [
             /*
              * If this is an empty string, the name field on the webhook will be used.
              */
-            'username' => 'ET Production BOT',
+            'username' => env("DISCORD_USERNAME"),
 
             /*
              * If this is an empty string, the avatar on the webhook will be used.
