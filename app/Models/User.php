@@ -46,6 +46,15 @@ class User extends Authenticatable
 
     protected $guard_name = 'sanctum';
 
+    public static function boot()
+    {
+        parent::boot();
+
+        static::updating(function ($user) {
+            $user->last_login = now();
+        });
+    }
+
     public function address()
     {
         return $this->morphOne(Address::class, 'addressable');
