@@ -28,36 +28,18 @@ use Spatie\Permission\Models\Role;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-
-    $user = $request->user();
-    $roles = $user->roles()->pluck('name');
-    $userPermissions = [];
-    foreach ($roles->toArray() as $value) {
-        $role = Role::findByName($value);
-        $permissions = $role->permissions()->pluck('name')->toArray();
-        $userPermissions = array_unique(array_merge($permissions,$userPermissions), SORT_REGULAR);
-
-    }
-
-    $image = $user->image;
-    $res = [
-        "user" => $user,
-        "roles" => $roles,
-        "image" => $image,
-        "permissions" => $userPermissions
-    ];
-    return response()->json($res);
-});
 Route::group([
+    'middleware' => 'api',
     'prefix' => 'auth'
 ], function ($router) {
     Route::post('login', [AuthController::class, 'login']);
-    Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('refresh', [AuthController::class, 'refresh']);
+    Route::post('me', [AuthController::class, 'me']);
 });
 Route::group([
     'prefix' => 'users',
-    'middleware' => 'auth:sanctum',
+    'middleware' => 'api',
 ], function () {
     Route::post('/store', [UserController::class, 'store']);
     Route::get('/index', [UserController::class, 'index']);
@@ -79,7 +61,7 @@ Route::prefix('settings/marketplace')->group(function () {
 });
 
 Route::group([
-    'middleware' => ['auth:sanctum'],
+    'middleware' => ['api'],
     'prefix' => 'orders'
 ], function ($router) {
 
@@ -94,7 +76,7 @@ Route::group([
 });
 
 Route::group([
-    'middleware' => ['auth:sanctum','permission:CREATE_MERCHANT_ORDER'],
+    'middleware' => ['api','permission:CREATE_MERCHANT_ORDER'],
     'prefix' => 'merchants'
 ], function ($router) {
     Route::get('/index', [MerchantController::class, 'index']);
@@ -104,7 +86,7 @@ Route::group([
 });
 
 Route::group([
-    'middleware' => 'auth:sanctum',
+    'middleware' => 'api',
     'prefix' => 'settings'
 ], function ($router) {
 
@@ -121,7 +103,7 @@ Route::group([
 //
 //});
 Route::group([
-    'middleware' => 'auth:sanctum',
+    'middleware' => 'api',
     'prefix' => 'roles'
 ], function ($router) {
 
@@ -137,7 +119,7 @@ Route::group([
 
 
 Route::group([
-    'middleware' => 'auth:sanctum',
+    'middleware' => 'api',
     'prefix' => 'permissions'
 ],function () {
     Route::get('/getPermissions', [PermissionController::class, 'getAll']);

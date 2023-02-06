@@ -200,6 +200,10 @@ return [
         Spatie\Permission\PermissionServiceProvider::class,
         NotificationChannels\Discord\DiscordServiceProvider::class,
 
+        /*
+         * JWT Auth
+         */
+        PHPOpenSourceSaver\JWTAuth\Providers\LaravelServiceProvider::class,
     ],
 
     /*
