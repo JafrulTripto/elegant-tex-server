@@ -34,6 +34,7 @@ class RolesAndPermissionsSeeder extends Seeder
         Permission::create(['guard_name' => 'api','name' => 'VIEW_ROLES']);
         Permission::create(['guard_name' => 'api','name' => 'VIEW_MERCHANTS']);
         Permission::create(['guard_name' => 'api','name' => 'VIEW_ORDERS']);
+        Permission::create(['guard_name' => 'api','name' => 'DELETE_ORDER']);
         Permission::create(['guard_name' => 'api','name' => 'VIEW_SETTINGS']);
 
 
