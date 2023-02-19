@@ -77,7 +77,7 @@ Route::group([
 });
 
 Route::group([
-    'middleware' => ['api','permission:CREATE_MERCHANT_ORDER'],
+    'middleware' => ['api','permission:VIEW_MERCHANTS'],
     'prefix' => 'merchants'
 ], function ($router) {
     Route::get('/index', [MerchantController::class, 'index']);
