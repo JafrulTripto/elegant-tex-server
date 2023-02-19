@@ -8,7 +8,9 @@ use App\Http\Resources\OrderResource;
 use App\Models\Marketplace;
 use App\Models\Merchant;
 use App\Models\Order;
+use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Log;
 
 
 class OrderService
@@ -16,16 +18,19 @@ class OrderService
     private CustomerService $customerService;
     private ProductService $productService;
     private ImageService $imageService;
+    private StorageService $storageService;
 
     public function __construct(
         CustomerService $customerService,
         ProductService $productService,
-        ImageService $imageService
+        ImageService $imageService,
+        StorageService $storageService
     )
     {
         $this->customerService = $customerService;
         $this->productService = $productService;
         $this->imageService = $imageService;
+        $this->storageService = $storageService;
     }
 
     public function store(array $orderData): void
@@ -94,6 +99,31 @@ class OrderService
             return OrderResource::make($order);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Order not found'], 404);
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function deleteOrder(Order $order): void
+    {
+        try {
+            $images = $order->image;
+            foreach ($images as $image) {
+                $filePath = $image->path;
+                $this->storageService->destroy($filePath);
+                $image->delete();
+            }
+
+            $products = $order->product;
+            foreach ($products as $product) {
+                $product->delete();
+            }
+
+            $order->delete();
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            throw new Exception('An error occurred while deleting the order');
         }
     }
 

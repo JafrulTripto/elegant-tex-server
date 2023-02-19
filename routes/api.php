@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DeliveryChannelController;
 use App\Http\Controllers\Api\MarketplaceController;
 use App\Http\Controllers\Api\MerchantController;
@@ -71,7 +72,7 @@ Route::group([
     Route::get('/getMerchantOrders', [OrderController::class, 'getMerchantOrders']);
     Route::get('/getOrder/{orderID}', [OrderController::class, 'getOrder']);
     Route::get('/getMerchants', [OrderController::class, 'getAllMerchants']);
-    Route::get('/delete', [OrderController::class, 'destroy']);
+    Route::delete('/delete/{id}', [OrderController::class, 'destroy']);
     Route::post('/changeOrderStatus', [OrderController::class, 'changeOrderStatus']);
 });
 
@@ -116,7 +117,12 @@ Route::group([
 
 });
 
-
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'dashboard'
+],function () {
+    Route::get('/getOrderCountToday', [DashboardController::class, 'getOrderCountToday']);
+});
 
 Route::group([
     'middleware' => 'api',

@@ -13,9 +13,13 @@ use App\Services\OrderService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 class OrderController extends Controller
 {
@@ -177,10 +181,17 @@ class OrderController extends Controller
      * Remove the specified resource from storage.
      *
      * @param \App\Models\Order $order
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(Order $order)
+    public function destroy($id): JsonResponse
     {
-        //
+        try {
+            $order = Order::findOrFail($id);
+            $this->orderService->deleteOrder($order);
+            return response()->json(['message' => 'Order deleted successfully'], ResponseAlias::HTTP_OK);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json(['message' => 'An error occurred while deleting the order'], ResponseAlias::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }
