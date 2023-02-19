@@ -18,7 +18,7 @@ class OrderResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'orderType' => $this->orderable_type,
+            'orderType' => class_basename($this->orderable_type),
             'orderable' => $this->orderable,
             'id' => $this->id,
             'status' => OrderStatus::from($this->status)->name,
