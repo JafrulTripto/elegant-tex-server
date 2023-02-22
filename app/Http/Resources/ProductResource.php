@@ -20,7 +20,8 @@ class ProductResource extends JsonResource
             'productColor' => $this->color_id,
             'productFabric' => $this->fabric_id,
             'description' => $this->description,
-            'unit' => $this->count
+            'unit' => $this->count,
+            'price' => $this->price
         ];
     }
 }

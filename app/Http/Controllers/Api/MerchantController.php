@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\MerchantResource;
 use App\Models\Merchant;
 use App\Services\MerchantService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
@@ -45,5 +46,13 @@ class  MerchantController extends Controller
     public function getAllMerchants() : ResourceCollection
     {
         return MerchantResource::collection(Merchant::all());
+    }
+
+    public function destroy($id): JsonResponse
+    {
+        $this->merchantService->delete($id);
+        return response()->json([
+            "message" => "Merchant deleted successfully."
+        ]);
     }
 }

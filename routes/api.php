@@ -82,6 +82,7 @@ Route::group([
 ], function ($router) {
     Route::get('/index', [MerchantController::class, 'index']);
     Route::get('/getMerchants', [MerchantController::class, 'getAllMerchants']);
+    Route::delete('/delete/{id}', [MerchantController::class, 'destroy']);
     Route::post('/store', [MerchantController::class, 'store']);
 
 });

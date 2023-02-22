@@ -33,11 +33,11 @@ class OrderService
         $this->storageService = $storageService;
     }
 
-    public function store(array $orderData): void
+    public function store(array $orderData): Order
     {
         $model = null;
 
-        $customer = $this->extractCustomerData($orderData);
+
         $order = new Order();
         $order->status = OrderStatus::DRAFT;
         $order->created_by = $orderData['createdBy'];
@@ -48,16 +48,18 @@ class OrderService
         $order->total_amount = $orderData['amount'] + $orderData['deliveryCharge'];
 
         if ($orderData['orderType'] == OrderType::MARKETPLACE->value) {
-            $marketplace = Marketplace::findOrFail($orderData['marketplaceId']);
+            $customer = $this->extractCustomerData($orderData);
+            $marketplace = Marketplace::findOrFail($orderData['marketplace']);
             $this->customerService->store($customer, $order);
             $model = $marketplace;
         } else {
-            $merchant = Merchant::findOrFail($orderData['merchantId']);
+            $merchant = Merchant::findOrFail($orderData['merchant']);
             $model = $merchant;
         }
+
         $model->order()->save($order);
 
-        foreach ($orderData['products'] as $product){
+        foreach ($orderData['products'] as $product) {
             $this->productService->store($product, $order);
         }
         if (array_key_exists('images', $orderData) && !empty($orderData['images'])) {
@@ -65,6 +67,8 @@ class OrderService
                 $this->imageService->store($order, $image);
             }
         }
+
+        return $order;
     }
 
     private function extractCustomerData($orderData)
