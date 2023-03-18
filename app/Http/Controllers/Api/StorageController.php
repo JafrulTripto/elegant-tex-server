@@ -27,8 +27,12 @@ class StorageController extends Controller
     public function uploadProductImage(Request $request): array
     {
         $path = '/public/images/product';
-        $productImage = $request->file("orderImage");
-        return $this->storageService->store($productImage, $path);
+        $productImage = $request->file("images");
+        $response = [];
+        foreach ($productImage as $image) {
+            $response[] = $this->storageService->store($image, $path);
+        }
+        return $response;
     }
     public function uploadMerchantImage(Request $request): array
     {

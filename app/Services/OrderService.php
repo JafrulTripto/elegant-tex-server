@@ -9,6 +9,7 @@ use App\Models\Marketplace;
 use App\Models\Merchant;
 use App\Models\Order;
 use Exception;
+use Haruncpi\LaravelIdGenerator\IdGenerator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
 
@@ -33,11 +34,12 @@ class OrderService
         $this->storageService = $storageService;
     }
 
+    /**
+     * @throws Exception
+     */
     public function store(array $orderData): Order
     {
         $model = null;
-
-
         $order = new Order();
         $order->status = OrderStatus::DRAFT;
         $order->created_by = $orderData['createdBy'];

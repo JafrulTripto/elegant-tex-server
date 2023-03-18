@@ -15,7 +15,6 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->string('et_order_id', 30)->unique()->nullable();
             $table->unsignedBigInteger('customer_id')->nullable(true);
             $table->foreign('customer_id')->references('id')->on('customers');
             $table->unsignedBigInteger('orderable_id');
