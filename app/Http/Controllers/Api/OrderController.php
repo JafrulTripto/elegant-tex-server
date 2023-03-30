@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\OrderException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOrderRequest;
+use App\Http\Requests\UpdateOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\OrdersResource;
 use App\Models\Marketplace;
@@ -156,11 +157,23 @@ class OrderController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Order $order
-     * @return \Illuminate\Http\Response
+     * @return JsonResponse
      */
-    public function update(Request $request, Order $order)
+    public function update(UpdateOrderRequest $request, $orderId)
     {
-        //
+        $order = Order::find($orderId);
+        $validatedData = $request->validated();
+
+        try {
+            $order = $this->orderService->update($order, $validatedData);
+        } catch (OrderException $e) {
+            throw new \Exception($e->getMessage(), 500);
+        }
+
+        return response()->json([
+            'message' => 'Order updated successfully',
+            'order' => $order
+        ]);
     }
 
     /**

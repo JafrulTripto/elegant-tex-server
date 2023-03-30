@@ -9,7 +9,6 @@ use App\Models\Marketplace;
 use App\Models\Merchant;
 use App\Models\Order;
 use Exception;
-use Haruncpi\LaravelIdGenerator\IdGenerator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
 
@@ -42,12 +41,7 @@ class OrderService
         $model = null;
         $order = new Order();
         $order->status = OrderStatus::DRAFT;
-        $order->created_by = $orderData['createdBy'];
-        $order->delivery_channel = $orderData['deliveryChannel'];
-        $order->delivery_date = date('Y-m-d H:i:s', strtotime($orderData['deliveryDate']));
-        $order->delivery_charge = $orderData['deliveryCharge'];
-        $order->amount = $orderData['amount'];
-        $order->total_amount = $orderData['amount'] + $orderData['deliveryCharge'];
+        $this->extracted($order, $orderData);
 
         if ($orderData['orderType'] == OrderType::MARKETPLACE->value) {
             $customer = $this->extractCustomerData($orderData);
@@ -132,5 +126,61 @@ class OrderService
             throw new Exception('An error occurred while deleting the order');
         }
     }
+
+
+    public function update(Order $order, array $orderData,): Order
+    {
+        $this->extracted($order, $orderData);
+        $temp = Order::findOrFail(4);
+        if ($orderData['orderType'] == OrderType::MARKETPLACE->value) {
+            $customerData = $this->extractCustomerData($orderData);
+            $marketplace = Marketplace::findOrFail($orderData['marketplace']);
+            $customer = $order->customer()->getResults();
+            $this->customerService->update($customerData, $customer);
+            $model = $marketplace;
+        } else {
+            $merchant = Merchant::findOrFail($orderData['merchant']);
+            $model = $merchant;
+        }
+
+        $model->order()->save($order);
+
+        // First, delete all existing products of the order
+        $order->product()->delete();
+
+        // Then, add the updated products
+        foreach ($orderData['products'] as $productData) {
+            $this->productService->store($productData, $order);
+        }
+
+        // First, delete all existing images of the order
+        $order->image()->delete();
+
+        // Then, add the updated images
+        if (array_key_exists('images', $orderData) && !empty($orderData['images'])) {
+            foreach ($orderData['images'] as $imageData){
+                $this->imageService->store($order, $imageData,);
+            }
+        }
+
+        return $order;
+    }
+
+    /**
+     * @param Order $order
+     * @param array $orderData
+     * @return void
+     */
+    public function extracted(Order $order, array $orderData): void
+    {
+
+        $order->created_by = $orderData['createdBy'];
+        $order->delivery_channel = $orderData['deliveryChannel'];
+        $order->delivery_date = date('Y-m-d H:i:s', strtotime($orderData['deliveryDate']));
+        $order->delivery_charge = $orderData['deliveryCharge'];
+        $order->amount = $orderData['amount'];
+        $order->total_amount = $orderData['amount'] + $orderData['deliveryCharge'];
+    }
+
 
 }

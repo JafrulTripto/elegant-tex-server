@@ -27,7 +27,7 @@ class StoreOrderRequest extends FormRequest
         $rules = [
             'orderType' => ['required', 'integer'],
             'createdBy' => ['required', 'integer', 'exists:users,id'],
-            'deliveryChannel' => ['required', 'string'],
+            'deliveryChannel' => ['required', 'integer'],
             'deliveryCharge' => ['required', 'numeric', 'min:0'],
             'amount' => ['required', 'numeric', 'min:0'],
             'images' => ['nullable', 'array'],
