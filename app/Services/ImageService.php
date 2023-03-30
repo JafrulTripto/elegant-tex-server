@@ -16,4 +16,18 @@ class ImageService
         $file->name = $imageData['name'];
         return $model->image()->save($file);
     }
+
+    public function update(Model $model, $imageData)
+    {
+        // Delete all existing images associated with the order
+        $model->image()->delete();
+
+        // Check if there are any new images to add
+        if (array_key_exists('images', $imageData) && !empty($imageData['images'])) {
+            foreach ($imageData['images'] as $image) {
+                $this->store($model, $image);
+            }
+        }
+    }
+
 }

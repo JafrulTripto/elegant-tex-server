@@ -10,7 +10,8 @@ class ProductService
     {
         $product = new Product();
         $product->description = $productData['productDescription'];
-        $product->count = $productData['count'];
+        $product->count = $productData['quantity'];
+        $product->price = $productData['price'];
         $product->type_id = $productData['productType'];
         $product->color_id = $productData['productColor'];
         $product->fabric_id = $productData['productFabric'];

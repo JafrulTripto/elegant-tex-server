@@ -22,19 +22,37 @@ class Address extends Model
     protected function district(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => District::find($value)->name,
+            get: function ($value) {
+                $district = District::find($value);
+                return [
+                    'value' => $value,
+                    'name' => $district->name,
+                ];
+            },
         );
     }
     protected function upazila(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => Upazila::find($value)->name,
+            get: function ($value) {
+                $upazila = Upazila::find($value);
+                return [
+                    'value' => $value,
+                    'name' => $upazila->name,
+                ];
+            },
         );
     }
     protected function division(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => Division::find($value)->name,
+            get: function ($value) {
+                $division = Division::find($value);
+                return [
+                    'value' => $value,
+                    'name' => $division->name,
+                ];
+            },
         );
     }
 }

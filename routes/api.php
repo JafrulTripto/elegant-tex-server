@@ -74,6 +74,7 @@ Route::group([
     Route::get('/getMerchants', [OrderController::class, 'getAllMerchants']);
     Route::delete('/delete/{id}', [OrderController::class, 'destroy']);
     Route::post('/changeOrderStatus', [OrderController::class, 'changeOrderStatus']);
+    Route::put('/update/{orderId}',  [OrderController::class, 'update']);
 });
 
 Route::group([
@@ -82,6 +83,7 @@ Route::group([
 ], function ($router) {
     Route::get('/index', [MerchantController::class, 'index']);
     Route::get('/getMerchants', [MerchantController::class, 'getAllMerchants']);
+    Route::delete('/delete/{id}', [MerchantController::class, 'destroy']);
     Route::post('/store', [MerchantController::class, 'store']);
 
 });

@@ -31,19 +31,37 @@ class Product extends Model
     protected function typeId(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => ProductType::find($value)->name,
+            get: function ($value) {
+                $productType = ProductType::find($value);
+                return [
+                    'value' => $value,
+                    'name' => $productType->name,
+                ];
+            },
         );
     }
     protected function colorId(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => ProductColor::find($value)->name,
+            get: function ($value) {
+                $productColor = ProductColor::find($value);
+                return [
+                    'value' => $value,
+                    'name' => $productColor->name,
+                ];
+            },
         );
     }
     protected function fabricId(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => ProductFabric::find($value)->name,
+            get: function ($value) {
+                $productFabric = ProductFabric::find($value);
+                return [
+                    'value' => $value,
+                    'name' => $productFabric->name,
+                ];
+            },
         );
     }
 }

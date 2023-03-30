@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\OrderException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreOrderRequest;
+use App\Http\Requests\UpdateOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\OrdersResource;
 use App\Models\Marketplace;
@@ -99,38 +102,22 @@ class OrderController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|int
      * @throws HttpException
+     * @throws \Exception
      */
-    public function store(Request $request)
+    public function store (StoreOrderRequest $request, OrderService $orderService)
     {
-        $orderData = [
-            'orderType' => $request->orderType,
-            'marketplaceId' => $request->marketplace,
-            'merchantId' => $request->merchant,
-            'createdBy' => $request->createdBy,
-            'deliveryChannel' => $request->deliveryChannel,
-            'deliveryCharge' => $request->deliveryCharge,
-            'amount' => $request->amount,
-            'images' => $request->images,
-            'deliveryDate' => $request->deliveryDate,
-            'name' => $request->name,
-            'phone' => $request->phone,
-            'facebookId' => $request->facebookId,
-            'address' => $request->address,
-            'altPhone' => $request->altPhone,
-            'upazila' => $request->upazila,
-            'district' => $request->district,
-            'division' => $request->division,
-            'products' => $request->products,
 
-        ];
+        $validatedData = $request->validated();
+
         try {
-            $this->orderService->store($orderData);
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage(), 500 );
+            $order = $orderService->store($validatedData);
+        } catch (OrderException $e) {
+            throw new \Exception($e->getMessage(), 500);
         }
 
         return response()->json([
-            "message" => "Order Created Successfully."
+            'message' => 'Order created successfully',
+            'order_id' => $order->id
         ]);
 
     }
@@ -170,11 +157,23 @@ class OrderController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Order $order
-     * @return \Illuminate\Http\Response
+     * @return JsonResponse
      */
-    public function update(Request $request, Order $order)
+    public function update(UpdateOrderRequest $request, $orderId)
     {
-        //
+        $order = Order::find($orderId);
+        $validatedData = $request->validated();
+
+        try {
+            $order = $this->orderService->update($order, $validatedData);
+        } catch (OrderException $e) {
+            throw new \Exception($e->getMessage(), 500);
+        }
+
+        return response()->json([
+            'message' => 'Order updated successfully',
+            'order' => $order
+        ]);
     }
 
     /**

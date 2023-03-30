@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Enums\OrderStatus;
+use App\Enums\OrderType;
 use App\Models\Marketplace;
 use App\Models\User;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -18,9 +19,10 @@ class OrderResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'orderType' => class_basename($this->orderable_type),
+            'orderType' => class_basename($this->orderable_type) === "Marketplace" ? OrderType::MARKETPLACE->value : OrderType::MERCHANT->value,
             'orderable' => $this->orderable,
             'id' => $this->id,
+            'orderId' => $this->et_order_id,
             'status' => OrderStatus::from($this->status)->name,
             'customer' => CustomerResource::make($this->customer),
             'products' => ProductResource::collection($this->product),
