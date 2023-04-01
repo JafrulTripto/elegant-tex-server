@@ -49,7 +49,8 @@ class UserController extends Controller
     public function store(StoreUserRequest $request, UserService $userService)
     {
         $userData = [
-            'name' => $request->name,
+            'firstName' => $request->firstName,
+            'lastName' => $request->lastName,
             'email' => $request->email,
             'password' => $request->password,
             'nid' => $request->nid,

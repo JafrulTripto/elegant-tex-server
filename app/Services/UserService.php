@@ -24,7 +24,8 @@ class UserService
     {
 
         $user = new User();
-        $user->name = $userData['name'];
+        $user->firstname = $userData['firstName'];
+        $user->lastname = $userData['lastName'];
         $user->email = $userData['email'];
         $user->nid = $userData['nid'];
         $user->password = Hash::make($userData['password']);
@@ -42,10 +43,10 @@ class UserService
 
     public function getRoleUsers()
     {
-        $users = User::get(['id', 'name'])->map(function (User $user) {
+        $users = User::get(['id', 'firstname', 'lastname'])->map(function (User $user) {
             return [
                 'id' => $user->id,
-                'name' => $user->name,
+                'name' => $user->firstname.' '.$user->lastname,
                 'roles' => $user->getRoleNames()
             ];
         });
