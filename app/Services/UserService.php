@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\UserAdminException;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -59,6 +60,9 @@ class UserService
     {
         try {
             $user = User::findOrFail($userId);
+            if ($user->hasRole(['SUDO', 'Admin'])){
+                throw new UserAdminException("Cannot delete admin user.");
+            }
         } catch (QueryException $exception) {
             throw new HttpResponseException(response()->json([
                 'message' => $exception->getMessage(),

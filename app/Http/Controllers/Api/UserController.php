@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\Request;
@@ -126,6 +127,15 @@ class UserController extends Controller
     public function getRoleUsers()
     {
         return $this->userService->getRoleUsers();
+    }
+
+    public function getUser($id)
+    {
+        $user = User::with(['address', 'image', 'roles'])->find($id);
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+        return new UserResource($user);
     }
 
 

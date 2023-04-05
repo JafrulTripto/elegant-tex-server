@@ -52,9 +52,23 @@ class OrderController extends Controller
 
     public function getMarketplaceOrders($userID, Request $request) : ResourceCollection
     {
+        $user = User::find($userID);
+
         $search = '';
         if ($request->has('search')) {
             $search = $request->input('search');
+        }
+
+        if ($user->hasPermissionTo("VIEW_ALL_ORDERS")){
+            $orders = Order::when($search, function ($query, $search) {
+                return $query->where('id', $search);
+            })
+                ->whereHasMorph('orderable', [Marketplace::class], function (Builder $query) {
+                    // No additional condition is required here
+                })
+                ->orderBy('id', 'DESC')
+                ->paginate(10);
+            return OrdersResource::collection($orders);
         }
 
         $orders = Order::when($search, function ($query, $search) {

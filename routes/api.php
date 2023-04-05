@@ -37,6 +37,7 @@ Route::group([
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('me', [AuthController::class, 'me']);
+    Route::post('resetPassword', [AuthController::class, 'me']);
 });
 Route::group([
     'prefix' => 'users',
@@ -46,6 +47,7 @@ Route::group([
     Route::get('/index', [UserController::class, 'index']);
     Route::get('/delete', [UserController::class, 'destroy']);
     Route::get('/getRoleUsers', [UserController::class, 'getRoleUsers']);
+    Route::get('/user/{id}', [UserController::class, 'getUser']);
 });
 Route::prefix('files')->group(function () {
     Route::post('/upload', [StorageController::class, 'upload']);

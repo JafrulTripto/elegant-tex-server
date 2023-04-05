@@ -30,6 +30,7 @@ class MarketplaceService
     public function userMarketplaces(string $userID)
     {
         $user = User::findOrFail($userID);
+
         return $user->marketplace()->get(['marketplaces.id','marketplaces.name'])->makeHidden('pivot')->toArray();
     }
 }

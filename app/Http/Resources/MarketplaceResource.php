@@ -14,11 +14,15 @@ class MarketplaceResource extends JsonResource
      */
     public function toArray($request)
     {
+        $userNames = $this->whenLoaded('users', function () {
+            return $this->users->pluck('firstname');
+        });
         return [
             'id' => $this->id,
             'key' =>$this->id,
             'name' => $this->name,
-            'pageLink' => $this->page_link
+            'pageLink' => $this->page_link,
+            'users' => $userNames
         ];
     }
 }

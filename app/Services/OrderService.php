@@ -131,7 +131,6 @@ class OrderService
     public function update(Order $order, array $orderData,): Order
     {
         $this->extracted($order, $orderData);
-        $temp = Order::findOrFail(4);
         if ($orderData['orderType'] == OrderType::MARKETPLACE->value) {
             $customerData = $this->extractCustomerData($orderData);
             $marketplace = Marketplace::findOrFail($orderData['marketplace']);
