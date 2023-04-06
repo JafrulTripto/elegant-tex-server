@@ -37,7 +37,7 @@ Route::group([
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('me', [AuthController::class, 'me']);
-    Route::post('resetPassword', [AuthController::class, 'me']);
+    Route::post('resetPassword', [AuthController::class, 'resetPassword']);
 });
 Route::group([
     'prefix' => 'users',
@@ -64,10 +64,9 @@ Route::prefix('settings/marketplace')->group(function () {
 });
 
 Route::group([
-    'middleware' => ['api'],
+    'middleware' => 'api',
     'prefix' => 'orders'
 ], function ($router) {
-
     Route::post('/store', [OrderController::class, 'store']);
     Route::get('/index', [OrderController::class, 'index']);
     Route::get('/getMarketplaceOrders/{userId}', [OrderController::class, 'getMarketplaceOrders']);
