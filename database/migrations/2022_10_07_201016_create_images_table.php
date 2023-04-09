@@ -17,9 +17,10 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('imageable_id');
             $table->string('imageable_type');
+            $table->string('name');
             $table->string('path');
             $table->string('ext');
-            $table->string('name');
+            $table->unsignedBigInteger('size');
             $table->timestamps();
         });
     }

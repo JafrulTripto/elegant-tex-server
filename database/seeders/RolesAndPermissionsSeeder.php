@@ -30,8 +30,10 @@ class RolesAndPermissionsSeeder extends Seeder
         Permission::create(['guard_name' => 'api','name' => 'DELETE_USER']);
         Permission::create(['guard_name' => 'api','name' => 'CREATE_MARKETPLACE_ORDER']);
         Permission::create(['guard_name' => 'api','name' => 'CREATE_MERCHANT_ORDER']);
-        Permission::create(['guard_name' => 'api','name' => 'VIEW_PERMISSIONS']);
-        Permission::create(['guard_name' => 'api','name' => 'VIEW_ROLES']);
+        Permission::create(['guard_name' => 'api','name' => 'ROLE_SETTINGS']);
+        Permission::create(['guard_name' => 'api','name' => 'PERMISSION_SETTINGS']);
+        Permission::create(['guard_name' => 'api','name' => 'MARKETPLACE_SETTINGS']);
+        Permission::create(['guard_name' => 'api','name' => 'PRODUCT_SETTINGS']);
         Permission::create(['guard_name' => 'api','name' => 'VIEW_MERCHANTS']);
         Permission::create(['guard_name' => 'api','name' => 'VIEW_ORDERS']);
         Permission::create(['guard_name' => 'api','name' => 'DELETE_ORDER']);

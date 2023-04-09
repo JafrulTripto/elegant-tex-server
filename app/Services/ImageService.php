@@ -14,6 +14,7 @@ class ImageService
         $file->path = $imageData['path'];
         $file->ext = $imageData['ext'];
         $file->name = $imageData['name'];
+        $file->size = $imageData['size'];
         return $model->image()->save($file);
     }
 
