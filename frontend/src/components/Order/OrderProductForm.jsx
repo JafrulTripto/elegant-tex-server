@@ -1,0 +1,218 @@
+import React from 'react';
+import {Button, Col, Form, Input, InputNumber, Row, Select, Upload} from "antd";
+import {InboxOutlined, MinusOutlined, PlusOutlined} from "@ant-design/icons";
+import {colors} from "../../utils/Colors";
+import {toast} from "react-toastify";
+
+const OrderProductForm = (props) => {
+
+  const {Option} = Select;
+  const {Dragger} = Upload;
+  const {files} = props;
+
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+
+  const draggerProps = {
+    name: "orderImage",
+    accept: "image/*",
+    multiple: true,
+    listType:"picture",
+    maxCount: 7,
+    onRemove: (file) => {
+      const index = props.files.indexOf(file);
+      const newFileList = props.files.slice();
+      newFileList.splice(index, 1);
+      props.setFiles(newFileList);
+      props.setRemovedFiles([...props.removedFiles,file]);
+    },
+    beforeUpload(file) {
+      const fileSize = file.size / 1024 / 1024; // Convert size to MB
+      if (fileSize > 5) {
+        file.status = 'error';
+        toast.error('File size must be smaller than 5MB');
+        return false; // Prevent upload
+      }
+      props.setFiles([...files, file]);
+      return false;
+    },
+    files
+  };
+  // const handleFileListChange = ({ fileList }) => {
+  //   // filter out files that exceed the size limit
+  //   const filteredFileList = fileList.filter(file => file.size <= MAX_FILE_SIZE);
+  //   // update the file list
+  //   setFileList(filteredFileList);
+  // };
+  const normFile = (e) => {
+    if (Array.isArray(e)) {
+      return e.filter(file => file.size <= MAX_FILE_SIZE);
+    }
+    return e?.fileList.filter(file => file.size <= MAX_FILE_SIZE);
+  };
+  return (
+    <Row>
+      <Col xs={24} md={12} lg={16} className="pr-4">
+        <Form.List name="products" initialValue={[{
+          productType: null,
+          productColor: null,
+          productFabric: null,
+          productDescription: null
+        }]}>
+          {(fields, {add, remove}) => (
+            <>
+              {fields.map(({key, name, ...restField}) => (
+
+                <Row gutter={24} key={key}>
+                  <Col xs={24} md={12} lg={8}>
+                    <Form.Item
+
+                      name={[name, 'productType']}
+                      label="Product Type"
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Please select product type!',
+                        },
+
+                      ]}>
+                      <Select>
+                        {props.productTypes.map(data => {
+                          return <Option value={data.id} key={data.id}>{data.name}</Option>
+                        })}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} md={12} lg={8}>
+                    <Form.Item
+                      name={[name, 'productColor']}
+                      label="Product Color"
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Please select product color!',
+                        },
+
+                      ]}>
+                      <Select>
+                        {props.productColors.map(data => {
+                          return <Option value={data.id} key={data.id}>{data.name}</Option>
+                        })}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} md={12} lg={8}>
+                    <Form.Item
+                      name={[name, 'productFabric']}
+                      label="Product Fabric"
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Please select product fabric!',
+                        },
+
+                      ]}>
+                      <Select>
+                        {props.productFabrics.map(data => {
+                          return <Option value={data.id} key={data.id}>{data.name}</Option>
+                        })}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} md={24} lg={16}>
+                    <Form.Item
+                      name={[name, 'productDescription']}
+                      label="Product description"
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Please input product description!',
+                        },
+                      ]}
+                    >
+                      <Input.TextArea rows={2} placeholder="Additional product information ..."/>
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} md={12} lg={4}>
+                    <Form.Item
+                      name={[name, "quantity"]}
+                      label="Quantity"
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Please enter product count!',
+                        },
+
+                      ]}>
+                      <InputNumber
+                        min={1}
+                        style={{width: "100%"}}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} md={12} lg={4}>
+                    <Form.Item
+                      name={[name, "price"]}
+                      label="Price"
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Please enter product price!',
+                        },
+
+                      ]}>
+                      <InputNumber
+                        min={1}
+                        style={{width: "100%"}}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>))}
+
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={12} lg={12}>
+                  <Form.Item>
+                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined/>}>
+                      Add Another Product
+                    </Button>
+
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12} lg={12}>
+                  <Form.Item>
+                    <Button type="dashed" danger onClick={() => fields.length > 1 ? remove(fields.length - 1) : null}
+                            disabled={fields.length <= 1} block icon={<MinusOutlined/>}>
+                      Remove Last Product
+                    </Button>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </>)}
+        </Form.List>
+      </Col>
+      <Col xs={24} md={12} lg={8} className="pt-8">
+        <Form.Item
+          name="images"
+          initialValue={files}
+          valuePropName="fileList"
+          getValueFromEvent={normFile}
+        >
+          <Dragger {...draggerProps} fileList={files}>
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined style={{color: colors.secondaryDark}}/>
+            </p>
+            <p className="ant-upload-text">Click or drag file to this area to upload</p>
+            <p className="ant-upload-hint mb-1">
+              Support for a single or bulk upload. Strictly prohibit from uploading company data or other
+              band files
+            </p>
+            <p className="ant-upload-hint font-bold" style={{color:"#E74646"}}>
+              Maximum file size must be less then 5 mb.
+            </p>
+          </Dragger>
+        </Form.Item>
+      </Col>
+    </Row>
+  );
+};
+
+export default OrderProductForm;

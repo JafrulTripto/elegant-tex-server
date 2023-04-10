@@ -1,0 +1,23 @@
+import {useEffect, useState} from "react";
+import useAxiosClient from "../axios-client";
+import {toast} from "react-toastify";
+
+export const useOrderCountToday = () => {
+
+  const axiosClient = useAxiosClient();
+  const [orderCountToday, setOrderCountToday] = useState(null);
+
+  const fetchOrderCountToday = () => {
+    axiosClient.get(`/dashboard/getOrderCountToday`).then((response) => {
+      setOrderCountToday(response.data)
+    }).catch((error) => {
+      const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+      toast.error(message);
+    });
+  }
+  useEffect(()=> {
+    fetchOrderCountToday();
+  },[])
+
+  return {orderCountToday}
+}
