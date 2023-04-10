@@ -17,6 +17,10 @@ import Order from "./views/Order.jsx";
 import Merchants from "./views/Merchants";
 import MerchantForm from "./views/MerchantForm";
 import Error from "./views/Error";
+import OrderFormV2 from "./views/OrderFormV2";
+import EditOrderFrom from "./views/EditOrderFrom";
+import UserProfile from "./views/UserProfile";
+import ResetPassword from "./views/ResetPassword";
 
 const router = createBrowserRouter([
   {
@@ -48,6 +52,14 @@ const router = createBrowserRouter([
         element: <OrderFrom/>
       },
       {
+        path: '/orders/orderFormV2',
+        element: <OrderFormV2/>
+      },
+      {
+        path: '/orders/editOrderForm',
+        element: <EditOrderFrom/>
+      },
+      {
         path: '/orders/:id',
         element: <Order/>
       },
@@ -62,6 +74,10 @@ const router = createBrowserRouter([
       {
         path: '/users/userForm',
         element: <UserForm/>,
+      },
+      {
+        path: '/users/:userName',
+        element: <UserProfile/>,
       },
       {
         path: '/settings/roleSettings',
@@ -82,6 +98,10 @@ const router = createBrowserRouter([
       {
         path: '/notFound',
         element: <NotFound/>
+      },
+      {
+        path: '/resetPassword',
+        element: <ResetPassword/>
       }
     ]
   },
