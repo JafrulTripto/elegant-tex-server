@@ -69,8 +69,20 @@ class ProductTypeController extends Controller
      * @param  \App\Models\ProductType  $productType
      * @return \Illuminate\Http\Response
      */
-    public function destroy(ProductType $productType)
+    public function destroy($id): JsonResponse
     {
-        //
+        $productType = ProductType::find($id);
+
+        if (!$productType) {
+            return response()->json([
+                "message" => "Product fabric not found."
+            ], 404);
+        }
+
+        $productType->delete();
+
+        return response()->json([
+            "message" => "Product fabric deleted successfully."
+        ]);
     }
 }

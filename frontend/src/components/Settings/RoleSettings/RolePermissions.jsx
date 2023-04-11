@@ -20,7 +20,6 @@ function RolePermissions({ role }) {
 
 
   const onChange = (record, value) => {
-    console.log(record)
     setLoadingSwithcKey(record.key);
     const data = {
       role: role,

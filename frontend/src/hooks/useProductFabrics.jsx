@@ -7,13 +7,16 @@ export const useProductFabrics = () => {
 
   const axiosClient = useAxiosClient();
   const [productFabrics, setProductFabrics] = useState([]);
-  const {user} = useStateContext();
+  const [productFabricsLoading, setProductFabricsLoading] = useState(false);
 
   const fetchProductFabrics = () => {
+      setProductFabricsLoading(true);
     axiosClient.get(`/settings/fabrics/index`).then((response) => {
       setProductFabrics([...response.data.data])
+        setProductFabricsLoading(false)
     }).catch((error) => {
       const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+      setProductFabricsLoading(false)
       toast.error(message);
     });
   }
@@ -21,5 +24,5 @@ export const useProductFabrics = () => {
     fetchProductFabrics();
   },[])
 
-  return {productFabrics}
+  return {productFabrics, productFabricsLoading, fetchProductFabrics}
 }
