@@ -5,21 +5,24 @@ import {useStateContext} from "../contexts/ContextProvider";
 
 export const useProductTypes = () => {
 
-  const axiosClient = useAxiosClient();
-  const [productTypes, setProductTypes] = useState([]);
-  const {user} = useStateContext();
+    const axiosClient = useAxiosClient();
+    const [productTypes, setProductTypes] = useState([]);
+    const [productTypesLoading, setProductTypesLoading] = useState(false);
 
-  const fetchProductTypes = () => {
-    axiosClient.get(`/settings/productTypes/index`).then((response) => {
-      setProductTypes([...response.data.data])
-    }).catch((error) => {
-      const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-      toast.error(message);
-    });
-  }
-  useEffect(()=> {
-    fetchProductTypes();
-  },[])
+    const fetchProductTypes = () => {
+        setProductTypesLoading(true);
+        axiosClient.get(`/settings/productTypes/index`).then((response) => {
+            setProductTypes([...response.data.data])
+            setProductTypesLoading(false);
+        }).catch((error) => {
+            const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+            setProductTypesLoading(false);
+            toast.error(message);
+        });
+    }
+    useEffect(() => {
+        fetchProductTypes();
+    }, [])
 
-  return {productTypes}
+    return {productTypes, productTypesLoading, fetchProductTypes}
 }

@@ -7,12 +7,16 @@ export const useDeliveryChannels = () => {
   const axiosClient = useAxiosClient();
 
   const [deliveryChannels, setDeliveryChannels] = useState([]);
+  const [deliveryChannelsLoading, setDeliveryChannelsLoading] = useState(false);
 
   const fetchDeliveryChannels = () => {
+      setDeliveryChannelsLoading(true);
     axiosClient.get(`/settings/deliveryChannels/index`).then((response) => {
       setDeliveryChannels([...response.data.data])
+        setDeliveryChannelsLoading(false);
     }).catch((error) => {
       const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+      setDeliveryChannelsLoading(false);
       toast.error(message);
     });
   }
@@ -20,5 +24,5 @@ export const useDeliveryChannels = () => {
       fetchDeliveryChannels();
   },[])
 
-  return {deliveryChannels}
+  return {deliveryChannels, deliveryChannelsLoading, fetchDeliveryChannels}
 }

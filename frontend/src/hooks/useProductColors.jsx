@@ -5,22 +5,25 @@ import {useStateContext} from "../contexts/ContextProvider";
 
 export const useProductColors = () => {
 
-  const axiosClient = useAxiosClient();
+    const axiosClient = useAxiosClient();
 
-  const [productColors, setProductColors] = useState([]);
-  const {user} = useStateContext();
+    const [productColors, setProductColors] = useState([]);
+    const [productColorLoading, setProductColorLoading] = useState(false);
 
-  const fetchProductColors = () => {
-    axiosClient.get(`/settings/colors/index`).then((response) => {
-      setProductColors([...response.data.data])
-    }).catch((error) => {
-      const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-      toast.error(message);
-    });
-  }
-  useEffect(()=> {
-    fetchProductColors();
-  },[])
+    const fetchProductColors = () => {
+        setProductColorLoading(true);
+        axiosClient.get(`/settings/colors/index`).then((response) => {
+            setProductColors([...response.data.data])
+        }).catch((error) => {
+            const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+            toast.error(message);
+        }).finally(() => {
+            setProductColorLoading(false)
+        });
+    }
+    useEffect(() => {
+        fetchProductColors();
+    }, [])
 
-  return {productColors}
+    return {productColors, productColorLoading, fetchProductColors}
 }

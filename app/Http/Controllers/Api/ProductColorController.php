@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductColorResource;
 use App\Models\ProductColor;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ProductColorController extends Controller
@@ -86,8 +87,21 @@ class ProductColorController extends Controller
      * @param  \App\Models\ProductColor  $productColor
      * @return \Illuminate\Http\Response
      */
-    public function destroy(ProductColor $productColor)
+    public function destroy($id): JsonResponse
     {
-        //
+        $productColor = ProductColor::find($id);
+
+        if (!$productColor) {
+            return response()->json([
+                "message" => "Product fabric not found."
+            ], 404);
+        }
+
+        $productColor->delete();
+
+        return response()->json([
+            "message" => "Product fabric deleted successfully."
+        ]);
     }
+
 }
