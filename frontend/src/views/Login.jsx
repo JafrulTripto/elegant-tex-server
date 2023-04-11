@@ -4,7 +4,6 @@ import {colors} from "../utils/Colors.js";
 import {useLocation, useNavigate} from "react-router-dom";
 import useAxiosClient from "../axios-client.js";
 import {useStateContext} from "../contexts/ContextProvider.jsx";
-import {toast} from "react-toastify";
 import {useEffect, useState} from "react";
 import Loading from "../components/Util/Loading";
 import elegantTexLogo from '../assets/images/eleganttex-logo-only.png'
@@ -110,8 +109,8 @@ export default function Login() {
 
 
                     <Form.Item>
-                      <Button block type="primary" htmlType="submit">
-                        Sign In
+                      <Button className="font-bold" block type="primary" htmlType="submit">
+                        Login
                       </Button>
                     </Form.Item>
 

@@ -51,7 +51,7 @@ const ReportBox = (props) => {
   return (
     <div className="report-box zoom-in bg-white rounded-lg shadow-md">
       <div className="flex justify-center items-center box p-5"  style={{height:"154px"}}>
-        <div className=""><Spin size="large"/></div>
+        <div className=""><p>No Data</p></div>
       </div>
     </div>
   )
