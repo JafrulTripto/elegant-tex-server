@@ -74,7 +74,7 @@ const confirmDeleteMerchant = async (id) => {
   try {
       const data = await axiosClient.delete(`/merchants/delete/${id}`);
       toast.warning(data.message);
-      fetchMerchants();
+      await fetchMerchants();
 
   } catch (error) {
     const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();

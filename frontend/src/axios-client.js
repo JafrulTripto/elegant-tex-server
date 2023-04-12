@@ -6,7 +6,7 @@ import {useStateContext} from "./contexts/ContextProvider.jsx";
 
 const useAxiosClient = () => {
   const navigate = useNavigate();
-  const {setToken, setUser, message} = useStateContext();
+  const {setToken} = useStateContext();
 
   async function refreshToken() {
     try {
@@ -14,9 +14,7 @@ const useAxiosClient = () => {
       const token = localStorage.getItem("ACCESS_TOKEN");
 
       const timeLeft = new Date(expiryTime) - new Date();
-
-      console.log(timeLeft)
-      if (expiryTime && timeLeft < 60 * 10000) {
+      if (expiryTime && timeLeft < 60 * 15000) {
         const res = await axiosClient.post("/auth/refresh", {}, {
           headers: {
             Authorization: `Bearer ${token}`
@@ -26,9 +24,7 @@ const useAxiosClient = () => {
         localStorage.setItem("TOKEN_EXPIRATION", new Date(Date.now() + res.data.expires_in * 1000));
       }
     } catch (error) {
-      localStorage.removeItem("ACCESS_TOKEN");
-      localStorage.removeItem("TOKEN_EXPIRATION");
-      navigate("/login"); // navigate to /login on error
+      setToken(null)
     }
   }
 
@@ -47,22 +43,17 @@ const useAxiosClient = () => {
       if (res.config.url !== '/auth/refresh') {
         refreshToken()
       }
-
       return res;
     }, (error) => {
-
       try {
         const { response } = error;
+        console.log(response.status)
         if (response.status === 401 && response.config.url !== '/auth/refresh') {
-          console.log("status 401")
-          localStorage.removeItem("ACCESS_TOKEN");
-          localStorage.removeItem("TOKEN_EXPIRATION");
-          //navigate("/login");
+          setToken(null);
         }
       } catch (e) {
         console.error(e);
       }
-
       throw error;
     })
 
