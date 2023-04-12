@@ -122,7 +122,7 @@ const Order = () => {
                       <Image
                         width={100}
                         height={100}
-                        src={`${import.meta.env.VITE_API_BASE_URL}/files/upload/${item.id}`}/>
+                        src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${item.id}`}/>
                     </Col>
                   })}
                 </Row> : <Empty description={"No image found."}/>}

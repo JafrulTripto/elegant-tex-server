@@ -48,7 +48,7 @@ function Merchants() {
 
   const renderMerchantAvater = (image) => {
     if (image) {
-        const imagePath = `${import.meta.env.VITE_API_BASE_URL}/files/upload/${image.id}`
+        const imagePath = `${process.env.REACT_APP_API_BASE_URL}/files/upload/${image.id}`
         return (
             <Avatar
                 src={imagePath}

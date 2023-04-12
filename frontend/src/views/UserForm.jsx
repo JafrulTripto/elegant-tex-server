@@ -37,7 +37,7 @@ const UserForm = () => {
     accept: "image/*",
     listType:"picture",
     multiple: false,
-    action: `${import.meta.env.VITE_API_BASE_URL}/files/upload`,
+    action: `${process.env.REACT_APP_API_BASE_URL}/files/upload`,
     maxCount: 1,
     onChange(info) {
 

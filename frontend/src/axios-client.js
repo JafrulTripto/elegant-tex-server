@@ -34,7 +34,7 @@ const useAxiosClient = () => {
 
   const axiosClient = useMemo(() => {
     const client = axios.create({
-      baseURL: `${import.meta.env.VITE_API_BASE_URL}`
+      baseURL: `${process.env.REACT_APP_API_BASE_URL}`
     });
 
     client.interceptors.request.use((config) => {

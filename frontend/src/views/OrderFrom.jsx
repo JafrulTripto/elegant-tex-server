@@ -67,7 +67,7 @@ const OrderFrom = () => {
     accept: "image/*",
     multiple: true,
     listType:"picture",
-    action: `${import.meta.env.VITE_API_BASE_URL}/files/uploadProductImage`,
+    action: `${process.env.REACT_APP_API_BASE_URL}/files/uploadProductImage`,
     maxCount: 5,
     onChange(info) {
       const {status} = info.file;

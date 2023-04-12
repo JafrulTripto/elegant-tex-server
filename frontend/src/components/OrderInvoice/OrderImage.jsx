@@ -18,7 +18,7 @@ const OrderImage = ({images}) => {
       {images.length > 0 ? <View style={{flexDirection: "row"}}>
         {images.map(image => {
           return (
-            <Image src={`${import.meta.env.VITE_API_BASE_URL}/files/upload/${image.id}`} key={image.id}
+            <Image src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${image.id}`} key={image.id}
                    style={{height: "100px", width: "100px", paddingRight: 5}}/>
           )
         })}

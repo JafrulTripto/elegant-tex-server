@@ -38,7 +38,7 @@ function MerchantForm() {
     accept: "image/*",
     multiple: false,
     listType:"picture",
-    action: `${import.meta.env.VITE_API_BASE_URL}/files/uploadMerchantImage`,
+    action: `${process.env.REACT_APP_API_BASE_URL}/files/uploadMerchantImage`,
     maxCount: 1,
     onChange(info) {
       const {status} = info.file;

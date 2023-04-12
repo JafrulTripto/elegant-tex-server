@@ -125,7 +125,7 @@ const EditOrderFrom = () => {
         const imageWithUrl = o.images.map((image) => {
           return {
             ...image,
-            url: `${import.meta.env.VITE_API_BASE_URL}/files/upload/${image.id}`
+            url: `${process.env.REACT_APP_API_BASE_URL}/files/upload/${image.id}`
           }
         });
         setFiles(imageWithUrl);

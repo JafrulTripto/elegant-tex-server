@@ -40,7 +40,7 @@ const NavigationDropdown = (props) => {
       <div>
         {
           user.image ?
-            <Avatar src={`${import.meta.env.VITE_API_BASE_URL}/files/upload/${user.image.id}`}/> :
+            <Avatar src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${user.image.id}`}/> :
             <Avatar style={{backgroundColor:colors.secondary, fontWeight:700}}>{user.firstname.charAt(0) + user.lastname.charAt(0)}</Avatar>
         }
 

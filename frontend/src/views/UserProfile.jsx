@@ -68,7 +68,7 @@ const UserProfile = () => {
                 xl: 150,
                 xxl: 150,
               }}
-              src={`${import.meta.env.VITE_API_BASE_URL}/files/upload/${fetchedUser.image.id}`}
+              src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${fetchedUser.image.id}`}
             /> : <Avatar
               shape="square"
               size={{
