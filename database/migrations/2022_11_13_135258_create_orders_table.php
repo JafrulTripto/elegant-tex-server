@@ -20,7 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('orderable_id');
             $table->string('orderable_type');
             $table->unsignedBigInteger('created_by');
-            $table->foreign('created_by')->references('id')->on('users');
+            $table->foreign('created_by')->references('id')->on('users')->onDelete("cascade");
             $table->integer('status');
             $table->string('delivery_channel');
             $table->date('delivery_date');

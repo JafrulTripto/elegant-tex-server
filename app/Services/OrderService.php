@@ -33,31 +33,29 @@ class OrderService
         $this->storageService = $storageService;
     }
 
-    public function store(array $orderData): void
+    /**
+     * @throws Exception
+     */
+    public function store(array $orderData): Order
     {
         $model = null;
-
-        $customer = $this->extractCustomerData($orderData);
         $order = new Order();
         $order->status = OrderStatus::DRAFT;
-        $order->created_by = $orderData['createdBy'];
-        $order->delivery_channel = $orderData['deliveryChannel'];
-        $order->delivery_date = date('Y-m-d H:i:s', strtotime($orderData['deliveryDate']));
-        $order->delivery_charge = $orderData['deliveryCharge'];
-        $order->amount = $orderData['amount'];
-        $order->total_amount = $orderData['amount'] + $orderData['deliveryCharge'];
+        $this->extracted($order, $orderData);
 
         if ($orderData['orderType'] == OrderType::MARKETPLACE->value) {
-            $marketplace = Marketplace::findOrFail($orderData['marketplaceId']);
+            $customer = $this->extractCustomerData($orderData);
+            $marketplace = Marketplace::findOrFail($orderData['marketplace']);
             $this->customerService->store($customer, $order);
             $model = $marketplace;
         } else {
-            $merchant = Merchant::findOrFail($orderData['merchantId']);
+            $merchant = Merchant::findOrFail($orderData['merchant']);
             $model = $merchant;
         }
+
         $model->order()->save($order);
 
-        foreach ($orderData['products'] as $product){
+        foreach ($orderData['products'] as $product) {
             $this->productService->store($product, $order);
         }
         if (array_key_exists('images', $orderData) && !empty($orderData['images'])) {
@@ -65,6 +63,8 @@ class OrderService
                 $this->imageService->store($order, $image);
             }
         }
+
+        return $order;
     }
 
     private function extractCustomerData($orderData)
@@ -126,5 +126,60 @@ class OrderService
             throw new Exception('An error occurred while deleting the order');
         }
     }
+
+
+    public function update(Order $order, array $orderData,): Order
+    {
+        $this->extracted($order, $orderData);
+        if ($orderData['orderType'] == OrderType::MARKETPLACE->value) {
+            $customerData = $this->extractCustomerData($orderData);
+            $marketplace = Marketplace::findOrFail($orderData['marketplace']);
+            $customer = $order->customer()->getResults();
+            $this->customerService->update($customerData, $customer);
+            $model = $marketplace;
+        } else {
+            $merchant = Merchant::findOrFail($orderData['merchant']);
+            $model = $merchant;
+        }
+
+        $model->order()->save($order);
+
+        // First, delete all existing products of the order
+        $order->product()->delete();
+
+        // Then, add the updated products
+        foreach ($orderData['products'] as $productData) {
+            $this->productService->store($productData, $order);
+        }
+
+        // First, delete all existing images of the order
+        $order->image()->delete();
+
+        // Then, add the updated images
+        if (array_key_exists('images', $orderData) && !empty($orderData['images'])) {
+            foreach ($orderData['images'] as $imageData){
+                $this->imageService->store($order, $imageData,);
+            }
+        }
+
+        return $order;
+    }
+
+    /**
+     * @param Order $order
+     * @param array $orderData
+     * @return void
+     */
+    public function extracted(Order $order, array $orderData): void
+    {
+
+        $order->created_by = $orderData['createdBy'];
+        $order->delivery_channel = $orderData['deliveryChannel'];
+        $order->delivery_date = date('Y-m-d H:i:s', strtotime($orderData['deliveryDate']));
+        $order->delivery_charge = $orderData['deliveryCharge'];
+        $order->amount = $orderData['amount'];
+        $order->total_amount = $orderData['amount'] + $orderData['deliveryCharge'];
+    }
+
 
 }

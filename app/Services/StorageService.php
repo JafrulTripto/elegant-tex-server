@@ -15,7 +15,8 @@ class StorageService implements IStorageService
             return [
                 "name" => $file->getClientOriginalName(),
                 "ext" => $file->getClientOriginalExtension(),
-                "path" => $imagePath
+                "path" => $imagePath,
+                "size" => $file->getSize()
             ];
         } catch (UploadException $exception){
             throw new UploadException($exception);

@@ -9,6 +9,7 @@ use App\Models\Marketplace;
 use App\Models\User;
 use App\Services\MarketplaceService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class MarketplaceController extends Controller
 {
@@ -21,7 +22,13 @@ class MarketplaceController extends Controller
 
     public function index()
     {
-        $marketplaces = Marketplace::paginate(15);
+        $user = User::find(Auth::id());
+        if ($user->hasPermissionTo("VIEW_ALL_MARKETPLACES")){
+            $marketplaces = Marketplace::with('users')->paginate(15);
+            return MarketplaceResource::collection($marketplaces);
+        }
+
+        $marketplaces = $user->marketplace()->with('users')->paginate(10);
         return MarketplaceResource::collection($marketplaces);
 
     }

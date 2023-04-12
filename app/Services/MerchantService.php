@@ -32,4 +32,10 @@ class MerchantService
     {
         return Merchant::with(['address', 'image'])->paginate(10);
     }
+
+    public function delete($id): void
+    {
+        $merchant = Merchant::findOrFail($id);
+        $merchant->delete();
+    }
 }

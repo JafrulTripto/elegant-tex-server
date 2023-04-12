@@ -25,6 +25,7 @@ return new class extends Migration
             $table->foreign('fabric_id')->references('id')->on('product_fabrics');
             $table->text('description');
             $table->integer('count');
+            $table->decimal('price', 10, 2);
             $table->timestamps();
         });
     }

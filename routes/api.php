@@ -37,6 +37,7 @@ Route::group([
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('me', [AuthController::class, 'me']);
+    Route::post('resetPassword', [AuthController::class, 'resetPassword']);
 });
 Route::group([
     'prefix' => 'users',
@@ -46,6 +47,7 @@ Route::group([
     Route::get('/index', [UserController::class, 'index']);
     Route::get('/delete', [UserController::class, 'destroy']);
     Route::get('/getRoleUsers', [UserController::class, 'getRoleUsers']);
+    Route::get('/user/{id}', [UserController::class, 'getUser']);
 });
 Route::prefix('files')->group(function () {
     Route::post('/upload', [StorageController::class, 'upload']);
@@ -62,10 +64,9 @@ Route::prefix('settings/marketplace')->group(function () {
 });
 
 Route::group([
-    'middleware' => ['api'],
+    'middleware' => 'auth:api',
     'prefix' => 'orders'
 ], function ($router) {
-
     Route::post('/store', [OrderController::class, 'store']);
     Route::get('/index', [OrderController::class, 'index']);
     Route::get('/getMarketplaceOrders/{userId}', [OrderController::class, 'getMarketplaceOrders']);
@@ -74,6 +75,7 @@ Route::group([
     Route::get('/getMerchants', [OrderController::class, 'getAllMerchants']);
     Route::delete('/delete/{id}', [OrderController::class, 'destroy']);
     Route::post('/changeOrderStatus', [OrderController::class, 'changeOrderStatus']);
+    Route::put('/update/{orderId}',  [OrderController::class, 'update']);
 });
 
 Route::group([
@@ -82,6 +84,7 @@ Route::group([
 ], function ($router) {
     Route::get('/index', [MerchantController::class, 'index']);
     Route::get('/getMerchants', [MerchantController::class, 'getAllMerchants']);
+    Route::delete('/delete/{id}', [MerchantController::class, 'destroy']);
     Route::post('/store', [MerchantController::class, 'store']);
 
 });
@@ -137,26 +140,26 @@ Route::prefix('settings/colors')->group(function () {
     Route::get('/index', [ProductColorController::class, 'index']);
     Route::post('/store', [ProductColorController::class, 'store']);
     Route::put('/update', [ProductColorController::class, 'update']);
-    Route::get('/delete', [ProductColorController::class, 'destroy']);
+    Route::delete('/delete/{id}', [ProductColorController::class, 'destroy']);
 });
 
 Route::prefix('settings/fabrics')->group(function () {
     Route::get('/index', [ProductFabricController::class, 'index']);
     Route::post('/store', [ProductFabricController::class, 'store']);
     Route::post('/update', [ProductFabricController::class, 'update']);
-    Route::get('/delete', [ProductFabricController::class, 'destroy']);
+    Route::delete('/delete/{id}', [ProductFabricController::class, 'destroy']);
 });
 Route::prefix('settings/productTypes')->group(function () {
     Route::get('/index', [ProductTypeController::class, 'index']);
     Route::post('/store', [ProductTypeController::class, 'store']);
     Route::post('/update', [ProductTypeController::class, 'update']);
-    Route::get('/delete', [ProductTypeController::class, 'destroy']);
+    Route::delete('/delete/{id}', [ProductTypeController::class, 'destroy']);
 });
 Route::prefix('settings/deliveryChannels')->group(function () {
     Route::get('/index', [DeliveryChannelController::class, 'index']);
     Route::post('/store', [DeliveryChannelController::class, 'store']);
     Route::post('/update', [DeliveryChannelController::class, 'update']);
-    Route::get('/delete', [DeliveryChannelController::class, 'destroy']);
+    Route::delete('/delete/{id}', [DeliveryChannelController::class, 'destroy']);
 });
 
 Route::get('/getDivisions', [BangladeshGeocodeController::class, 'getDivision']);

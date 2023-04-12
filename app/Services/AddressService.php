@@ -18,4 +18,16 @@ class AddressService
         $model->address()->save($address);
         return true;
     }
+
+    public function update(Model $model, $data)
+    {
+        $address = $model->address;
+        $address->address = $data['address'];
+        $address->phone = $data['phone'];
+        $address->district = $data['district'];
+        $address->division = $data['division'];
+        $address->upazila = $data['upazila'];
+        $address->save();
+        return true;
+    }
 }

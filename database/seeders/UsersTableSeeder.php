@@ -21,7 +21,8 @@ class UsersTableSeeder extends Seeder
         if (User::count() == 0) {
 
             $user = User::create([
-                'name'           => 'Jafrul Hossain',
+                'firstname'      => 'Jafrul',
+                'lastname'       => 'Hossain',
                 'email'          => 'jafrultripto@gmail.com',
                 'password'       => Hash::make('Ewu2013368037'),
                 'nid'            => '19943323021000036',

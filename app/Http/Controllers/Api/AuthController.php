@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
+use App\Http\Requests\ResetPasswordRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 
 class AuthController extends Controller
@@ -28,37 +30,13 @@ class AuthController extends Controller
         $credentials = request(['email', 'password']);
 
         if (! $token = auth()->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['message' => 'Incorrect email or password.'], 401);
         }
         $user = auth()->user();
         $user->last_login = now();
         $user->save();
         return $this->respondWithToken($token);
     }
-
-//    public function login(LoginRequest $request)
-//    {
-//        $credentials = $request->validated();
-//        if (!Auth::attempt($credentials)) {
-//            return response([
-//                "message" => 'Incorrect email or password!!!',
-//            ], 422);
-//        }
-//        /** @var User $user */
-//        $user = Auth::user();
-//        $token = $user->createToken('main')->plainTextToken;
-//        $user->last_login = now();
-//        $user->save();
-//        return response(compact('user', 'token'));
-//    }
-
-//    public function logout(Request $request)
-//    {
-//        $user = $request->user();
-//        /** @var User $user */
-//        $user->currentAccessToken()->delete();
-//        return response('', 204);
-//    }
 
     public function logout(): JsonResponse
     {
@@ -101,5 +79,22 @@ class AuthController extends Controller
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60
         ]);
+    }
+
+    public function resetPassword(ResetPasswordRequest $request)
+    {
+        // Retrieve user based on email address
+        $user = User::where('email', $request->input('email'))->first();
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        if (!Hash::check($request->input('currentPassword'), $user->password)) {
+            return response()->json(['error' => 'Current password is incorrect'], 401);
+        }
+        // Hash and save new password
+        $user->password = Hash::make($request->input('password'));
+        $user->save();
+        return response()->json(['message' => 'Password reset successful. Please login again.']);
     }
 }

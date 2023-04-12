@@ -86,8 +86,20 @@ class ProductFabricController extends Controller
      * @param  \App\Models\ProductFabric  $productFabric
      * @return \Illuminate\Http\Response
      */
-    public function destroy(ProductFabric $productFabric)
+    public function destroy($id): JsonResponse
     {
-        //
+        $productFabric = ProductFabric::find($id);
+
+        if (!$productFabric) {
+            return response()->json([
+                "message" => "Product fabric not found."
+            ], 404);
+        }
+
+        $productFabric->delete();
+
+        return response()->json([
+            "message" => "Product fabric deleted successfully."
+        ]);
     }
 }
