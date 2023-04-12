@@ -72,7 +72,7 @@ const renderActionButtons = (record) => {
 
 const confirmDeleteMerchant = async (id) => {
   try {
-      const data = axiosClient.delete(`/merchants/delete/${id}`);
+      const data = await axiosClient.delete(`/merchants/delete/${id}`);
       toast.warning(data.message);
       fetchMerchants();
 
