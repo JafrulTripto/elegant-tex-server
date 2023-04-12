@@ -1,7 +1,7 @@
 import React from 'react';
-import {View, Text, StyleSheet, Font} from "@react-pdf/renderer";
+import {View, Text, StyleSheet} from "@react-pdf/renderer";
 
-const InvoiceProductTable = ({products}) => {
+const InvoiceProductTable = ({ products }) => {
 
   const styles = StyleSheet.create({
     table: {

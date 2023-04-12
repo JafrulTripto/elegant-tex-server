@@ -8,7 +8,6 @@ import useAxiosClient from "../axios-client";
 import Loading from "../components/Util/Loading";
 import {colors} from "../utils/Colors";
 import {useStateContext} from "../contexts/ContextProvider";
-import loading from "../components/Util/Loading";
 
 
 const UserProfile = () => {
@@ -47,7 +46,7 @@ const UserProfile = () => {
       }
     }
     getUserData()
-  }, [state])
+  }, [state, axiosClient])
 
   const resetUserPassword = () => {
     navigate('/resetPassword', {state: {email: user.email}});

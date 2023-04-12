@@ -1,7 +1,6 @@
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import useAxiosClient from "../axios-client";
 import {toast} from "react-toastify";
-import {useStateContext} from "../contexts/ContextProvider";
 
 export const useProductTypes = () => {
 
@@ -9,9 +8,9 @@ export const useProductTypes = () => {
     const [productTypes, setProductTypes] = useState([]);
     const [productTypesLoading, setProductTypesLoading] = useState(false);
 
-    const fetchProductTypes = () => {
+    const fetchProductTypes = useCallback(async () => {
         setProductTypesLoading(true);
-        axiosClient.get(`/settings/productTypes/index`).then((response) => {
+        await axiosClient.get(`/settings/productTypes/index`).then((response) => {
             setProductTypes([...response.data.data])
             setProductTypesLoading(false);
         }).catch((error) => {
@@ -19,10 +18,11 @@ export const useProductTypes = () => {
             setProductTypesLoading(false);
             toast.error(message);
         });
-    }
+    }, [axiosClient])
+
     useEffect(() => {
         fetchProductTypes();
-    }, [])
+    }, [fetchProductTypes])
 
     return {productTypes, productTypesLoading, fetchProductTypes}
 }

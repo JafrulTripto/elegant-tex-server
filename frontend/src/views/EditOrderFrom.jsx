@@ -12,7 +12,6 @@ import Loading from "../components/Util/Loading";
 import {useMerchants} from "../hooks/useMerchants";
 import {useMarketplaces} from "../hooks/useMarketplaces";
 import {OrderTypeEnum} from "../utils/enums/OrderTypeEnum";
-import moment from "moment";
 import * as dayjs from 'dayjs'
 import {useProductColors} from "../hooks/useProductColors";
 import {useProductFabrics} from "../hooks/useProductFabrics";
@@ -38,7 +37,7 @@ const EditOrderFrom = () => {
   const [orderLoading, setOrderLoading] = useState(true);
 
   const {marketplaces} = useMarketplaces();
-  const {merchants, isMerchantLoading} = useMerchants();
+  const {merchants} = useMerchants();
 
   const {productColors} = useProductColors();
   const {productFabrics} = useProductFabrics();
@@ -139,11 +138,11 @@ const EditOrderFrom = () => {
       }
     }
     fetchOrder();
-  }, [])
+  }, [axiosClient, navigate, state.order.id, updateOrderForm])
 
   if (order
     && Object.keys(order).length === 0
-    && Object.getPrototypeOf(order) === Object.prototype) {
+    && Object.getPrototypeOf(order) === Object.prototype && orderLoading) {
     return <Loading layout={'default'}/>
   }
 

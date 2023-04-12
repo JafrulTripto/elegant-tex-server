@@ -1,6 +1,5 @@
 import React from 'react';
 import {StyleSheet, Text, View} from "@react-pdf/renderer";
-import dayjs from "dayjs";
 import OrderItemHeader from "./OrderItemHeader";
 
 const CustomerDetails = ({customer}) => {

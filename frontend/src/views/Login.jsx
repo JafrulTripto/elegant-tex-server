@@ -1,7 +1,6 @@
-import {Alert, Button, Card, Checkbox, Col, DatePicker, Form, Input, Layout, Row, Space, Typography} from "antd";
+import {Alert, Button, Card, Col, Form, Input, Layout, Row, Typography} from "antd";
 import {LockOutlined, UserOutlined} from "@ant-design/icons";
 import {colors} from "../utils/Colors.js";
-import {useLocation, useNavigate} from "react-router-dom";
 import useAxiosClient from "../axios-client.js";
 import {useStateContext} from "../contexts/ContextProvider.jsx";
 import {useEffect, useState} from "react";
@@ -12,9 +11,7 @@ import elegantTexLogo from '../assets/images/eleganttex-logo-only.png'
 export default function Login() {
 
   const axiosClient = useAxiosClient();
-  const navigate = useNavigate();
-
-  const {setToken, setUser, message, setMessage} = useStateContext();
+  const {setToken, message, setMessage} = useStateContext();
 
   const [loading, setLoading] = useState(false);
   const [loginMessage, setLoginMessage] = useState(null);
@@ -29,7 +26,7 @@ export default function Login() {
       setLoginMessage(null);
       setMessage("");
     },5000)
-  }, [])
+  }, [message, setMessage])
   const onFinish = (values) => {
     const payload = {
       email: values.email,
@@ -46,9 +43,6 @@ export default function Login() {
     })
   };
 
-  const generateAlert = () =>  {
-
-  }
   const onFinishFailed = (errorInfo) => {
   };
 

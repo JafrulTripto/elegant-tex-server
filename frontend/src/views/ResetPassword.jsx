@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Button, Card, Checkbox, Col, Form, Input, Row, Typography} from "antd";
+import {Button, Card, Col, Form, Input, Row, Typography} from "antd";
 import {colors} from "../utils/Colors";
 import elegantTexLogo from "../assets/images/eleganttex-logo-only.png";
 import {LockOutlined} from "@ant-design/icons";
@@ -22,7 +22,7 @@ const ResetPassword = () => {
     if (!state) {
       navigate("/")
     }
-  }, []);
+  }, [state, navigate]);
   const onFinish = (data) => {
     const payload = {
       email: state.email,

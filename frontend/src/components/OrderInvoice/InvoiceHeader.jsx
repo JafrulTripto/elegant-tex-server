@@ -1,7 +1,6 @@
 import React from 'react';
 import {StyleSheet, View, Text, Image} from "@react-pdf/renderer";
 import ETLogo from "../../assets/images/elegant_tex_logo.jpg"
-import moment from "moment";
 import dayjs from "dayjs";
 import {formatOrderNumber} from "../Util/OrderNumberFormatter";
 

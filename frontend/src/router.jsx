@@ -1,4 +1,4 @@
-import {createBrowserRouter, Navigate} from "react-router-dom";
+import {createBrowserRouter} from "react-router-dom";
 import Login from "./views/Login.jsx";
 import Dashboard from "./views/Dashboard.jsx";
 import DefaultLayout from "./components/Layouts/DefaultLayout.jsx";
@@ -12,12 +12,11 @@ import UserForm from "./views/UserForm.jsx";
 import PermissionSettings from "./views/PermissionSettings.jsx";
 import ProductSettings from "./views/ProductSettings.jsx";
 import MarketplaceSettings from "./views/MarketplaceSettings.jsx";
-import OrderFrom from "./views/OrderFrom.jsx";
 import Order from "./views/Order.jsx";
 import Merchants from "./views/Merchants";
 import MerchantForm from "./views/MerchantForm";
 import Error from "./views/Error";
-import OrderFormV2 from "./views/OrderFormV2";
+import OrderForm from "./views/OrderForm";
 import EditOrderFrom from "./views/EditOrderFrom";
 import UserProfile from "./views/UserProfile";
 import ResetPassword from "./views/ResetPassword";
@@ -49,11 +48,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/orders/orderForm',
-        element: <OrderFrom/>
-      },
-      {
-        path: '/orders/orderFormV2',
-        element: <OrderFormV2/>
+        element: <OrderForm/>
       },
       {
         path: '/orders/editOrderForm',

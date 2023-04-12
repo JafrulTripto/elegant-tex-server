@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useNavigate} from "react-router-dom";
 import {toast} from "react-toastify";
 import {Avatar, Button, Card, Col, Modal, Row, Space, Table} from "antd";
@@ -8,7 +8,7 @@ import moment from "moment";
 import {useStateContext} from "../contexts/ContextProvider";
 import Permission from "../components/Util/Permission";
 
-const Users = () => {
+const Users = (callback, deps) => {
   const axiosClient = useAxiosClient();
   const navigate = useNavigate()
   const [users, setUsers] = useState([]);
@@ -19,30 +19,32 @@ const Users = () => {
 
   const {user} = useStateContext();
 
+    const fetchUsers = useCallback(async (page = 1) => {
+        setLoading(true);
+        try {
+            const link = page > 1 ? `/users/index?page=${page}` : "/users/index"
+            const users = await axiosClient.get(link);
+            setLoading(false);
+            const userData = users.data.data.map((data) => {
+                return { ...data, key: data.id }
+            })
+            setUsers(userData);
+            setTotal(users.data.total)
+        } catch (error) {
+            toast.error(error.response.data.message);
+            setLoading(false);
+        }
+    }, [ axiosClient])
+
   useEffect(() => {
     fetchUsers();
-  },[])
+  },[fetchUsers])
 
 
   const addNewUser = () => {
     navigate('/users/userForm')
   }
-  const fetchUsers = async (page = 1) => {
-    setLoading(true);
-    try {
-      const link = page > 1 ? `/users/index?page=${page}` : "/users/index"
-      const users = await axiosClient.get(link);
-      setLoading(false);
-      const userData = users.data.data.map((data) => {
-        return { ...data, key: data.id }
-      })
-      setUsers(userData);
-      setTotal(users.data.total)
-    } catch (error) {
-      toast.error(error.response.data.message);
-      setLoading(false);
-    }
-  }
+
 
   const renderUserAvater = (image) => {
     if (image) {

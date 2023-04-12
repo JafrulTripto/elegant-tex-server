@@ -1,5 +1,5 @@
 import React, { useState} from 'react';
-import {Button, Col, Modal, Row, Space, Table} from "antd";
+import {Button, Col, Modal, Space, Table} from "antd";
 import {DeleteOutlined, EditOutlined, PlusOutlined} from "@ant-design/icons";
 import ProductSettingsForm from "./ProductSettingsForm.jsx";
 import {toast} from "react-toastify";
@@ -9,7 +9,6 @@ const ProductSettingsItem = (props) => {
     const {settingsType, data, loading, fetch} = props;
     const [openForm, setOpenForm] = useState(false);
     const [modal, contextHolder] = Modal.useModal();
-    const [deleteLoading, setDeleteLoading] = useState(false);
     const axiosClient = useAxiosClient();
 
     const handleEditProductSettings = () => {
@@ -25,16 +24,13 @@ const ProductSettingsItem = (props) => {
     }
 
     const confirmDeleteItem = async (record) => {
-        setDeleteLoading(true);
         try {
             const response = await axiosClient.delete(`/settings/${settingsType.key}/delete/${record.id}`);
             toast.success(response.data.message);
             fetch();
-            setDeleteLoading(false)
         } catch (error) {
             const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
             toast.error(message);
-            setDeleteLoading(false);
         }
 
     }

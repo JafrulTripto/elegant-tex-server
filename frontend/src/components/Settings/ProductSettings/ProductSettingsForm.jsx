@@ -1,6 +1,5 @@
-import React, {useEffect, useState} from 'react';
+import React, { useState} from 'react';
 import {Button, Form, Input, Modal} from "antd";
-import {useProductColors} from "../../../hooks/useProductColors.jsx";
 import {toast} from "react-toastify";
 import useAxiosClient from "../../../axios-client.js";
 

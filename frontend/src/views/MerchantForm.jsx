@@ -1,7 +1,6 @@
 import React, {useState} from 'react'
 import {Col, Form, Input, Row, Card, Upload, message, Button, Select} from 'antd';
 import {InboxOutlined} from '@ant-design/icons'
-
 import {toast} from 'react-toastify';
 import {useNavigate} from "react-router-dom";
 import useAxiosClient from "../axios-client";
@@ -13,22 +12,17 @@ function MerchantForm() {
   const axiosClient = useAxiosClient();
   const {Dragger} = Upload;
   const {Option} = Select;
-
   const [divisions, setDivisions] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [upazilas, setUpazilas] = useState([]);
-
   const [divisionLoading, setDivisionLoading] = useState(false);
   const [districtLoading, setDistrictLoading] = useState(false);
   const [upazilaLoading, setUpazilaLoading] = useState(false);
-
   const [uploaded, setUploaded] = useState(false);
   const [imageData, setImageData] = useState({});
   const [loading, setLoading] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
   const [fileList, setFileList] = useState([]);
-
-
   const navigate = useNavigate();
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
@@ -54,8 +48,6 @@ function MerchantForm() {
       } else if (status === 'error') {
         message.error(`${info.file.name} file upload failed.`);
       }
-    },
-    onDrop(e) {
     },
     beforeUpload(file) {
       const fileSize = file.size / 1024 / 1024; // Convert size to MB

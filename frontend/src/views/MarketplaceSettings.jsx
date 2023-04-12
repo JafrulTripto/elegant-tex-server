@@ -1,7 +1,5 @@
-import React, {useEffect, useState} from 'react'
+import React, {useCallback, useEffect, useState} from 'react'
 import {Space, Card, Modal, Form, Input, Button, Select, Table, Tag} from 'antd'
-
-import axios from 'axios';
 import { toast } from 'react-toastify';
 import useAxiosClient from "../axios-client.js";
 import AddNewItemLayout from "../components/Layouts/AddNewItemLayout.jsx";
@@ -13,10 +11,24 @@ const MarketplaceSettings = () => {
   const [form] = Form.useForm();
 
   const { Option } = Select;
+    const getAllMarketplaces = useCallback((page = 1) => {
+        setMarketplaceLoading(true);
+        const url = page > 1 ? `/settings/marketplace/index?page=${page}` : "/settings/marketplace/index"
+        axiosClient.post(url).then((res) => {
+            setMarketplaces(res.data.data);
+            setMarketplaceLoading(false);
+            setTotal(res.data.meta.total);
+            setPageSize(res.data.meta.per_page)
+        }).catch(error => {
+            const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+            toast.error(message);
+        })
+    }, [axiosClient])
+
 
   useEffect(() => {
     getAllMarketplaces();
-  }, [])
+  }, [getAllMarketplaces])
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false)
@@ -49,27 +61,10 @@ const MarketplaceSettings = () => {
     }
   }
 
-  const getAllMarketplaces = (page = 1) => {
-    setMarketplaceLoading(true);
-    const url = page > 1 ? `/settings/marketplace/index?page=${page}` : "/settings/marketplace/index"
-    axiosClient.post(url).then((res) => {
-      setMarketplaces(res.data.data);
-      setMarketplaceLoading(false);
-      setTotal(res.data.meta.total);
-      setPageSize(res.data.meta.per_page)
-    }).catch(error => {
-      const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-      toast.error(message);
-    })
-  }
 
   const handleOnClickButton = () => {
     setIsModalOpen(true);
   }
-
-  const handleOk = () => {
-    setIsModalOpen(false);
-  };
 
   const handleCancel = () => {
     form.resetFields();

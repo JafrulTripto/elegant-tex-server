@@ -33,7 +33,7 @@ export const useUpazilas = (districtId) => {
       }
 
 
-    }, [districtId]);
+    }, [districtId, axiosClient]);
 
     return {upazilas, upazilaLoading};
 

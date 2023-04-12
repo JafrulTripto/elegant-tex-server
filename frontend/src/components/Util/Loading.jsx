@@ -6,7 +6,7 @@ import {colors} from "../../utils/Colors";
 const antIcon = <Loading3QuartersOutlined style={{fontSize: 56}} spin/>;
 const Loading = (props) => {
 
-  const { Title, Text } = Typography;
+  const { Title } = Typography;
 
   const calculateHeight = () =>{
     if (props.layout === 'default'){

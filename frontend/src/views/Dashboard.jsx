@@ -4,9 +4,7 @@ import DashboardWidgets from "../components/Dashboard/DashboardWidgets";
 const Dashboard = () => {
 
   return (
-
       <DashboardWidgets/>
-
   );
 };
 
