@@ -19,7 +19,7 @@ const ProductSettingsItem = (props) => {
     const handleDeleteProductSettings = (record) => {
         modal.confirm({
             title: "Are you sure?",
-            content: 'Bla bla ...',
+            content: 'Do you realy want delete this record? This process cannot be undone.',
             onOk: () => confirmDeleteItem(record),
         })
     }

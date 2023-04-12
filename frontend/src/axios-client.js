@@ -2,9 +2,11 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import { useMemo } from "react";
+import {useStateContext} from "./contexts/ContextProvider.jsx";
 
 const useAxiosClient = () => {
   const navigate = useNavigate();
+  const {setToken, setUser, message} = useStateContext();
 
   async function refreshToken() {
     try {
@@ -13,6 +15,7 @@ const useAxiosClient = () => {
 
       const timeLeft = new Date(expiryTime) - new Date();
 
+      console.log(timeLeft)
       if (expiryTime && timeLeft < 60 * 10000) {
         const res = await axiosClient.post("/auth/refresh", {}, {
           headers: {
@@ -51,9 +54,10 @@ const useAxiosClient = () => {
       try {
         const { response } = error;
         if (response.status === 401 && response.config.url !== '/auth/refresh') {
+          console.log("status 401")
           localStorage.removeItem("ACCESS_TOKEN");
           localStorage.removeItem("TOKEN_EXPIRATION");
-          navigate("/login");
+          //navigate("/login");
         }
       } catch (e) {
         console.error(e);

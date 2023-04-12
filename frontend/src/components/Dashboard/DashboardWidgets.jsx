@@ -4,11 +4,11 @@ import ReportBox from "./ReportBox";
 import {useOrderCountToday} from "../../hooks/useOrderCountToday";
 
 const DashboardWidgets = () => {
-  const {orderCountToday} = useOrderCountToday();
+  const {orderCountToday, orderCountLoading} = useOrderCountToday();
   return (
     <Row gutter={[16,16]}>
       <Col xs={24} md={12} lg={6}>
-        <ReportBox data={orderCountToday}/>
+        <ReportBox data={orderCountToday} loading={orderCountLoading}/>
       </Col>
       <Col xs={24} md={12} lg={6}><ReportBox/></Col>
       <Col xs={24} md={12} lg={6}><ReportBox/></Col>

@@ -64,7 +64,7 @@ Route::prefix('settings/marketplace')->group(function () {
 });
 
 Route::group([
-    'middleware' => 'api',
+    'middleware' => 'auth:api',
     'prefix' => 'orders'
 ], function ($router) {
     Route::post('/store', [OrderController::class, 'store']);

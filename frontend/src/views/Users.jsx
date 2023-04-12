@@ -20,6 +20,7 @@ const Users = () => {
   const {user} = useStateContext();
 
   useEffect(() => {
+      console.log("fetch user")
     fetchUsers();
   },[])
 

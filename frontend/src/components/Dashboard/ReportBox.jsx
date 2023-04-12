@@ -14,14 +14,16 @@ const antIcon = (
   />
 );
 const ReportBox = (props) => {
-  if (props.data) {
+
+    const {data, loading} = props;
+  if (data) {
     const orderPercentage = () => {
-      if (props.data.change >= 0 ){
+      if (data.change >= 0 ){
         return (
           <div className="ml-auto">
             <div
               className="report-box__indicator bg-green-500 tooltip cursor-pointer rounded-lg px-2 py-1 text-white font-bold">
-              {Math.abs(props.data.change)}%<FontAwesomeIcon icon={faChevronUp} style={{fontSize: "15px", paddingLeft:"10px"}}/>
+              {Math.abs(data.change)}%<FontAwesomeIcon icon={faChevronUp} style={{fontSize: "15px", paddingLeft:"10px"}}/>
             </div>
           </div>
         )
@@ -30,11 +32,12 @@ const ReportBox = (props) => {
         <div className="ml-auto">
           <div
             className="report-box__indicator bg-red-500 tooltip cursor-pointer rounded-lg px-2 py-1 text-white font-bold">
-            {Math.abs(props.data.change)}% <FontAwesomeIcon icon={faChevronDown} className="px-1" style={{fontSize: "15px", paddingLeft:"10px"}}/>
+            {Math.abs(data.change)}% <FontAwesomeIcon icon={faChevronDown} className="px-1" style={{fontSize: "15px", paddingLeft:"10px"}}/>
           </div>
         </div>
       )
     }
+
     return (
       <div className="report-box zoom-in bg-white rounded-lg shadow-md">
         <div className="box p-5">
@@ -47,6 +50,15 @@ const ReportBox = (props) => {
         </div>
       </div>
     );
+  }
+  if (loading){
+      return (
+          <div className="report-box zoom-in bg-white rounded-lg shadow-md">
+              <div className="flex justify-center items-center box p-5"  style={{height:"154px"}}>
+                  <div className=""><Spin /></div>
+              </div>
+          </div>
+      )
   }
   return (
     <div className="report-box zoom-in bg-white rounded-lg shadow-md">

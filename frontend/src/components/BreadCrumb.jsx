@@ -16,7 +16,7 @@ function BreadCrumb(props) {
             const isLast = index === pathnames.length - 1;
 
             return {
-                title: <Link to={routeTo}>{path}</Link>,
+                title: isLast ? <Link onClick={ (event) => event.preventDefault() } to={routeTo}>{path}</Link> : <Link to={routeTo}>{path}</Link>,
             };
         });
 
