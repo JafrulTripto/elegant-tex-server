@@ -3,6 +3,7 @@ name: ElegantTex CI
 on:
   push:
     branches:
+      - "master"
       - "stage"
 
 jobs:
