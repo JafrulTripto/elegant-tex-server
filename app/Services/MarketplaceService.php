@@ -33,4 +33,21 @@ class MarketplaceService
 
         return $user->marketplace()->get(['marketplaces.id','marketplaces.name'])->makeHidden('pivot')->toArray();
     }
+
+    public function updateMarketplace(Marketplace $marketplace, $data): bool
+    {
+        try {
+            $marketplace->name = $data['name'];
+            $marketplace->page_link = $data['pageLink'];
+            $marketplace->save();
+            $marketplace->users()->sync($data['users']);
+            return true;
+        } catch (QueryException $exception) {
+            throw new HttpResponseException(response()->json([
+                'message' => $exception->getMessage(),
+                'status' => $exception->getCode()
+            ], 500));
+        }
+    }
+
 }

@@ -42,7 +42,6 @@ const useAxiosClient = () => {
     }, (error) => {
       try {
         const { response } = error;
-        console.log(response.status)
         if (response.status === 401 && response.config.url !== '/auth/refresh') {
           setToken(null);
         }

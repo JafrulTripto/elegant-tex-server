@@ -49,6 +49,16 @@ Route::group([
     Route::get('/getRoleUsers', [UserController::class, 'getRoleUsers']);
     Route::get('/user/{id}', [UserController::class, 'getUser']);
 });
+Route::group([
+    'prefix' => 'settings/marketplace',
+    'middleware' => 'auth:api',
+], function () {
+    Route::post('/store', [MarketplaceController::class, 'store']);
+    Route::post('/index', [MarketplaceController::class, 'index']);
+    Route::get('/getUserMarketplaces', [MarketplaceController::class, 'getUserMarketplaces']);
+    Route::delete('/delete/{id}', [MarketplaceController::class, 'destroy']);
+    Route::post('/update/{id}', [MarketplaceController::class, 'update']);
+});
 Route::prefix('files')->group(function () {
     Route::post('/upload', [StorageController::class, 'upload']);
     Route::post('/uploadProductImage', [StorageController::class, 'uploadProductImage']);
@@ -57,11 +67,6 @@ Route::prefix('files')->group(function () {
     Route::post('/delete', [StorageController::class, 'destroy']);
 });
 
-Route::prefix('settings/marketplace')->group(function () {
-    Route::post('/store', [MarketplaceController::class, 'store']);
-    Route::post('/index', [MarketplaceController::class, 'index']);
-    Route::get('/getUserMarketplaces', [MarketplaceController::class, 'getUserMarketplaces']);
-});
 
 Route::group([
     'middleware' => 'auth:api',
