@@ -46,7 +46,7 @@ const NavigationDropdown = (props) => {
 
       </div>
       <Dropdown menu={{items}} trigger={['click']} className="pl-1">
-        <a onClick={(e) => e.preventDefault()} href="#">
+        <a onClick={(e) => e.preventDefault()} href="/#">
           <FontAwesomeIcon icon={faChevronDown} style={{fontSize: "16px"}}/>
         </a>
       </Dropdown>
