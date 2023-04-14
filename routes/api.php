@@ -144,26 +144,26 @@ Route::group([
 Route::prefix('settings/colors')->group(function () {
     Route::get('/index', [ProductColorController::class, 'index']);
     Route::post('/store', [ProductColorController::class, 'store']);
-    Route::put('/update', [ProductColorController::class, 'update']);
+    Route::put('/update/{id}', [ProductColorController::class, 'update']);
     Route::delete('/delete/{id}', [ProductColorController::class, 'destroy']);
 });
 
 Route::prefix('settings/fabrics')->group(function () {
     Route::get('/index', [ProductFabricController::class, 'index']);
     Route::post('/store', [ProductFabricController::class, 'store']);
-    Route::post('/update', [ProductFabricController::class, 'update']);
+    Route::put('/update/{id}', [ProductFabricController::class, 'update']);
     Route::delete('/delete/{id}', [ProductFabricController::class, 'destroy']);
 });
 Route::prefix('settings/productTypes')->group(function () {
     Route::get('/index', [ProductTypeController::class, 'index']);
     Route::post('/store', [ProductTypeController::class, 'store']);
-    Route::post('/update', [ProductTypeController::class, 'update']);
+    Route::put('/update/{id}', [ProductTypeController::class, 'update']);
     Route::delete('/delete/{id}', [ProductTypeController::class, 'destroy']);
 });
 Route::prefix('settings/deliveryChannels')->group(function () {
     Route::get('/index', [DeliveryChannelController::class, 'index']);
     Route::post('/store', [DeliveryChannelController::class, 'store']);
-    Route::post('/update', [DeliveryChannelController::class, 'update']);
+    Route::put('/update/{id}', [DeliveryChannelController::class, 'update']);
     Route::delete('/delete/{id}', [DeliveryChannelController::class, 'destroy']);
 });
 
