@@ -1,5 +1,5 @@
 import React, { useState} from 'react';
-import {Button, Col, Modal, Space, Table} from "antd";
+import {Button, Col, Form, Modal, Space, Table} from "antd";
 import {DeleteOutlined, EditOutlined, PlusOutlined} from "@ant-design/icons";
 import ProductSettingsForm from "./ProductSettingsForm.jsx";
 import {toast} from "react-toastify";
@@ -8,11 +8,17 @@ import useAxiosClient from "../../../axios-client.js";
 const ProductSettingsItem = (props) => {
     const {settingsType, data, loading, fetch} = props;
     const [openForm, setOpenForm] = useState(false);
+    const [productSettingsId, setProductSettingsId] = useState(null);
     const [modal, contextHolder] = Modal.useModal();
     const axiosClient = useAxiosClient();
+    const [form] = Form.useForm();
 
-    const handleEditProductSettings = () => {
-
+    const handleEditProductSettings = (record) => {
+        setOpenForm(true);
+        form.setFieldsValue({
+            name: record.name
+        })
+        setProductSettingsId(record.id);
     }
 
     const handleDeleteProductSettings = (record) => {
@@ -49,7 +55,7 @@ const ProductSettingsItem = (props) => {
             render: (text, record, index) => (
                 <Space size="middle">
                     <Button className='edit-btn' icon={<EditOutlined/>} size={"small"}
-                            onClick={() => handleEditProductSettings()}/>
+                            onClick={() => handleEditProductSettings(record)}/>
 
                     <Button type="primary" danger icon={<DeleteOutlined/>} size={"small"}
                             onClick={() => handleDeleteProductSettings(record)}/>
@@ -93,7 +99,15 @@ const ProductSettingsItem = (props) => {
                      title={() => tableHeader(settingsType)}
                      dataSource={data}/>
           </Col>
-          <ProductSettingsForm openForm={openForm} setOpenForm={setOpenForm} fetch={fetch} title={settingsType.title} settings={settingsType.key}/>
+          <ProductSettingsForm
+              form={form}
+              openForm={openForm}
+              setOpenForm={setOpenForm}
+              fetch={fetch}
+              productSettingsId={productSettingsId}
+              setProductSettingsId={setProductSettingsId}
+              title={settingsType.title}
+              settings={settingsType.key}/>
           {contextHolder}
       </>
 
