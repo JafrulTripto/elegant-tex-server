@@ -22,10 +22,10 @@ export default function Login() {
       setLoginMessage({message, type: "info"});
     }
 
-    setInterval(() => {
+    setTimeout(() => {
       setLoginMessage(null);
       setMessage("");
-    },5000)
+    },15000)
   }, [message, setMessage])
   const onFinish = (values) => {
     const payload = {

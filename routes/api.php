@@ -48,6 +48,7 @@ Route::group([
     Route::get('/delete', [UserController::class, 'destroy']);
     Route::get('/getRoleUsers', [UserController::class, 'getRoleUsers']);
     Route::get('/user/{id}', [UserController::class, 'getUser']);
+    Route::put('/changeStatus/{id}', [UserController::class, 'changeUserStatus']);
 });
 Route::group([
     'prefix' => 'settings/marketplace',
