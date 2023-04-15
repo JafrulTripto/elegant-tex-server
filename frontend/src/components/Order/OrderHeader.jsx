@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {Button, Tag} from "antd";
 import {CalendarOutlined, DownloadOutlined} from "@ant-design/icons";
 import moment from "moment/moment";
@@ -9,8 +9,6 @@ import { PDFDownloadLink } from '@react-pdf/renderer';
 import dayjs from "dayjs";
 
 const OrderHeader = ({order}) => {
-  const [pdfLoading, setPdfLoading] = useState(false);
-
   const generateTagColorFromStatus = (status) => {
     let obj = OrderStatusEnum.find(o => o.label === status);
     return obj.color;

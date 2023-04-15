@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Text, View, Image, Document, StyleSheet, Font} from '@react-pdf/renderer';
+import {Page, View, Document, StyleSheet, Font} from '@react-pdf/renderer';
 import InvoiceProductTable from "./InvoiceProductTable";
 import RobotoRegular from "../../assets/fonts/Roboto/Roboto-Regular.ttf";
 import RobotoBold from "../../assets/fonts/Roboto/Roboto-Bold.ttf";

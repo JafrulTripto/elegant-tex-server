@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Navigate, Outlet, useNavigate, useLocation} from "react-router-dom";
 import {useStateContext} from "../../contexts/ContextProvider.jsx";
 import {Layout, Menu, Modal, theme} from "antd";
@@ -25,7 +25,6 @@ const DefaultLayout = () => {
 
     const [collapsed, setCollapsed] = useState(false);
     const [navbarWidth, setNavbarWidth] = useState("");
-    const [navbarLeft, setNavbarLeft] = useState("");
 
     const {
         token: {colorBgContainer},
@@ -65,34 +64,36 @@ const DefaultLayout = () => {
     ];
 
 
-    const [loading, setLoading] = useState(false);
 
     const {user, token, setUser, setPermissions, setRoles, setToken, permissions} = useStateContext();
+    const tokenRef = useRef(token);
 
     useEffect(() => {
+        tokenRef.current = token;
+    }, [token]);
 
+    const fetchUser = useCallback(() => {
+        axiosClient.post('auth/me').then(({data}) => {
+            setUser(data.user);
+            setPermissions(data.permissions);
+            setRoles(data.roles);
+        }).catch(error => {
+            tokenRef.current = null; // update tokenRef.current without causing re-render
+            const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+            toast.error(message);
+        })
+    }, [axiosClient, setRoles, setPermissions, setUser])
+
+    useEffect(() => {
         if (collapsed) {
             setNavbarWidth("calc(100% - 82px)")
-            setNavbarLeft("82px")
         } else {
             setNavbarWidth("calc(100% - 250px)")
-            setNavbarLeft("250px")
         }
-        if (token) {
-            setLoading(true);
-            axiosClient.post('auth/me').then(({data}) => {
-                setUser(data.user);
-                setLoading(false);
-                setPermissions(data.permissions);
-                setRoles(data.roles);
-            }).catch(error => {
-                setToken(null)
-                setLoading(false);
-                const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-                toast.error(message);
-            })
+        if (tokenRef.current) {
+            fetchUser();
         }
-    }, [])
+    }, [collapsed, fetchUser, tokenRef]);
 
     if (!token) {
         return <Navigate to="/login"/>
@@ -103,16 +104,13 @@ const DefaultLayout = () => {
         setCollapsed(!collapsed)
         if (collapsed) {
             setNavbarWidth("calc(100% - 250px)");
-            setNavbarLeft("250px")
         } else {
             setNavbarWidth("calc(100% - 82px)");
-            setNavbarLeft("82px")
         }
     }
     const onBreakpointHandler = (broken) => {
         if (broken) {
             setNavbarWidth("calc(100% - 82px)");
-            setNavbarLeft("82px")
         }
         setCollapsed(broken)
     }
@@ -131,18 +129,15 @@ const DefaultLayout = () => {
     const confirmLogout = async () => {
 
         try {
-            setLoading(true);
             const response = await axiosClient.post(`/auth/logout`);
             toast.success(response.data.message);
             setUser(null)
             setToken(null);
-            setLoading(false);
         }  catch(error){
             setToken(null);
             setUser(null);
             const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
             toast.error(message);
-            setLoading(false);
         }
 
     }

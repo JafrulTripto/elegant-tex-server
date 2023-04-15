@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {Space, Card, Row, Col, Button, Input, Table, Tag, Tabs, Switch, Select, Modal, Alert} from 'antd';
+import React, {useState, useEffect, useCallback} from 'react';
+import {Space, Card, Row, Col, Button, Input, Table, Tag, Tabs, Select, Modal} from 'antd';
 
 import {NavLink, useNavigate} from "react-router-dom";
 
@@ -12,7 +12,7 @@ import useAxiosClient from "../axios-client.js";
 import Permission from "../components/Util/Permission.jsx";
 import {OrderTypeEnum} from "../utils/enums/OrderTypeEnum.js";
 import {OrderStatusEnum} from "../utils/enums/OrderStatusEnum";
-import {extractOrderNumber, formatOrderNumber} from "../components/Util/OrderNumberFormatter";
+import {formatOrderNumber} from "../components/Util/OrderNumberFormatter";
 
 
 function Sales() {
@@ -24,7 +24,6 @@ function Sales() {
 
   const [loading, setLoading] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1);
@@ -35,42 +34,42 @@ function Sales() {
   const [orderId, setOrderId] = useState(null);
 
   const handleNewOrder = (orderType) => {
-    navigate('/orders/orderFormV2', {state: {orderType, update: false}})
+    navigate('/orders/orderForm', {state: {orderType, update: false}})
   }
+
+    const fetchOrders = useCallback(async (page = 1, type = 'Marketplace') => {
+        setLoading(true);
+        let link = '';
+        const userId = user.id;
+        if (type === 'Marketplace') {
+            link = page > 1 ? `/orders/getMarketplaceOrders/${userId}?page=${page}` : `/orders/getMarketplaceOrders/${userId}`;
+        } else {
+            link = page > 1 ? `/orders/getMerchantOrders?page=${page}` : `/orders/getMerchantOrders`;
+
+        }
+
+        try {
+            const orders = await axiosClient.get(link);
+            setLoading(false);
+            const ordersData = orders.data.data.map((data) => {
+                return {...data, key: data.id}
+            })
+            setOrders(ordersData);
+            setTotal(orders.data.meta.total)
+        } catch (error) {
+            const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+            toast.error(message);
+            setLoading(false);
+        }
+    }, [axiosClient, user.id])
 
   useEffect(() => {
 
     if (user) {
       fetchOrders();
     }
+  }, [user, fetchOrders])
 
-  }, [user])
-
-  const fetchOrders = async (page = 1, type = 'Marketplace') => {
-    setLoading(true);
-    let link = '';
-    const userId = user.id;
-    if (type === 'Marketplace') {
-      link = page > 1 ? `/orders/getMarketplaceOrders/${userId}?page=${page}` : `/orders/getMarketplaceOrders/${userId}`;
-    } else {
-      link = page > 1 ? `/orders/getMerchantOrders?page=${page}` : `/orders/getMerchantOrders`;
-
-    }
-
-    try {
-      const orders = await axiosClient.get(link);
-      setLoading(false);
-      const ordersData = orders.data.data.map((data) => {
-        return {...data, key: data.id}
-      })
-      setOrders(ordersData);
-      setTotal(orders.data.meta.total)
-    } catch (error) {
-      const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-      toast.error(message);
-      setLoading(false);
-    }
-  }
 
   const handleEditOrder = (record) => {
     navigate('/orders/editOrderForm', {state: {orderType: record.orderType, update: true, order: record}})
@@ -93,7 +92,6 @@ function Sales() {
       fetchOrders(1, orderType);
 
     } catch (error) {
-      setDeleteLoading(false);
       const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
       toast.error(message);
     }
@@ -109,9 +107,6 @@ function Sales() {
         </Permission>
       </Space>
     );
-  }
-
-  const onTableRowClick = (order, record) => {
   }
 
   const onSearch = async (value, page = 1) => {

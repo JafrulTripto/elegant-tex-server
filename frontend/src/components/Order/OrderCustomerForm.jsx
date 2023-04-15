@@ -1,14 +1,10 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {Col, Form, Input, Row, Select} from "antd";
-import {useDivisions} from "../../hooks/useDivisions";
-import {useDistricts} from "../../hooks/useDistricts";
-import {useUpazilas} from "../../hooks/useUpazilas";
+
 
 const OrderCustomerForm = (props) => {
 
   const {Option} = Select;
-
-
 
   return (
     <Row gutter={24}>

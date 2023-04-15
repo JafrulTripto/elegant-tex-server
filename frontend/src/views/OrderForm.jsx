@@ -19,7 +19,7 @@ import {useDivisions} from "../hooks/useDivisions";
 import {useDistricts} from "../hooks/useDistricts";
 import {useUpazilas} from "../hooks/useUpazilas";
 
-const OrderFormV2 = () => {
+const OrderForm = () => {
   const axiosClient = useAxiosClient();
   const {state} = useLocation();
   const navigate = useNavigate()
@@ -29,7 +29,7 @@ const OrderFormV2 = () => {
   const {orderType} = state ? state : {};
 
   const {marketplaces} = useMarketplaces();
-  const {merchants, isMerchantLoading} = useMerchants();
+  const {merchants} = useMerchants();
 
   const {productColors} = useProductColors();
   const {productFabrics} = useProductFabrics();
@@ -41,7 +41,7 @@ const OrderFormV2 = () => {
     if (!state) {
       navigate('/orders')
     }
-  }, []);
+  }, [state, navigate]);
 
 
   const [loading, setLoading] = useState(false);
@@ -168,4 +168,4 @@ const OrderFormV2 = () => {
   );
 };
 
-export default OrderFormV2;
+export default OrderForm;

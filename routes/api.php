@@ -48,6 +48,17 @@ Route::group([
     Route::get('/delete', [UserController::class, 'destroy']);
     Route::get('/getRoleUsers', [UserController::class, 'getRoleUsers']);
     Route::get('/user/{id}', [UserController::class, 'getUser']);
+    Route::put('/changeStatus/{id}', [UserController::class, 'changeUserStatus']);
+});
+Route::group([
+    'prefix' => 'settings/marketplace',
+    'middleware' => 'auth:api',
+], function () {
+    Route::post('/store', [MarketplaceController::class, 'store']);
+    Route::post('/index', [MarketplaceController::class, 'index']);
+    Route::get('/getUserMarketplaces', [MarketplaceController::class, 'getUserMarketplaces']);
+    Route::delete('/delete/{id}', [MarketplaceController::class, 'destroy']);
+    Route::post('/update/{id}', [MarketplaceController::class, 'update']);
 });
 Route::prefix('files')->group(function () {
     Route::post('/upload', [StorageController::class, 'upload']);
@@ -57,11 +68,6 @@ Route::prefix('files')->group(function () {
     Route::post('/delete', [StorageController::class, 'destroy']);
 });
 
-Route::prefix('settings/marketplace')->group(function () {
-    Route::post('/store', [MarketplaceController::class, 'store']);
-    Route::post('/index', [MarketplaceController::class, 'index']);
-    Route::get('/getUserMarketplaces', [MarketplaceController::class, 'getUserMarketplaces']);
-});
 
 Route::group([
     'middleware' => 'auth:api',
@@ -139,26 +145,26 @@ Route::group([
 Route::prefix('settings/colors')->group(function () {
     Route::get('/index', [ProductColorController::class, 'index']);
     Route::post('/store', [ProductColorController::class, 'store']);
-    Route::put('/update', [ProductColorController::class, 'update']);
+    Route::put('/update/{id}', [ProductColorController::class, 'update']);
     Route::delete('/delete/{id}', [ProductColorController::class, 'destroy']);
 });
 
 Route::prefix('settings/fabrics')->group(function () {
     Route::get('/index', [ProductFabricController::class, 'index']);
     Route::post('/store', [ProductFabricController::class, 'store']);
-    Route::post('/update', [ProductFabricController::class, 'update']);
+    Route::put('/update/{id}', [ProductFabricController::class, 'update']);
     Route::delete('/delete/{id}', [ProductFabricController::class, 'destroy']);
 });
 Route::prefix('settings/productTypes')->group(function () {
     Route::get('/index', [ProductTypeController::class, 'index']);
     Route::post('/store', [ProductTypeController::class, 'store']);
-    Route::post('/update', [ProductTypeController::class, 'update']);
+    Route::put('/update/{id}', [ProductTypeController::class, 'update']);
     Route::delete('/delete/{id}', [ProductTypeController::class, 'destroy']);
 });
 Route::prefix('settings/deliveryChannels')->group(function () {
     Route::get('/index', [DeliveryChannelController::class, 'index']);
     Route::post('/store', [DeliveryChannelController::class, 'store']);
-    Route::post('/update', [DeliveryChannelController::class, 'update']);
+    Route::put('/update/{id}', [DeliveryChannelController::class, 'update']);
     Route::delete('/delete/{id}', [DeliveryChannelController::class, 'destroy']);
 });
 

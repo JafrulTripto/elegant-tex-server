@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {Button, Card, Col, Form, Input, List, Modal, Row, Space} from "antd";
 import AddNewItemLayout from "../components/Layouts/AddNewItemLayout.jsx";
 import {toast} from "react-toastify";
@@ -12,34 +12,31 @@ const PermissionSettings = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false)
   const [permissions, setPermissions] = useState([]);
-  const [permission, setPermission] = useState(null);
 
+    const getPermissions = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const response = await axiosClient.get(`/permissions/getPermissions`);
+            setPermissions(response.data);
+        } catch (error) {
+            toast.error(error.response.data.message);
+            setIsLoading(false);
+        }
+
+        setIsLoading(false);
+    }, [axiosClient])
 
   useEffect(() => {
     getPermissions();
 
-    return () => {
-
-    }
-  }, [])
+  }, [getPermissions])
 
 
   const handleOnClickButton = () => {
     setIsModalOpen(true);
   }
 
-  const getPermissions = async () => {
-    setIsLoading(true);
-    try {
-      const response = await axiosClient.get(`/permissions/getPermissions`);
-      setPermissions(response.data);
-    } catch (error) {
-      toast.error(error.response.data.message);
-      setIsLoading(false);
-    }
 
-    setIsLoading(false);
-  }
 
   const handleCancel = () => {
     form.resetFields();
@@ -74,9 +71,7 @@ const PermissionSettings = () => {
       getPermissions();
     })
   }
-  const assignUserPermission = (item) => {
-    setPermission(item);
-  }
+
 
 
 
@@ -104,7 +99,6 @@ const PermissionSettings = () => {
                              actions={[
                                [
                                  <Button key= "edit" type='link' size='small' onClick={()=>editPermission(item)}>Edit</Button>,
-                                 <Button key= "assign" type='link' size='small'  onClick={()=>assignUserPermission(item.name)}>Assign</Button>,
                                  <Button key= "delete" type='text' size='small' danger onClick={()=>handleDeletePermission(item.id)}>Delete</Button>
                                ]
                              ]}>
@@ -115,7 +109,7 @@ const PermissionSettings = () => {
             </Card>
           </Col>
           <Col xs={24} md={16} lg={16}>
-            {/* {permission ? <AssignUserPermission permission={permission} /> : null} */}
+
           </Col>
         </Row>
       </Space>

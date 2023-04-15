@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductColorResource;
+use App\Models\Product;
 use App\Models\ProductColor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -38,9 +39,21 @@ class ProductColorController extends Controller
      */
     public function store(Request $request)
     {
+        $name = $request->name;
+
+        // Check if the color already exists
+        $existingColor = ProductColor::where('name', $name)->first();
+        if ($existingColor) {
+            return response()->json([
+                "message" => "Product color already exists."
+            ], 422);
+        }
+
+        // If the color does not exist, create a new entry
         $productColor = new ProductColor();
-        $productColor->name = $request->name;
+        $productColor->name = $name;
         $productColor->save();
+
         return response()->json([
             "message" => "Product color created successfully."
         ]);
@@ -76,10 +89,37 @@ class ProductColorController extends Controller
      * @param  \App\Models\ProductColor  $productColor
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, ProductColor $productColor)
+    public function update(Request $request, $id): JsonResponse
     {
-        //
+        $productColor = ProductColor::find($id);
+
+        if (!$productColor) {
+            return response()->json([
+                "message" => "Product color not found."
+            ], 404);
+        }
+
+        // Update the product color record
+        $productColor->name = $request->input('name');
+        try {
+            $productColor->save();
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Handle foreign key constraint violation error
+            if ($e->errorInfo[1] == 1451) {
+                return response()->json([
+                    "message" => "Cannot update product color."
+                ], 400);
+            } else {
+                throw $e;
+            }
+        }
+
+        return response()->json([
+            "message" => "Product color updated successfully.",
+            "data" => $productColor
+        ]);
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -93,14 +133,22 @@ class ProductColorController extends Controller
 
         if (!$productColor) {
             return response()->json([
-                "message" => "Product fabric not found."
+                "message" => "Product color not found."
             ], 404);
+        }
+        $referencingProducts = Product::where('color_id', $id)->get();
+
+        if (count($referencingProducts) > 0) {
+            // If there are referencing records, return an error message
+            return response()->json([
+                "message" => "Cannot delete product color because this color is already in use."
+            ], 400);
         }
 
         $productColor->delete();
 
         return response()->json([
-            "message" => "Product fabric deleted successfully."
+            "message" => "Product color deleted successfully."
         ]);
     }
 

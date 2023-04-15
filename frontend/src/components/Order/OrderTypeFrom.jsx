@@ -1,8 +1,7 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {OrderTypeEnum} from "../../utils/enums/OrderTypeEnum";
 import {Col, Form, Row, Select} from "antd";
-import {useMarketplaces} from "../../hooks/useMarketplaces";
-import {useMerchants} from "../../hooks/useMerchants";
+
 
 const OrderTypeFrom = ({orderType, From, data}) => {
 

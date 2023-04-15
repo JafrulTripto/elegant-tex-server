@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreMarketplaceRequest;
+use App\Http\Requests\UpdateMarketplaceRequest;
 use App\Http\Resources\MarketplaceResource;
 use App\Models\Marketplace;
 use App\Models\User;
 use App\Services\MarketplaceService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -50,6 +52,34 @@ class MarketplaceController extends Controller
         ]);
     }
 
+    public function update(UpdateMarketplaceRequest $request, $id): JsonResponse
+    {
+        $marketplace = Marketplace::find($id);
+
+        if (!$marketplace) {
+            return response()->json([
+                "message" => "Marketplace not found."
+            ], 404);
+        }
+
+        $data = [
+            'name' => $request->name,
+            'pageLink' => $request->pageLink,
+            'users' => $request->users
+        ];
+
+        if ($this->marketplaceService->updateMarketplace($marketplace, $data)) {
+            return response()->json([
+                "message" => "Marketplace updated successfully."
+            ]);
+        }
+
+        return response()->json([
+            "message" => "Error updating marketplace."
+        ]);
+    }
+
+
     public function getUserMarketplaces(Request $request)
     {
         if ($request->has('userID')) {
@@ -60,6 +90,21 @@ class MarketplaceController extends Controller
 
         return response()->json([
             "message" => "No valid user id!!!"
+        ]);
+    }
+
+    public function destroy($id): JsonResponse
+    {
+        $marketplace = Marketplace::findOrFail($id);
+
+        if ($marketplace->delete()) {
+            return response()->json([
+                "message" => "Marketplace deleted successfully."
+            ]);
+        }
+
+        return response()->json([
+            "message" => "Error deleting marketplace."
         ]);
     }
 }

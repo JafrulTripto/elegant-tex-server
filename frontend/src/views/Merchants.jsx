@@ -1,10 +1,9 @@
 
 
 import { Card, Col, Row, Button, Table, Avatar, Space, Modal } from 'antd';
-import { PlusOutlined, AntDesignOutlined, DeleteOutlined, EditOutlined, UserOutlined } from '@ant-design/icons'
+import { PlusOutlined, DeleteOutlined, EditOutlined, UserOutlined } from '@ant-design/icons'
 import { useNavigate } from "react-router-dom";
-import React, { useEffect, useState } from 'react'
-import axios from 'axios';
+import React, {useCallback, useEffect, useState} from 'react'
 import { toast } from 'react-toastify';
 import useAxiosClient from "../axios-client";
 
@@ -19,31 +18,30 @@ function Merchants() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-
+    const fetchMerchants = useCallback(async (page = 1) => {
+        setLoading(true);
+        try {
+            const link = page > 1 ? `/merchants/index?page=${page}` : "/merchants/index"
+            const Merchants = await axiosClient.get(link);
+            setLoading(false);
+            const MerchantData = Merchants.data.data.map((data) => {
+                return { ...data, key: data.id }
+            })
+            setMerchants(MerchantData);
+            setTotal(Merchants.data.total)
+        } catch (error) {
+            toast.error(error.response.data.message);
+            setLoading(false);
+        }
+    }, [axiosClient])
 
   useEffect(() => {
       fetchMerchants();
-  },[])
+  },[fetchMerchants])
 
 
   const addNewMerchant = () => {
       navigate('/merchants/merchantForm')
-  }
-  const fetchMerchants = async (page = 1) => {
-      setLoading(true);
-      try {
-          const link = page > 1 ? `/merchants/index?page=${page}` : "/merchants/index"
-          const Merchants = await axiosClient.get(link);
-          setLoading(false);
-          const MerchantData = Merchants.data.data.map((data) => {
-              return { ...data, key: data.id }
-          })
-          setMerchants(MerchantData);
-          setTotal(Merchants.data.total)
-      } catch (error) {
-          toast.error(error.response.data.message);
-          setLoading(false);
-      }
   }
 
   const renderMerchantAvater = (image) => {

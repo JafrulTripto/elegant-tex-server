@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import useAxiosClient from "../axios-client";
 import {toast} from "react-toastify";
 
@@ -9,20 +9,20 @@ export const useDeliveryChannels = () => {
   const [deliveryChannels, setDeliveryChannels] = useState([]);
   const [deliveryChannelsLoading, setDeliveryChannelsLoading] = useState(false);
 
-  const fetchDeliveryChannels = () => {
+  const fetchDeliveryChannels =useCallback(() => {
       setDeliveryChannelsLoading(true);
-    axiosClient.get(`/settings/deliveryChannels/index`).then((response) => {
-      setDeliveryChannels([...response.data.data])
-        setDeliveryChannelsLoading(false);
-    }).catch((error) => {
-      const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-      setDeliveryChannelsLoading(false);
-      toast.error(message);
-    });
-  }
+      axiosClient.get(`/settings/deliveryChannels/index`).then((response) => {
+          setDeliveryChannels([...response.data.data])
+          setDeliveryChannelsLoading(false);
+      }).catch((error) => {
+          const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+          setDeliveryChannelsLoading(false);
+          toast.error(message);
+      });
+  },[axiosClient])
   useEffect(()=> {
       fetchDeliveryChannels();
-  },[])
+  },[fetchDeliveryChannels])
 
   return {deliveryChannels, deliveryChannelsLoading, fetchDeliveryChannels}
 }

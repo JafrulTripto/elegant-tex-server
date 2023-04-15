@@ -29,7 +29,7 @@ export const useDistricts = (divisionId) => {
     } else {
       setDistricts([]);
     }
-  }, [divisionId]);
+  }, [divisionId, axiosClient]);
 
   return { districts, districtLoading };
 };

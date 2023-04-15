@@ -12,8 +12,26 @@ function AssignUserRoles(props) {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+      const fetchRoleUsers = async () => {
+          setLoading(true);
+          const roleUsers = await axiosClient.get(`/users/getRoleUsers`);
+          const tempData = [];
+          roleUsers.data.forEach(element => {
+              let data = {
+                  key: element.id,
+                  title: element.name,
+                  roles: element.roles
+              }
+              tempData.push(data);
+
+          });
+          let data = tempData.filter(item => item.roles.includes(props.role)).map(item => item.key)
+          setTargetKeys(data)
+          setRoleData(tempData);
+          setLoading(false);
+      }
     fetchRoleUsers()
-  }, [props.role]);
+  }, [axiosClient, props.role]);
 
   const handleChange = (newTargetKeys, direction, moveKeys) => {
     if (direction === 'right') {
@@ -32,7 +50,7 @@ function AssignUserRoles(props) {
       userIds,
       role
     }
-    const response = axiosClient.post(`/roles/removeRole`, data);
+    await axiosClient.post(`/roles/removeRole`, data);
   }
 
   const assignRole = async (userIds, role) => {
@@ -40,27 +58,9 @@ function AssignUserRoles(props) {
       userIds,
       role
     }
-    const response = axiosClient.post(`/roles/assignRole`, data);
+    await axiosClient.post(`/roles/assignRole`, data);
   }
 
-  const fetchRoleUsers = async () => {
-    setLoading(true);
-    const roleUsers = await axiosClient.get(`/users/getRoleUsers`);
-    const tempData = [];
-    roleUsers.data.forEach(element => {
-      let data = {
-        key: element.id,
-        title: element.name,
-        roles: element.roles
-      }
-      tempData.push(data);
-
-    });
-    let data = tempData.filter(item => item.roles.includes(props.role)).map(item => item.key)
-    setTargetKeys(data)
-    setRoleData(tempData);
-    setLoading(false);
-  }
 
   return (
     <Card className='shadow' loading={loading}>

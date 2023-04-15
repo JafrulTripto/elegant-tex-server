@@ -12,9 +12,7 @@ const ProductSettings = () => {
     const {productTypes, productTypesLoading, fetchProductTypes} = useProductTypes();
     const {deliveryChannels, deliveryChannelsLoading, fetchDeliveryChannels} = useDeliveryChannels();
 
-
     return (
-
         <Space
             direction="vertical"
             size="middle"

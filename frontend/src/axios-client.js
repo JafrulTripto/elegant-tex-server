@@ -1,12 +1,9 @@
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import dayjs from "dayjs";
 import { useMemo } from "react";
 import {useStateContext} from "./contexts/ContextProvider.jsx";
 
 const useAxiosClient = () => {
-  const navigate = useNavigate();
-  const {setToken} = useStateContext();
+  const {setToken, token} = useStateContext();
 
   async function refreshToken() {
     try {
@@ -20,8 +17,7 @@ const useAxiosClient = () => {
             Authorization: `Bearer ${token}`
           }
         });
-        localStorage.setItem("ACCESS_TOKEN", res.data.access_token);
-        localStorage.setItem("TOKEN_EXPIRATION", new Date(Date.now() + res.data.expires_in * 1000));
+        setToken(res.data.access_token, res.data.expires_in);
       }
     } catch (error) {
       setToken(null)
@@ -34,7 +30,6 @@ const useAxiosClient = () => {
     });
 
     client.interceptors.request.use((config) => {
-      const token = localStorage.getItem('ACCESS_TOKEN');
       config.headers.Authorization = `Bearer ${token}`;
       return config;
     })
@@ -47,7 +42,6 @@ const useAxiosClient = () => {
     }, (error) => {
       try {
         const { response } = error;
-        console.log(response.status)
         if (response.status === 401 && response.config.url !== '/auth/refresh') {
           setToken(null);
         }
@@ -58,7 +52,7 @@ const useAxiosClient = () => {
     })
 
     return client;
-  }, [navigate]);
+  }, []);
 
   return axiosClient;
 };

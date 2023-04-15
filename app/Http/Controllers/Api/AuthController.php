@@ -29,7 +29,10 @@ class AuthController extends Controller
     public function login()
     {
         $credentials = request(['email', 'password']);
-
+        $userActive = User::where('email', $credentials['email'])->where('status', 1)->first();
+        if (!$userActive) {
+            return response()->json(['message' => 'Your account has been suspended.'], 403);
+        }
         if (! $token = auth()->attempt($credentials)) {
             return response()->json(['message' => 'Incorrect email or password.'], 401);
         }
@@ -78,7 +81,7 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 120
+            'expires_in' => auth()->factory()->getTTL() * 60
         ]);
     }
 

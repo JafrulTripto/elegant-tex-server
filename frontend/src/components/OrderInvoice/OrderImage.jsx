@@ -1,5 +1,5 @@
-import React, {Fragment} from 'react';
-import {Image, View, Text, StyleSheet} from "@react-pdf/renderer";
+import React from 'react';
+import { Image, View, Text, StyleSheet } from "@react-pdf/renderer";
 import OrderItemHeader from "./OrderItemHeader";
 
 const OrderImage = ({images}) => {

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 
 import {useNavigate, useParams} from 'react-router-dom';
 import {toast} from 'react-toastify';
@@ -21,26 +21,26 @@ const Order = () => {
 
   const {id} = useParams()
 
+    const fetchOrders = useCallback(async () => {
+
+        setLoading(true);
+        try {
+            const order = await axiosClient.get(`/orders/getOrder/${extractOrderNumber(id)}`);
+            setOrder({...order.data.data})
+            setLoading(false)
+        } catch (error) {
+            const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+            navigate('/notFound');
+            toast.error(message);
+            setLoading(false);
+        }
+
+    }, [axiosClient, id, navigate])
 
   useEffect(() => {
     fetchOrders();
-  }, [])
+  }, [fetchOrders])
 
-  const fetchOrders = async () => {
-
-    setLoading(true);
-    try {
-      const order = await axiosClient.get(`/orders/getOrder/${extractOrderNumber(id)}`);
-      setOrder({...order.data.data})
-      setLoading(false)
-    } catch (error) {
-      const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-      navigate('/notFound');
-      toast.error(message);
-      setLoading(false);
-    }
-
-  }
 
   const products = [
     {

@@ -3,16 +3,7 @@ import {faChevronDown, faChevronUp, faPersonDigging} from "@fortawesome/free-sol
 import {colors} from "../../utils/Colors";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import { Spin } from 'antd';
-import {LoadingOutlined} from "@ant-design/icons";
 
-const antIcon = (
-  <LoadingOutlined
-    style={{
-      fontSize: 50,
-    }}
-    spin
-  />
-);
 const ReportBox = (props) => {
 
     const {data, loading} = props;
