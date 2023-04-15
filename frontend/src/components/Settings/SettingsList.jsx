@@ -1,43 +1,45 @@
 import React from 'react';
 import {Col, Row} from "antd";
 import {FlagOutlined, UnlockOutlined, UsergroupAddOutlined} from "@ant-design/icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {colors} from "../../utils/Colors.js";
 import {Link} from "react-router-dom";
 import Permission from "../Util/Permission";
+import {faLockOpen, faMoneyBillTrendUp, faSliders, faUserTag} from "@fortawesome/free-solid-svg-icons";
 
 
 const SettingsList = () => {
 
   const iconStyle = {
     fontSize: "20px",
-    color: colors.primary
+    color: colors.secondary
   }
 
   const data = [
     {
       title: 'Role Settings',
-      icon: <UsergroupAddOutlined style={iconStyle}/>,
+      icon: <FontAwesomeIcon icon={faUserTag} style={iconStyle}/>,
       link: "/settings/roleSettings",
       description: "Manage the application roles.User can have multiple roles.",
       permission: "ROLE_SETTINGS"
     },
     {
       title: 'Permission Settings',
-      icon: <UnlockOutlined style={iconStyle}/>,
+      icon: <FontAwesomeIcon icon={faLockOpen} style={iconStyle}/>,
       link: "/settings/permissionSettings",
       description: "Manage the application permissions.",
       permission: 'PERMISSION_SETTINGS'
     },
     {
       title: 'Marketplace Settings',
-      icon: <FlagOutlined style={iconStyle}/>,
+      icon: <FontAwesomeIcon icon={faMoneyBillTrendUp} style={iconStyle}/>,
       link: "/settings/marketplaceSettings",
       description: "Create and manage the business pages as you need. These business pages will need in order creation.",
       permission: "MARKETPLACE_SETTINGS"
     },
     {
       title: 'Product Settings',
-      icon: <FlagOutlined style={iconStyle}/>,
+      icon: <FontAwesomeIcon icon={faSliders} style={iconStyle}/>,
       link: "/settings/productSettings",
       description: "Create and manage the business pages as you need. These business pages will need in order creation.",
       permission: "PRODUCT_SETTINGS"

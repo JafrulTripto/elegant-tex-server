@@ -22,11 +22,12 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by');
             $table->foreign('created_by')->references('id')->on('users')->onDelete("cascade");
             $table->integer('status');
-            $table->string('delivery_channel');
+            $table->unsignedBigInteger('delivery_channel');
             $table->date('delivery_date');
             $table->integer('amount');
             $table->integer('delivery_charge');
             $table->integer('total_amount');
+            $table->text('cancellation_comment')->nullable();
             $table->timestamps();
         });
     }
