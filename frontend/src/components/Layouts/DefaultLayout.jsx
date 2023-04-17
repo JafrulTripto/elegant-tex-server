@@ -64,7 +64,6 @@ const DefaultLayout = () => {
     ];
 
 
-
     const {user, token, setUser, setPermissions, setRoles, setToken, permissions} = useStateContext();
     const tokenRef = useRef(token);
 
@@ -133,7 +132,7 @@ const DefaultLayout = () => {
             toast.success(response.data.message);
             setUser(null)
             setToken(null);
-        }  catch(error){
+        } catch (error) {
             setToken(null);
             setUser(null);
             const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
@@ -150,59 +149,60 @@ const DefaultLayout = () => {
     }
 
 
-    return (<Layout style={{minHeight: "100vh"}}>
-        <Sider
-            style={{
-                overflow: "auto", height: "100vh", position: "sticky", top: 0, left: 0
-            }}
-            trigger={null}
-            collapsible
-            breakpoint={'sm'}
-            width={250}
-            collapsedWidth={70}
-            onBreakpoint={onBreakpointHandler}
-            collapsed={collapsed}>
-            <div style={{padding: "5px", display: "flex"}}>
-                <ElegantTexIcon/>
-            </div>
-            <Menu
-                theme="dark"
-                mode="inline"
-                defaultSelectedKeys={route[1] === '' ? 'dashboard' : route[1]}
-                items={generatePermittedRoutes()}
-                onClick={(item) => navigate("/" + item.key)}
-            />
-        </Sider>
-        <Layout className="site-layout">
-            <Header
+    return (
+        <Layout style={{minHeight: "100vh"}}>
+            <Sider
                 style={{
-                    position: 'fixed',
-                    zIndex: 1000,
-                    width: navbarWidth,
-                    padding: "0 20px",
-                    background: colorBgContainer,
-                    transition: "350ms"
-                }}>
-                <div className="flex justify-between">
-                    <div>
-                        {React.createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
-                            className: 'trigger', onClick: sidebarCollapseToggle,
-                        })}
-                    </div>
-                    {user && Object.keys(user).length !== 0 ?
-                        <NavigationDropdown user={user} handleLogout={handleLogout}/> : null}
+                    overflow: "auto", height: "100vh", position: "sticky", top: 0, left: 0
+                }}
+                trigger={null}
+                collapsible
+                breakpoint={'sm'}
+                width={250}
+                collapsedWidth={70}
+                onBreakpoint={onBreakpointHandler}
+                collapsed={collapsed}>
+                <div style={{padding: "5px", display: "flex"}}>
+                    <ElegantTexIcon/>
                 </div>
-            </Header>
-            <BreadCrumb/>
-            <Content
-                className="sm:px-1 md:px-5 lg:px-5 mx-2 py-5"
-                style={{
-                    minHeight: 280, background: "#f5f5f5",
-                }}>
-                {user && Object.keys(user).length !== 0 ? <Outlet/> : <Loading layout='default'/>}
-            </Content>
-        </Layout>
-    </Layout>);
+                <Menu
+                    theme="dark"
+                    mode="inline"
+                    defaultSelectedKeys={route[1] === '' ? 'dashboard' : route[1]}
+                    items={generatePermittedRoutes()}
+                    onClick={(item) => navigate("/" + item.key)}
+                />
+            </Sider>
+            <Layout className="site-layout">
+                <Header
+                    style={{
+                        position: 'fixed',
+                        zIndex: 1000,
+                        width: navbarWidth,
+                        padding: "0 20px",
+                        background: colorBgContainer,
+                        transition: "350ms"
+                    }}>
+                    <div className="flex justify-between">
+                        <div>
+                            {React.createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
+                                className: 'trigger', onClick: sidebarCollapseToggle,
+                            })}
+                        </div>
+                        {user && Object.keys(user).length !== 0 ?
+                            <NavigationDropdown user={user} handleLogout={handleLogout}/> : null}
+                    </div>
+                </Header>
+                <BreadCrumb/>
+                <Content
+                    className="sm:px-1 md:px-5 lg:px-5 mx-2 py-5"
+                    style={{
+                        minHeight: 280, background: "#f5f5f5",
+                    }}>
+                    {user && Object.keys(user).length !== 0 ? <Outlet/> : <Loading layout='default'/>}
+                </Content>
+            </Layout>
+        </Layout>);
 };
 
 export default DefaultLayout;
