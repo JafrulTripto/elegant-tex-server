@@ -4,9 +4,12 @@ namespace App\Services;
 
 use App\Exceptions\UserAdminException;
 use App\Models\User;
+use App\Notifications\WelcomeEmailNotification;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class UserService
 {
@@ -21,19 +24,30 @@ class UserService
         $this->storageService = $storageService;
     }
 
-    public function store(array $userData)
+    /**
+     * @throws \Exception
+     */
+    public function store(array $userData): void
     {
 
-        $user = new User();
-        $user->firstname = $userData['firstName'];
-        $user->lastname = $userData['lastName'];
-        $user->email = $userData['email'];
-        $user->nid = $userData['nid'];
-        $user->password = Hash::make($userData['password']);
-        $user->save();
-        $this->addressService->store($user, $userData);
-        if (array_key_exists('image', $userData) && !empty($userData['image'])) {
-            $this->imageService->store($user, $userData['image']);
+        try {
+            $user = User::create([
+                'firstname' => $userData['firstName'],
+                'lastname' => $userData['lastName'],
+                'email' => $userData['email'],
+                'nid' => $userData['nid'],
+                'password' => Hash::make($userData['password']),
+            ]);
+
+            $this->addressService->store($user, $userData);
+
+            if (array_key_exists('image', $userData) && !empty($userData['image'])) {
+                $this->imageService->store($user, $userData['image']);
+            }
+            $user->notify(new WelcomeEmailNotification());
+        } catch (\Exception $e) {
+            Log::error('Failed to create user: ' . $e->getMessage());
+            throw new \Exception('Failed to create user');
         }
     }
 

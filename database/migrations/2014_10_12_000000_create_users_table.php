@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('nid');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->timestamp('last_login')->nullable();
+            $table->timestamp('last_login')->default(null)->nullable();
             $table->boolean('status')->default(true);
             $table->rememberToken();
             $table->timestamps();

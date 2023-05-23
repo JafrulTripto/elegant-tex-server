@@ -48,7 +48,7 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(StoreUserRequest $request, UserService $userService)
+    public function store(StoreUserRequest $request, UserService $userService): JsonResponse
     {
         $userData = [
             'firstName' => $request->firstName,
