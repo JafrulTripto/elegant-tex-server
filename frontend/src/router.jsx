@@ -20,6 +20,7 @@ import OrderForm from "./views/OrderForm";
 import EditOrderFrom from "./views/EditOrderFrom";
 import UserProfile from "./views/UserProfile";
 import ResetPassword from "./views/ResetPassword";
+import MaterialSettings from "./components/Settings/ProductSettings/MaterialSettings";
 
 const router = createBrowserRouter([
   {
@@ -84,7 +85,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/settings/productSettings',
-        element: <ProductSettings/>
+        element: <MaterialSettings/>
       },
       {
         path: '/settings/marketplaceSettings',
