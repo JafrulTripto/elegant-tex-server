@@ -63,6 +63,7 @@ Route::group([
 Route::prefix('files')->group(function () {
     Route::post('/upload', [StorageController::class, 'upload']);
     Route::post('/uploadProductImage', [StorageController::class, 'uploadProductImage']);
+    Route::post('/uploadMaterialImage', [StorageController::class, 'uploadMaterialImage']);
     Route::post('/uploadMerchantImage', [StorageController::class, 'uploadMerchantImage']);
     Route::get('/upload/{userId}', [StorageController::class, 'getImage']);
     Route::post('/delete', [StorageController::class, 'destroy']);

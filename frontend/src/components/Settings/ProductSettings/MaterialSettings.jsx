@@ -98,23 +98,26 @@ const MaterialSettings = () => {
     }
 
     const onFinish = async (data) => {
-
+        console.log(data);
     }
 
     const props = {
-        name:"materialImage",
-        action: `${process.env.REACT_APP_API_BASE_URL}/files/upload`,
+        name: "materialImage",
+        action: `${process.env.REACT_APP_API_BASE_URL}/files/uploadMaterialImage`,
         beforeUpload: (file) => {
             const isPNG = file.type === 'image/png';
-            if (!isPNG) {
-                toast.error(`${file.name} is not a png file`);
+            const isJPG = file.type === 'image/jpeg';
+
+            if (!isPNG && !isJPG) {
+                toast.error(`${file.type} is not a PNG or JPG file`);
             }
-            return isPNG || Upload.LIST_IGNORE;
+            return isPNG || isJPG || Upload.LIST_IGNORE;
         },
         onChange: (info) => {
             console.log(info.fileList);
         },
     };
+
 
     const normFile = (e) => {
         console.log('Upload event:', e);
@@ -131,7 +134,7 @@ const MaterialSettings = () => {
                        pagination={{
                            pageSize: 5
                        }}
-                       rowKey={"id"}
+                       rowKey={"key"}
                        size="small"
                        columns={columns}
                        title={() => tableHeader()}
@@ -161,7 +164,7 @@ const MaterialSettings = () => {
                         rules={[
                             {
                                 required: true,
-                                message: `Please input Color!!!`,
+                                message: `Please input material name!!!`,
                             },
                         ]}
                     >
@@ -173,12 +176,6 @@ const MaterialSettings = () => {
                         valuePropName="fileList"
                         getValueFromEvent={normFile}
                         extra="Max size 250mb"
-                        rules={[
-                            {
-                                required: true,
-                                message: `Please input Color!!!`,
-                            },
-                        ]}
                     >
                         <Upload {...props}>
                             <Button icon={<UploadOutlined />}>Click to upload</Button>
