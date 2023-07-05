@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreMaterialRequest;
 use App\Models\Material;
 use App\Services\MaterialService;
-use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class MaterialController extends Controller
 {
@@ -14,6 +14,11 @@ class MaterialController extends Controller
     public function __construct(MaterialService $materialService)
     {
         $this->materialService = $materialService;
+    }
+
+    public function index(): Collection
+    {
+        return Material::with('image')->get();
     }
 
     /**

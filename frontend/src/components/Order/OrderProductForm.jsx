@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, Col, Form, Input, InputNumber, Row, Select, Upload} from "antd";
+import {Avatar, Button, Col, Form, Input, InputNumber, Row, Select, Upload} from "antd";
 import {InboxOutlined, MinusOutlined, PlusOutlined} from "@ant-design/icons";
 import {colors} from "../../utils/Colors";
 import {toast} from "react-toastify";
@@ -90,6 +90,29 @@ const OrderProductForm = (props) => {
                                             <Select>
                                                 {props.productColors.map(data => {
                                                     return <Option value={data.id} key={data.id}>{data.name}</Option>
+                                                })}
+                                            </Select>
+                                        </Form.Item>
+                                    </Col>
+                                    <Col xs={24} md={12} lg={8}>
+                                        <Form.Item
+                                            name={[name, 'material']}
+                                            label="Material"
+                                            rules={[
+                                                {
+                                                    required: true,
+                                                    message: 'Please select material!',
+                                                },
+
+                                            ]}>
+                                            <Select>
+                                                {props.materials.map(data => {
+                                                    return <Option value={data.id} key={data.id}>
+                                                                <span>
+                                                                    <Avatar shape="square" src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${data.image.id}`} />
+                                                                    <span style={{ marginLeft: '10px' }}>{data.name}</span>
+                                                                </span>
+                                                    </Option>
                                                 })}
                                             </Select>
                                         </Form.Item>

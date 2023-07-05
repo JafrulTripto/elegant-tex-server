@@ -153,6 +153,7 @@ Route::prefix('settings/colors')->group(function () {
 
 Route::prefix('settings/materials')->group(function () {
     Route::post('/store', [MaterialController::class, 'store']);
+    Route::get('/index', [MaterialController::class, 'index']);
 });
 
 Route::prefix('settings/fabrics')->group(function () {

@@ -18,6 +18,7 @@ import {useProductTypes} from "../hooks/useProductTypes";
 import {useDivisions} from "../hooks/useDivisions";
 import {useDistricts} from "../hooks/useDistricts";
 import {useUpazilas} from "../hooks/useUpazilas";
+import {useMaterials} from "../hooks/useMaterials";
 
 const OrderForm = () => {
   const axiosClient = useAxiosClient();
@@ -34,6 +35,7 @@ const OrderForm = () => {
   const {productColors} = useProductColors();
   const {productFabrics} = useProductFabrics();
   const {productTypes} = useProductTypes();
+  const {materials} = useMaterials();
 
 
 
@@ -137,6 +139,7 @@ const OrderForm = () => {
           productTypes={productTypes}
           productColors={productColors}
           productFabrics={productFabrics}
+          materials={materials}
           orderForm={orderForm}
           setUploading={setUploading}
           setFiles={setFiles}
