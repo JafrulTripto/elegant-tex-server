@@ -1,14 +1,18 @@
 import React, {useState} from 'react';
-import {Button, Col, Form, Input, Modal, Space, Table, Upload} from "antd";
+import {Button, Col, Form, Input, message, Modal, Space, Table, Upload} from "antd";
 import {DeleteOutlined, EditOutlined, PlusOutlined, UploadOutlined} from "@ant-design/icons";
 import {toast} from "react-toastify";
-import ProductSettingsForm from "./ProductSettingsForm";
+import useAxiosClient from "../../../axios-client";
 
 const MaterialSettings = () => {
 
     const [form] = Form.useForm();
     const [modal, contextHolder] = Modal.useModal();
     const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const axiosClient = useAxiosClient();
+
+    const [isUploadDisabled, setIsUploadDisabled] = useState(false);
 
     const [openForm, setOpenForm] = useState(false);
 
@@ -98,33 +102,50 @@ const MaterialSettings = () => {
     }
 
     const onFinish = async (data) => {
-        console.log(data);
+        try {
+            setSaving(true);
+            const response = await axiosClient.post(`/settings/materials/store`, data);
+            setSaving(false);
+            toast.success(response.data.message);
+            form.resetFields(); // Reset the form fields
+            handleCancel();
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     const props = {
         name: "materialImage",
         action: `${process.env.REACT_APP_API_BASE_URL}/files/uploadMaterialImage`,
         beforeUpload: (file) => {
+            const maxSize = 2 * 1024 * 1024; // 2MB
+
             const isPNG = file.type === 'image/png';
             const isJPG = file.type === 'image/jpeg';
 
             if (!isPNG && !isJPG) {
-                toast.error(`${file.type} is not a PNG or JPG file`);
+                message.error(`${file.type} is not a PNG or JPG file`);
+            }
+            if (file.size > maxSize) {
+                message.error(`File size exceeds the limit of 2MB`);
+                return false;
             }
             return isPNG || isJPG || Upload.LIST_IGNORE;
         },
         onChange: (info) => {
-            console.log(info.fileList);
+            console.log(info.file.status);
+            if (info.file.status === 'done') {
+                setIsUploadDisabled(true); // Disable the upload button
+            }
         },
     };
 
 
     const normFile = (e) => {
-        console.log('Upload event:', e);
         if (Array.isArray(e)) {
             return e;
         }
-        return e?.fileList;
+        return e?.file.response;
     }
 
     return (
@@ -168,16 +189,22 @@ const MaterialSettings = () => {
                             },
                         ]}
                     >
-                        <Input placeholder={`Color`}/>
+                        <Input placeholder={`Material name`}/>
                     </Form.Item>
                     <Form.Item
-                        name="upload"
+                        name="materialImage"
                         label="Upload Material Image"
-                        valuePropName="fileList"
+                        valuePropName="file"
                         getValueFromEvent={normFile}
-                        extra="Max size 250mb"
+                        extra="Max size 2MB"
+                        rules={[
+                            {
+                                required: true,
+                                message: `Please upload material image!!!`,
+                            },
+                        ]}
                     >
-                        <Upload {...props}>
+                        <Upload {...props} disabled={isUploadDisabled}>
                             <Button icon={<UploadOutlined />}>Click to upload</Button>
                         </Upload>
                     </Form.Item>

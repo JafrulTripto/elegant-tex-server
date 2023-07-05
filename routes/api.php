@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DeliveryChannelController;
 use App\Http\Controllers\Api\MarketplaceController;
+use App\Http\Controllers\Api\MaterialController;
 use App\Http\Controllers\Api\MerchantController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PermissionController;
@@ -148,6 +149,10 @@ Route::prefix('settings/colors')->group(function () {
     Route::post('/store', [ProductColorController::class, 'store']);
     Route::put('/update/{id}', [ProductColorController::class, 'update']);
     Route::delete('/delete/{id}', [ProductColorController::class, 'destroy']);
+});
+
+Route::prefix('settings/materials')->group(function () {
+    Route::post('/store', [MaterialController::class, 'store']);
 });
 
 Route::prefix('settings/fabrics')->group(function () {
