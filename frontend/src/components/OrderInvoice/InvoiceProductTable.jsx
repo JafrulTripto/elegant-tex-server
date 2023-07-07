@@ -72,15 +72,15 @@ const InvoiceProductTable = ({ products }) => {
       {products.map(product => {
         return(
           <View style={styles.tableRow} key={product.id}>
-            <View style={styles.tableCol}>
-              <Text style={styles.tableCell}>{product.productType.name}</Text>
-            </View>
-            <View style={styles.tableCol}>
-              <Text style={styles.tableCell}>{product.productColor.name}</Text>
-            </View>
-            <View style={styles.tableCol}>
-              <Text style={styles.tableCell}>{product.productFabric.name}</Text>
-            </View>
+            {/*<View style={styles.tableCol}>*/}
+            {/*  <Text style={styles.tableCell}>{product.productType.name}</Text>*/}
+            {/*</View>*/}
+            {/*<View style={styles.tableCol}>*/}
+            {/*  <Text style={styles.tableCell}>{product.productColor.name}</Text>*/}
+            {/*</View>*/}
+            {/*<View style={styles.tableCol}>*/}
+            {/*  <Text style={styles.tableCell}>{product.productFabric.name}</Text>*/}
+            {/*</View>*/}
             <View style={[styles.tableCol, {width:"30%"}]}>
               <Text style={styles.tableCell}>{product.description}</Text>
             </View>

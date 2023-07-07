@@ -14,12 +14,12 @@ import {extractOrderNumber} from "../components/Util/OrderNumberFormatter";
 
 const Order = () => {
 
-  const axiosClient = useAxiosClient();
-  const [loading, setLoading] = useState(false);
-  const [order, setOrder] = useState({});
-  const navigate = useNavigate()
+    const axiosClient = useAxiosClient();
+    const [loading, setLoading] = useState(false);
+    const [order, setOrder] = useState({});
+    const navigate = useNavigate()
 
-  const {id} = useParams()
+    const {id} = useParams()
 
     const fetchOrders = useCallback(async () => {
 
@@ -37,107 +37,126 @@ const Order = () => {
 
     }, [axiosClient, id, navigate])
 
-  useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders])
+    useEffect(() => {
+        fetchOrders();
+    }, [fetchOrders])
 
 
-  const products = [
-    {
-      title: 'Product',
-      dataIndex: 'productType',
-      key: 'id',
-      render: (_, record) => (
-        <div className='flex flex-col'>
-          <h2 className='text-zinc-600'>{record.productType.name}</h2>
-          <div>Color: <span className='text-zinc-600 font-bold'>{record.productColor.name}</span></div>
-          <div>Fabric: <span className='text-zinc-600 font-bold'>{record.productFabric.name}</span></div>
-        </div>
-      )
-    },
-    {
-      title: 'Description',
-      dataIndex: 'description',
-      key: 'id',
-    },
-    {
-      title: 'Quantity',
-      dataIndex: 'unit',
-      key: 'id',
-    },
-    {
-      title: 'Price',
-      dataIndex: 'price',
-      key: 'id',
+    const products = [
+        {
+            title: 'Product',
+            dataIndex: 'products',
+            key: 'id',
+            render: (_, record) => (
+                <div className='flex flex-col'>
+                    <h2 className='text-zinc-600'>{record.productType.name}</h2>
+                    {/*<div><span className='text-zinc-600 font-bold'>{record.productType.name}</span></div>*/}
+                    {/*<div>Fabric: <span className='text-zinc-600 font-bold'>{record.productFabric.name}</span></div>*/}
+                </div>
+            )
+        },
+        {
+            title: 'Material',
+            dataIndex: 'material',
+            key: 'id',
+            render: (_, record) => (
+                <div className="flex items-center">
+                    <Image
+                        className="rounded-lg"
+                        src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${record.material.image}`}
+                        width={50}
+                        height={50}
+                    />
+                    <h4 className="text-zinc-600 ml-3">{record.material.name}</h4>
+                </div>
+            )
+        },
+        {
+            title: 'Description',
+            dataIndex: 'description',
+            key: 'id',
+        },
+        {
+            title: 'Quantity',
+            dataIndex: 'unit',
+            key: 'id',
+        },
+        {
+            title: 'Price',
+            dataIndex: 'price',
+            key: 'id',
+        }
+    ];
+
+    const renderCustomerInfo = () => {
+        if (order.customer) {
+            return <Col xs={24} md={24}>
+                <Card title="Customer">
+                    <CustomerInfo customer={order.customer}/>
+                </Card>
+            </Col>
+        } else if (loading) {
+            return <Skeleton paragraph={{rows: 3}}/>
+        }
+        return null;
     }
-  ];
 
-  const renderCustomerInfo = () => {
-    if (order.customer) {
-      return <Col xs={24} md={24}>
-        <Card title="Customer">
-          <CustomerInfo customer={order.customer}/>
-        </Card>
-      </Col>
-    } else if (loading) {
-      return <Skeleton paragraph={{rows: 3}}/>
-    }
-    return null;
-  }
+    return (
+        <>
+            {order.id ? <OrderHeader order={order}/> : <Skeleton paragraph={{rows: 2}}/>}
+            <Row gutter={[12, 0]}>
+                <Col xs={24} md={16}>
+                    <Row gutter={[12, 12]}>
+                        <Col xs={24} md={24}>
+                            {order.products ?
+                                <Table columns={products} rowKey="id" dataSource={order.products} pagination={false}/> :
+                                <Skeleton paragraph={{rows: 3}}/>}
+                        </Col>
+                        <Col xs={24} md={24}>
+                            <Card title="Payment Summary">
+                                {order.payment ?
+                                    <PaymentSummary payment={order.payment}/> : <Skeleton paragraph={{rows: 3}}/>}
+                            </Card>
+                        </Col>
+                        <Col xs={24} md={24}>
+                            <Card title="Delivery Info">
+                                {order.payment ?
+                                    <DeliveryInfo deliveryDate={order.deliveryDate}
+                                                  deliveryChannel={order.deliveryChannel.name}/> :
+                                    <Skeleton paragraph={{rows: 3}}/>}
+                            </Card>
+                        </Col>
+                    </Row>
 
-  return (
-    <>
-      {order.id ? <OrderHeader order ={order}/> : <Skeleton paragraph={{rows: 2}}/>}
-      <Row gutter={[12, 0]}>
-        <Col xs={24} md={16}>
-          <Row gutter={[12, 12]}>
-            <Col xs={24} md={24}>
-              {order.products ? <Table columns={products} rowKey="id" dataSource={order.products} pagination={false}/> :
-                <Skeleton paragraph={{rows: 3}}/>}
-            </Col>
-            <Col xs={24} md={24}>
-              <Card title="Payment Summary">
-                {order.payment ?
-                  <PaymentSummary payment={order.payment}/> : <Skeleton paragraph={{rows: 3}}/>}
-              </Card>
-            </Col>
-            <Col xs={24} md={24}>
-              <Card title="Delivery Info">
-                {order.payment ?
-                  <DeliveryInfo deliveryDate={order.deliveryDate} deliveryChannel={order.deliveryChannel.name}/> : <Skeleton paragraph={{rows: 3}}/>}
-              </Card>
-            </Col>
-          </Row>
+                </Col>
 
-        </Col>
+                <Col xs={24} md={8}>
+                    <Row gutter={[12, 12]}>
+                        {renderCustomerInfo()}
+                        <Col xs={24} md={24}>
+                            <Card className='shadow' title="Images" style={{overflow: "auto"}}>
+                                {order.images && order.images.length ? <Row gutter={[16, 16]}>
+                                    {order.images.map(item => {
+                                        return <Col key={item.id}>
+                                            <Image
+                                                width={100}
+                                                height={100}
+                                                src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${item.id}`}/>
+                                        </Col>
+                                    })}
+                                </Row> : <Empty description={"No image found."}/>}
+                            </Card>
+                        </Col>
+                    </Row>
 
-        <Col xs={24} md={8}>
-          <Row gutter={[12, 12]}>
-            {renderCustomerInfo()}
-            <Col xs={24} md={24}>
-              <Card className='shadow' title="Images" style={{overflow: "auto"}}>
-                {order.images && order.images.length ? <Row gutter={[16, 16]}>
-                  {order.images.map(item => {
-                    return <Col key={item.id}>
-                      <Image
-                        width={100}
-                        height={100}
-                        src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${item.id}`}/>
-                    </Col>
-                  })}
-                </Row> : <Empty description={"No image found."}/>}
-              </Card>
-            </Col>
-          </Row>
-
-        </Col>
+                </Col>
 
 
-      </Row>
-    </>
+            </Row>
+        </>
 
 
-  )
+    )
 }
 
 export default Order;

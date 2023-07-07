@@ -12,7 +12,7 @@ const MaterialSettings = () => {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const axiosClient = useAxiosClient();
-    const {materials, materialsLoading} = useMaterials();
+    const {materials, materialsLoading, fetchMaterials} = useMaterials();
 
     const [isUploadDisabled, setIsUploadDisabled] = useState(false);
 
@@ -121,6 +121,7 @@ const MaterialSettings = () => {
             toast.success(response.data.message);
             form.resetFields(); // Reset the form fields
             handleCancel();
+            fetchMaterials();
         } catch (error) {
             console.log(error);
         }

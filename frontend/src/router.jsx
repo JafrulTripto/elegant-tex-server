@@ -85,7 +85,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/settings/productSettings',
-        element: <MaterialSettings/>
+        element: <ProductSettings/>
       },
       {
         path: '/settings/marketplaceSettings',

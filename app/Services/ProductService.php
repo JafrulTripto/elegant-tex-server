@@ -12,9 +12,9 @@ class ProductService
         $product->description = $productData['productDescription'];
         $product->count = $productData['quantity'];
         $product->price = $productData['price'];
+        $product->material_id = $productData['material'];
         $product->type_id = $productData['productType'];
-        $product->color_id = $productData['productColor'];
-        $product->fabric_id = $productData['productFabric'];
+
 
 //        $productType = ProductType::findOrFail($productData['productType']);
 //        $productColor = ProductColor::findOrFail($productData['productColor']);

@@ -48,8 +48,7 @@ const OrderProductForm = (props) => {
             <Col xs={24} md={12} lg={16} className="pr-4">
                 <Form.List name="products" initialValue={[{
                     productType: null,
-                    productColor: null,
-                    productFabric: null,
+                    material: null,
                     productDescription: null
                 }]}>
                     {(fields, {add, remove}) => (
@@ -57,6 +56,24 @@ const OrderProductForm = (props) => {
                             {fields.map(({key, name, ...restField}) => (
 
                                 <Row gutter={24} key={key}>
+                                    <Col xs={24} md={12} lg={8}>
+                                        <Form.Item
+                                            name={[name, 'productType']}
+                                            label="Product Type"
+                                            rules={[
+                                                {
+                                                    required: true,
+                                                    message: 'Please select product type!',
+                                                },
+
+                                            ]}>
+                                            <Select size="large">
+                                                {props.productTypes.map(data => {
+                                                    return <Option value={data.id} key={data.id}>{data.name}</Option>
+                                                })}
+                                            </Select>
+                                        </Form.Item>
+                                    </Col>
                                     <Col xs={24} md={12} lg={12}>
                                         <Form.Item
                                             name={[name, 'material']}
@@ -92,6 +109,7 @@ const OrderProductForm = (props) => {
 
                                             ]}>
                                             <InputNumber
+                                                size="large"
                                                 min={1}
                                                 style={{width: "100%"}}
                                             />
@@ -109,6 +127,7 @@ const OrderProductForm = (props) => {
 
                                             ]}>
                                             <InputNumber
+                                                size="large"
                                                 min={1}
                                                 style={{width: "100%"}}
                                             />
