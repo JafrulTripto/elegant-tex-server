@@ -1,8 +1,9 @@
 import React, {useState} from 'react';
-import {Button, Col, Form, Input, message, Modal, Space, Table, Upload} from "antd";
-import {DeleteOutlined, EditOutlined, PlusOutlined, UploadOutlined} from "@ant-design/icons";
+import {Avatar, Button, Col, Form, Image, Input, message, Modal, Space, Table, Upload} from "antd";
+import {DeleteOutlined, EditOutlined, PlusOutlined, UploadOutlined, UserOutlined} from "@ant-design/icons";
 import {toast} from "react-toastify";
 import useAxiosClient from "../../../axios-client";
+import {useMaterials} from "../../../hooks/useMaterials";
 
 const MaterialSettings = () => {
 
@@ -11,25 +12,12 @@ const MaterialSettings = () => {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const axiosClient = useAxiosClient();
+    const {materials, materialsLoading} = useMaterials();
 
     const [isUploadDisabled, setIsUploadDisabled] = useState(false);
 
     const [openForm, setOpenForm] = useState(false);
 
-    const data = [
-        {
-            key: '1',
-            name: 'Mike',
-            age: 32,
-            address: '10 Downing Street',
-        },
-        {
-            key: '2',
-            name: 'John',
-            age: 42,
-            address: '10 Downing Street',
-        },
-    ];
 
 
     const handleEditProductSettings = (record) => {
@@ -41,6 +29,23 @@ const MaterialSettings = () => {
 
     const confirmDeleteItem = async (record) => {
 
+
+    }
+
+    const renderMaterialImage = (image) => {
+        if (image) {
+            const imagePath = `${process.env.REACT_APP_API_BASE_URL}/files/upload/${image.id}`
+            return (
+                <Image
+                    style={{borderRadius:"5px"}}
+                    src={imagePath}
+                    width={50}
+                    height={50}
+                />
+
+            )
+        }
+        return <Avatar size={{xs: 24, sm: 32, md: 32}} icon={<UserOutlined/>}/>
 
     }
 
@@ -57,7 +62,14 @@ const MaterialSettings = () => {
             title: 'Name',
             key: 'name',
             dataIndex: 'name',
-            width: "80%"
+            width: "40%"
+        },
+        {
+            title: 'Preview',
+            dataIndex: 'image',
+            key: 'image',
+            width: "40%",
+            render: renderMaterialImage
         },
         {
             title: 'Action',
@@ -151,15 +163,15 @@ const MaterialSettings = () => {
     return (
         <>
             <Col xs={24} md={12} lg={12}>
-                <Table loading={loading}
+                <Table loading={materialsLoading}
                        pagination={{
                            pageSize: 5
                        }}
-                       rowKey={"key"}
-                       size="small"
+                       rowKey="id"
+                       size="middle"
                        columns={columns}
                        title={() => tableHeader()}
-                       dataSource={data}/>
+                       dataSource={materials}/>
             </Col>
 
             <Modal

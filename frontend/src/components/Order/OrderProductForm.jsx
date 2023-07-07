@@ -57,44 +57,7 @@ const OrderProductForm = (props) => {
                             {fields.map(({key, name, ...restField}) => (
 
                                 <Row gutter={24} key={key}>
-                                    <Col xs={24} md={12} lg={8}>
-                                        <Form.Item
-
-                                            name={[name, 'productType']}
-                                            label="Product Type"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                    message: 'Please select product type!',
-                                                },
-
-                                            ]}>
-                                            <Select>
-                                                {props.productTypes.map(data => {
-                                                    return <Option value={data.id} key={data.id}>{data.name}</Option>
-                                                })}
-                                            </Select>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col xs={24} md={12} lg={8}>
-                                        <Form.Item
-                                            name={[name, 'productColor']}
-                                            label="Product Color"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                    message: 'Please select product color!',
-                                                },
-
-                                            ]}>
-                                            <Select>
-                                                {props.productColors.map(data => {
-                                                    return <Option value={data.id} key={data.id}>{data.name}</Option>
-                                                })}
-                                            </Select>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col xs={24} md={12} lg={8}>
+                                    <Col xs={24} md={12} lg={12}>
                                         <Form.Item
                                             name={[name, 'material']}
                                             label="Material"
@@ -105,7 +68,7 @@ const OrderProductForm = (props) => {
                                                 },
 
                                             ]}>
-                                            <Select>
+                                            <Select size="large">
                                                 {props.materials.map(data => {
                                                     return <Option value={data.id} key={data.id}>
                                                                 <span>
@@ -117,39 +80,7 @@ const OrderProductForm = (props) => {
                                             </Select>
                                         </Form.Item>
                                     </Col>
-                                    <Col xs={24} md={12} lg={8}>
-                                        <Form.Item
-                                            name={[name, 'productFabric']}
-                                            label="Product Fabric"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                    message: 'Please select product fabric!',
-                                                },
-
-                                            ]}>
-                                            <Select>
-                                                {props.productFabrics.map(data => {
-                                                    return <Option value={data.id} key={data.id}>{data.name}</Option>
-                                                })}
-                                            </Select>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col xs={24} md={24} lg={16}>
-                                        <Form.Item
-                                            name={[name, 'productDescription']}
-                                            label="Product description"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                    message: 'Please input product description!',
-                                                },
-                                            ]}
-                                        >
-                                            <Input.TextArea rows={2} placeholder="Additional product information ..."/>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col xs={24} md={12} lg={4}>
+                                    <Col xs={24} md={12} lg={6}>
                                         <Form.Item
                                             name={[name, "quantity"]}
                                             label="Quantity"
@@ -166,7 +97,7 @@ const OrderProductForm = (props) => {
                                             />
                                         </Form.Item>
                                     </Col>
-                                    <Col xs={24} md={12} lg={4}>
+                                    <Col xs={24} md={12} lg={6}>
                                         <Form.Item
                                             name={[name, "price"]}
                                             label="Price"
@@ -183,6 +114,21 @@ const OrderProductForm = (props) => {
                                             />
                                         </Form.Item>
                                     </Col>
+                                    <Col xs={24} md={24} lg={24}>
+                                        <Form.Item
+                                            name={[name, 'productDescription']}
+                                            label="Product description"
+                                            rules={[
+                                                {
+                                                    required: true,
+                                                    message: 'Please input product description!',
+                                                },
+                                            ]}
+                                        >
+                                            <Input.TextArea rows={2} placeholder="Additional product information ..."/>
+                                        </Form.Item>
+                                    </Col>
+
                                     <Col xs={24} md={24} lg={24}>
                                         <Row gutter={[16, 16]}>
                                             <Col xs={24} md={12} lg={12}>
