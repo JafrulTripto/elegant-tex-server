@@ -23,7 +23,9 @@ const OrderProductForm = (props) => {
             const newFileList = props.files.slice();
             newFileList.splice(index, 1);
             props.setFiles(newFileList);
-            props.setRemovedFiles([...props.removedFiles, file]);
+            if (props.removedFiles){
+                props.setRemovedFiles([...props.removedFiles, file]);
+            }
         },
         beforeUpload(file) {
             const fileSize = file.size / 1024 / 1024; // Convert size to MB
@@ -48,7 +50,7 @@ const OrderProductForm = (props) => {
             <Col xs={24} md={12} lg={16} className="pr-4">
                 <Form.List name="products" initialValue={[{
                     productType: null,
-                    material: null,
+                    fabrics: null,
                     productDescription: null
                 }]}>
                     {(fields, {add, remove}) => (
@@ -76,17 +78,17 @@ const OrderProductForm = (props) => {
                                     </Col>
                                     <Col xs={24} md={12} lg={12}>
                                         <Form.Item
-                                            name={[name, 'material']}
-                                            label="Material"
+                                            name={[name, 'fabrics']}
+                                            label="Fabric"
                                             rules={[
                                                 {
                                                     required: true,
-                                                    message: 'Please select material!',
+                                                    message: 'Please select fabric!',
                                                 },
 
                                             ]}>
                                             <Select size="large">
-                                                {props.materials.map(data => {
+                                                {props.fabrics.map(data => {
                                                     return <Option value={data.id} key={data.id}>
                                                                 <span>
                                                                     <Avatar shape="square" src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${data.image.id}`} />

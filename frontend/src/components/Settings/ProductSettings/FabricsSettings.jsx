@@ -3,16 +3,16 @@ import {Avatar, Button, Col, Form, Image, Input, message, Modal, Space, Table, U
 import {DeleteOutlined, EditOutlined, PlusOutlined, UploadOutlined, UserOutlined} from "@ant-design/icons";
 import {toast} from "react-toastify";
 import useAxiosClient from "../../../axios-client";
-import {useMaterials} from "../../../hooks/useMaterials";
+import {useFabrics} from "../../../hooks/useFabrics";
 
-const MaterialSettings = () => {
+const FabricsSettings = () => {
 
     const [form] = Form.useForm();
     const [modal, contextHolder] = Modal.useModal();
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const axiosClient = useAxiosClient();
-    const {materials, materialsLoading, fetchMaterials} = useMaterials();
+    const {fabrics, fetchFabrics, fabricsLoading} = useFabrics();
 
     const [isUploadDisabled, setIsUploadDisabled] = useState(false);
 
@@ -32,7 +32,7 @@ const MaterialSettings = () => {
 
     }
 
-    const renderMaterialImage = (image) => {
+    const renderFabricsImage = (image) => {
         if (image) {
             const imagePath = `${process.env.REACT_APP_API_BASE_URL}/files/upload/${image.id}`
             return (
@@ -69,7 +69,7 @@ const MaterialSettings = () => {
             dataIndex: 'image',
             key: 'image',
             width: "40%",
-            render: renderMaterialImage
+            render: renderFabricsImage
         },
         {
             title: 'Action',
@@ -96,14 +96,14 @@ const MaterialSettings = () => {
                     <div className="flex flex-wrap items-center">
                         <div className="relative w-full max-w-full flex-grow flex-1">
                             <h6 className="uppercase mb-1 text-xs font-semibold text-blueGray-500">Settings</h6>
-                            <h2 className="text-xl mb-0 font-semibold text-blueGray-800">Material</h2>
+                            <h2 className="text-xl mb-0 font-semibold text-blueGray-800">Fabrics</h2>
                         </div>
                     </div>
 
                 </div>
                 <div className="pt-2 px-2">
                     <Button type="primary" onClick={() => setOpenForm(true)}
-                            icon={<PlusOutlined/>}>Add Material
+                            icon={<PlusOutlined/>}>Add Fabrics
                     </Button>
                 </div>
             </div>
@@ -116,20 +116,20 @@ const MaterialSettings = () => {
     const onFinish = async (data) => {
         try {
             setSaving(true);
-            const response = await axiosClient.post(`/settings/materials/store`, data);
+            const response = await axiosClient.post(`/settings/fabrics/store`, data);
             setSaving(false);
             toast.success(response.data.message);
             form.resetFields(); // Reset the form fields
             handleCancel();
-            fetchMaterials();
+            fetchFabrics();
         } catch (error) {
             console.log(error);
         }
     }
 
     const props = {
-        name: "materialImage",
-        action: `${process.env.REACT_APP_API_BASE_URL}/files/uploadMaterialImage`,
+        name: "fabricsImage",
+        action: `${process.env.REACT_APP_API_BASE_URL}/files/uploadFabricsImage`,
         beforeUpload: (file) => {
             const maxSize = 2 * 1024 * 1024; // 2MB
 
@@ -164,7 +164,7 @@ const MaterialSettings = () => {
     return (
         <>
             <Col xs={24} md={12} lg={12}>
-                <Table loading={materialsLoading}
+                <Table loading={fabricsLoading}
                        pagination={{
                            pageSize: 5
                        }}
@@ -172,11 +172,11 @@ const MaterialSettings = () => {
                        size="middle"
                        columns={columns}
                        title={() => tableHeader()}
-                       dataSource={materials}/>
+                       dataSource={fabrics}/>
             </Col>
 
             <Modal
-                title={`Add New Material`}
+                title={`Add New Fabrics`}
                 open={openForm}
                 okText="Submit"
                 okType='submit'
@@ -194,26 +194,26 @@ const MaterialSettings = () => {
                 >
                     <Form.Item
                         name="name"
-                        label="Material"
+                        label="Fabric"
                         rules={[
                             {
                                 required: true,
-                                message: `Please input material name!!!`,
+                                message: `Please input fabric name!!!`,
                             },
                         ]}
                     >
-                        <Input placeholder={`Material name`}/>
+                        <Input placeholder={`Fabric name`}/>
                     </Form.Item>
                     <Form.Item
-                        name="materialImage"
-                        label="Upload Material Image"
+                        name="fabricsImage"
+                        label="Upload Fabric Image"
                         valuePropName="file"
                         getValueFromEvent={normFile}
                         extra="Max size 2MB"
                         rules={[
                             {
                                 required: true,
-                                message: `Please upload material image!!!`,
+                                message: `Please upload fabric image!!!`,
                             },
                         ]}
                     >
@@ -233,4 +233,4 @@ const MaterialSettings = () => {
     );
 };
 
-export default MaterialSettings;
+export default FabricsSettings;

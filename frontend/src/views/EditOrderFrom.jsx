@@ -13,12 +13,11 @@ import {useMerchants} from "../hooks/useMerchants";
 import {useMarketplaces} from "../hooks/useMarketplaces";
 import {OrderTypeEnum} from "../utils/enums/OrderTypeEnum";
 import * as dayjs from 'dayjs'
-import {useProductColors} from "../hooks/useProductColors";
-import {useProductFabrics} from "../hooks/useProductFabrics";
 import {useProductTypes} from "../hooks/useProductTypes";
 import {useDistricts} from "../hooks/useDistricts";
 import {useUpazilas} from "../hooks/useUpazilas";
 import {useDivisions} from "../hooks/useDivisions";
+import {useFabrics} from "../hooks/useFabrics";
 
 const EditOrderFrom = () => {
 
@@ -39,11 +38,12 @@ const EditOrderFrom = () => {
   const {marketplaces} = useMarketplaces();
   const {merchants} = useMerchants();
 
-  const {productColors} = useProductColors();
-  const {productFabrics} = useProductFabrics();
-  const {productTypes} = useProductTypes();
 
-  const [selectedDivision, setSelectedDivision] = useState(null);
+  const {productTypes} = useProductTypes();
+  const {fabrics} = useFabrics();
+
+
+    const [selectedDivision, setSelectedDivision] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState(null);
 
   const {divisions, divisionLoading} = useDivisions();
@@ -85,8 +85,7 @@ const EditOrderFrom = () => {
               quantity: product.unit,
               price: product.price,
               productType: product.productType.value,
-              productColor: product.productColor.value,
-              productFabric: product.productFabric.value
+              fabrics: product.fabrics.value
             }
           }),
 
@@ -104,8 +103,7 @@ const EditOrderFrom = () => {
           quantity: product.unit,
           price: product.price,
           productType: product.productType.value,
-          productColor: product.productColor.value,
-          productFabric: product.productFabric.value
+          fabrics: product.fabrics.value
         }
       }),
 
@@ -240,8 +238,7 @@ const EditOrderFrom = () => {
         <Divider style={{color: colors.primary}}>Product Info</Divider>
         <OrderProductForm
           productTypes={productTypes}
-          productColors={productColors}
-          productFabrics={productFabrics}
+          fabrics={fabrics}
           orderForm={updateOrderForm}
           setUploading={setUploading}
           setFiles={setFiles}

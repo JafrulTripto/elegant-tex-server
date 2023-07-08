@@ -12,13 +12,11 @@ import {useStateContext} from "../contexts/ContextProvider";
 import {OrderTypeEnum} from "../utils/enums/OrderTypeEnum";
 import {useMarketplaces} from "../hooks/useMarketplaces";
 import {useMerchants} from "../hooks/useMerchants";
-import {useProductColors} from "../hooks/useProductColors";
-import {useProductFabrics} from "../hooks/useProductFabrics";
 import {useProductTypes} from "../hooks/useProductTypes";
 import {useDivisions} from "../hooks/useDivisions";
 import {useDistricts} from "../hooks/useDistricts";
 import {useUpazilas} from "../hooks/useUpazilas";
-import {useMaterials} from "../hooks/useMaterials";
+import {useFabrics} from "../hooks/useFabrics";
 
 const OrderForm = () => {
   const axiosClient = useAxiosClient();
@@ -32,10 +30,8 @@ const OrderForm = () => {
   const {marketplaces} = useMarketplaces();
   const {merchants} = useMerchants();
 
-  const {productColors} = useProductColors();
-  const {productFabrics} = useProductFabrics();
   const {productTypes} = useProductTypes();
-  const {materials} = useMaterials();
+  const {fabrics} = useFabrics();
 
 
 
@@ -137,9 +133,7 @@ const OrderForm = () => {
         <Divider style={{color: colors.primary}}>Product Info</Divider>
         <OrderProductForm
           productTypes={productTypes}
-          productColors={productColors}
-          productFabrics={productFabrics}
-          materials={materials}
+          fabrics={fabrics}
           orderForm={orderForm}
           setUploading={setUploading}
           setFiles={setFiles}

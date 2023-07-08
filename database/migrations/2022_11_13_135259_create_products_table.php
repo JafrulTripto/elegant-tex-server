@@ -16,10 +16,10 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("order_id");
-            $table->unsignedBigInteger("material_id");
+            $table->unsignedBigInteger("fabrics_id");
             $table->unsignedBigInteger("type_id");
             $table->foreign('order_id')->references('id')->on('orders');
-            $table->foreign('material_id')->references('id')->on('materials');
+            $table->foreign('fabrics_id')->references('id')->on('fabrics');
             $table->foreign('type_id')->references('id')->on('product_types');
             $table->text('description');
             $table->integer('count');

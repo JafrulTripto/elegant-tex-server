@@ -56,18 +56,18 @@ const Order = () => {
             )
         },
         {
-            title: 'Material',
-            dataIndex: 'material',
+            title: 'Fabrics',
+            dataIndex: 'fabrics',
             key: 'id',
             render: (_, record) => (
                 <div className="flex items-center">
                     <Image
                         className="rounded-lg"
-                        src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${record.material.image}`}
+                        src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${record.fabrics.image}`}
                         width={50}
                         height={50}
                     />
-                    <h4 className="text-zinc-600 ml-3">{record.material.name}</h4>
+                    <h4 className="text-zinc-600 ml-3">{record.fabrics.name}</h4>
                 </div>
             )
         },

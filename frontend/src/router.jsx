@@ -20,7 +20,7 @@ import OrderForm from "./views/OrderForm";
 import EditOrderFrom from "./views/EditOrderFrom";
 import UserProfile from "./views/UserProfile";
 import ResetPassword from "./views/ResetPassword";
-import MaterialSettings from "./components/Settings/ProductSettings/MaterialSettings";
+import FabricsSettings from "./components/Settings/ProductSettings/FabricsSettings";
 
 const router = createBrowserRouter([
   {

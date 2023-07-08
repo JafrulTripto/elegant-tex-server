@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreMaterialRequest extends FormRequest
+class StoreFabricsRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -15,10 +15,10 @@ class StoreMaterialRequest extends FormRequest
     {
         return [
             'name' => 'required',
-            'materialImage.name' => 'required',
-            'materialImage.ext' => 'required',
-            'materialImage.path' => 'required',
-            'materialImage.size' => 'required|integer',
+            'fabricsImage.name' => 'required',
+            'fabricsImage.ext' => 'required',
+            'fabricsImage.path' => 'required',
+            'fabricsImage.size' => 'required|integer',
         ];
     }
 
