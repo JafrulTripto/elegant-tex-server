@@ -53,7 +53,7 @@ Route::group([
 });
 Route::group([
     'prefix' => 'settings/marketplace',
-    'middleware' => 'auth:api',
+    'middleware' => 'api',
 ], function () {
     Route::post('/store', [MarketplaceController::class, 'store']);
     Route::post('/index', [MarketplaceController::class, 'index']);
@@ -72,7 +72,7 @@ Route::prefix('files')->group(function () {
 
 
 Route::group([
-    'middleware' => 'auth:api',
+    'middleware' => 'api',
     'prefix' => 'orders'
 ], function ($router) {
     Route::post('/store', [OrderController::class, 'store']);
@@ -154,6 +154,7 @@ Route::prefix('settings/colors')->group(function () {
 Route::prefix('settings/fabrics')->group(function () {
     Route::post('/store', [FabricsController::class, 'store']);
     Route::get('/index', [FabricsController::class, 'index']);
+    Route::delete('/delete/{id}', [FabricsController::class, 'destroy']);
 });
 
 //Route::prefix('settings/fabrics')->group(function () {

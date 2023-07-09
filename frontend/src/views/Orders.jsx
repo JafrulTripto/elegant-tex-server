@@ -1,9 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import {Space, Card, Row, Col, Button, Input, Table, Tag, Tabs, Select, Modal} from 'antd';
-
 import {NavLink, useNavigate} from "react-router-dom";
-
-
 import {toast} from 'react-toastify';
 import {PlusOutlined, DeleteOutlined, EditOutlined} from '@ant-design/icons'
 import moment from 'moment';
@@ -11,7 +8,6 @@ import {useStateContext} from "../contexts/ContextProvider.jsx";
 import useAxiosClient from "../axios-client.js";
 import Permission from "../components/Util/Permission.jsx";
 import {OrderTypeEnum} from "../utils/enums/OrderTypeEnum.js";
-import {OrderStatusEnum} from "../utils/enums/OrderStatusEnum";
 import {formatOrderNumber} from "../components/Util/OrderNumberFormatter";
 
 
@@ -30,8 +26,74 @@ function Sales() {
   const [pageSize, setPageSize] = useState(10);
   const [orderType, setOrderType] = useState('Marketplace');
   const [orderStatus, setOrderStatus] = useState(null);
+  const [currentOrderStatus, setCurrentOrderStatus] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [orderId, setOrderId] = useState(null);
+
+
+
+  const checkOrderStatusChangePermission = (value, permission) => {
+
+    if (permissions.includes('CHANGE_STATUS')) {
+      return false;
+    }
+    if (permissions.includes(permission) && value > currentOrderStatus) {
+      return false;
+    }
+    return true;
+
+  }
+
+  const OrderStatusList = Object.freeze([
+    {
+      label: 'DRAFT',
+      value: 0,
+      color: '#FF0032',
+      disabled: currentOrderStatus > 0
+    },
+    {
+      label: 'APPROVED',
+      value: 1,
+      color: '#122c91',
+      disabled: checkOrderStatusChangePermission(1,'ORDER_APPROVE')
+    },
+    {
+      label: 'PRODUCTION',
+      value: 2,
+      color: 'purple',
+      disabled:checkOrderStatusChangePermission(2,'ORDER_IN_PRODUCTION')
+    },
+    {
+      label: 'QA',
+      value: 3,
+      color: 'green',
+      disabled: checkOrderStatusChangePermission(3,'ORDER_IN_QA')
+    },
+    {
+      label: 'READY',
+      value: 4,
+      color: '#0C6170',
+      disabled: checkOrderStatusChangePermission(4,'ORDER_READY')
+    },
+    {
+      label: 'DELIVERED',
+      value: 5,
+      color: '#37BEB0',
+      disabled: checkOrderStatusChangePermission(5,'ORDER_DELIVERED')
+    },
+    {
+      label: 'RETURNED',
+      value: 6,
+      color: '#FBC740',
+      disabled: checkOrderStatusChangePermission(6,'ORDER_RETURNED')
+    },
+    {
+      label: 'CANCELLED',
+      value: 7,
+      color: '#FF0032',
+      disabled: checkOrderStatusChangePermission(7,'ORDER_CANCELLED')
+    }
+  ])
 
   const handleNewOrder = (orderType) => {
     navigate('/orders/orderForm', {state: {orderType, update: false}})
@@ -142,6 +204,7 @@ function Sales() {
     fetchOrders(1, orderType);
   }
   const showStatusModal = (data, id) => {
+    setCurrentOrderStatus(data);
     setOrderStatus(data);
     setIsModalOpen(true);
     setOrderId(id);
@@ -159,7 +222,7 @@ function Sales() {
       setOrderStatus(null);
       setStatusLoading(false)
       setIsModalOpen(false);
-      toast.success("Succesfully changed order status to " + response.data.data.status);
+      toast.success("Succesfully changed order status to " + retrieveStatusString(response.data.data.status));
 
     }).catch((error) => {
       const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
@@ -176,13 +239,18 @@ function Sales() {
   }
 
   const generateTagColorFromStatus = (status) => {
-    let obj = OrderStatusEnum.find(o => o.label === status);
+    let obj = OrderStatusList.find(o => o.value === status);
     return obj.color;
   }
 
+  const retrieveStatusString = (statusValue) => {
+    const statusObject = OrderStatusList.find((status) => status.value === statusValue);
+    return statusObject ? statusObject.label : 'Unknown';
+  };
+
   const renderStatus = (data, record, index) => {
     return <Tag color={generateTagColorFromStatus(data)} style={{cursor: "pointer", fontWeight: 700}}
-                onClick={() => showStatusModal(data, record.id)}>{data}</Tag>
+                onClick={() => showStatusModal(data, record.id)}>{retrieveStatusString(data)}</Tag>
   }
 
 
@@ -242,7 +310,6 @@ function Sales() {
         children: <Table
           dataSource={orders}
           columns={columns}
-
           loading={loading}
           scroll={{x: 400}}
           size={'small'}
@@ -322,7 +389,7 @@ function Sales() {
           value={orderStatus}
           style={{width: "100%"}}
           onChange={handleStatusChange}
-          options={OrderStatusEnum}
+          options={OrderStatusList}
         />
       </Modal>
     </Space>

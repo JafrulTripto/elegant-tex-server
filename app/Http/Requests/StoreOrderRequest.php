@@ -55,6 +55,7 @@ class StoreOrderRequest extends FormRequest
         } else {
             $rules = array_merge($rules, [
                 'merchant' => ['required', 'integer', 'exists:merchants,id'],
+                'merchantRef' => ['required', 'string',  'max:255'],
             ]);
         }
 

@@ -28,7 +28,15 @@ const FabricsSettings = () => {
     }
 
     const confirmDeleteItem = async (record) => {
+        try {
+            const data = await axiosClient.delete(`/settings/fabrics/delete/${record.id}`);
+            toast.warning(data.data.message);
+            await fetchFabrics()
 
+        } catch (error) {
+            const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+            toast.error(message);
+        }
 
     }
 
@@ -49,10 +57,10 @@ const FabricsSettings = () => {
 
     }
 
-    const handleDeleteProductSettings = (record) => {
+    const handleDeleteFabrics = (record) => {
         modal.confirm({
             title: "Are you sure?",
-            content: 'Do you realy want delete this record? This process cannot be undone.',
+            content: 'Do you really want delete this record? This process cannot be undone.',
             onOk: () => confirmDeleteItem(record),
         })
     }
@@ -81,7 +89,7 @@ const FabricsSettings = () => {
                             onClick={() => handleEditProductSettings(record)}/>
 
                     <Button type="primary" danger icon={<DeleteOutlined/>} size={"small"}
-                            onClick={() => handleDeleteProductSettings(record)}/>
+                            onClick={() => handleDeleteFabrics(record)}/>
                 </Space>
 
             ),
@@ -111,6 +119,7 @@ const FabricsSettings = () => {
     }
     const handleCancel = () => {
         setOpenForm(false);
+        form.resetFields();
     }
 
     const onFinish = async (data) => {
@@ -146,7 +155,6 @@ const FabricsSettings = () => {
             return isPNG || isJPG || Upload.LIST_IGNORE;
         },
         onChange: (info) => {
-            console.log(info.file.status);
             if (info.file.status === 'done') {
                 setIsUploadDisabled(true); // Disable the upload button
             }
@@ -228,6 +236,7 @@ const FabricsSettings = () => {
                     </Form.Item>
                 </Form>
             </Modal>
+            {contextHolder}
         </>
 
     );

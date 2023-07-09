@@ -18,6 +18,27 @@ class Order extends Model
         'status'
     ];
 
+    public static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function ($order) {
+            $order->order_id = 'ET-ORD-' . static::generateNextOrderNumber();
+        });
+    }
+
+    private static function generateNextOrderNumber(): string
+    {
+        $lastOrder = static::orderByDesc('id')->first();
+
+        if ($lastOrder) {
+            $lastOrderNumber = (int) substr($lastOrder->order_id, -4);
+            return str_pad($lastOrderNumber + 1, 4, '0', STR_PAD_LEFT);
+        }
+
+        return '1000';
+    }
+
     public function product(): HasMany
     {
         return $this->hasMany(Product::class);

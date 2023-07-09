@@ -5,7 +5,7 @@ import moment from "moment/moment";
 import {OrderStatusEnum} from "../../utils/enums/OrderStatusEnum";
 import {formatOrderNumber} from "../Util/OrderNumberFormatter";
 import OrderInvoice from "../OrderInvoice/OrderInvoice";
-import { PDFDownloadLink } from '@react-pdf/renderer';
+import {PDFDownloadLink} from '@react-pdf/renderer';
 import dayjs from "dayjs";
 
 const OrderHeader = ({order}) => {
@@ -26,20 +26,25 @@ const OrderHeader = ({order}) => {
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="text-sm font-semibold text-zinc-500">
-            <span className="text-sm font-thin">Ordered By:</span> {order.orderable.name}
+          <div>
+            <div className="text-sm font-semibold text-zinc-500">
+              <span className="text-sm font-thin">Ordered By:</span> {order.orderable.name}
+            </div>
+            {order.merchantRef?<div  className="text-sm font-semibold text-blue-800">
+              <span className="text-sm font-thin">Merchant Reference:</span> {order.merchantRef}
+            </div> : null}
           </div>
-          <div className="pl-4">
 
-            <PDFDownloadLink document={<OrderInvoice order={order} />} fileName={`${formatOrderNumber(order.id)}-${dayjs().unix()}.pdf`}>
-              {({ blob, url, loading, error }) =>
+          <div className="pl-4">
+            <PDFDownloadLink document={<OrderInvoice order={order}/>}
+                             fileName={`${formatOrderNumber(order.id)}-${dayjs().unix()}.pdf`}>
+              {({blob, url, loading, error}) =>
                 <Button type="dashed" loading={loading} icon={<DownloadOutlined/>}
                 >Download PDF
                 </Button>
               }
             </PDFDownloadLink>
           </div>
-
         </div>
       </div>
       <CalendarOutlined className="text-zinc-500 pr-1"/>

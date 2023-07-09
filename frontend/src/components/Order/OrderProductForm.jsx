@@ -76,7 +76,7 @@ const OrderProductForm = (props) => {
                                             </Select>
                                         </Form.Item>
                                     </Col>
-                                    <Col xs={24} md={12} lg={12}>
+                                    <Col xs={24} md={12} lg={8}>
                                         <Form.Item
                                             name={[name, 'fabrics']}
                                             label="Fabric"
@@ -99,7 +99,7 @@ const OrderProductForm = (props) => {
                                             </Select>
                                         </Form.Item>
                                     </Col>
-                                    <Col xs={24} md={12} lg={6}>
+                                    <Col xs={24} md={12} lg={4}>
                                         <Form.Item
                                             name={[name, "quantity"]}
                                             label="Quantity"
@@ -112,12 +112,12 @@ const OrderProductForm = (props) => {
                                             ]}>
                                             <InputNumber
                                                 size="large"
-                                                min={1}
+                                                min={0}
                                                 style={{width: "100%"}}
                                             />
                                         </Form.Item>
                                     </Col>
-                                    <Col xs={24} md={12} lg={6}>
+                                    <Col xs={24} md={12} lg={4}>
                                         <Form.Item
                                             name={[name, "price"]}
                                             label="Price"
@@ -130,7 +130,7 @@ const OrderProductForm = (props) => {
                                             ]}>
                                             <InputNumber
                                                 size="large"
-                                                min={1}
+                                                min={0}
                                                 style={{width: "100%"}}
                                             />
                                         </Form.Item>

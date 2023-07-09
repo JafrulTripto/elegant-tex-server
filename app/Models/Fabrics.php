@@ -14,4 +14,11 @@ class Fabrics extends Model
     {
         return $this->morphOne(Image::class, 'imageable');
     }
+    public function imagePath()
+    {
+        if ($this->image()->exists()){
+            return $this->image()->first()->path;
+        }
+        return false;
+    }
 }
