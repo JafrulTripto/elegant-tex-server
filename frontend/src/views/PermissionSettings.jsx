@@ -1,8 +1,14 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {Button, Card, Col, Form, Input, List, Modal, Row, Space} from "antd";
+import {Button, Card, Col, Form, Input, List, Modal, Row, Space, Table} from "antd";
 import AddNewItemLayout from "../components/Layouts/AddNewItemLayout.jsx";
 import {toast} from "react-toastify";
 import useAxiosClient from "../axios-client.js";
+import {NavLink} from "react-router-dom";
+import {formatOrderNumber} from "../components/Util/OrderNumberFormatter";
+import moment from "moment/moment";
+import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
+import Permission from "../components/Util/Permission";
+import TextArea from "antd/es/input/TextArea";
 
 const PermissionSettings = () => {
 
@@ -72,6 +78,43 @@ const PermissionSettings = () => {
     })
   }
 
+  const handleEditPermission = (record) => {
+
+  };
+  const renderActionButtons = (record) => {
+    return (
+      <Space size="middle">
+        <Button className='edit-btn' icon={<EditOutlined/>} size={"small"} onClick={() => handleEditPermission(record)}/>
+        <Permission required={'DELETE_ORDER'}>
+          <Button type="primary" danger icon={<DeleteOutlined/>} size={"small"}
+                  onClick={() => handleDeletePermission(record)}/>
+        </Permission>
+      </Space>
+    );
+  }
+  const columns = [
+
+    {
+      title: 'Permission',
+      dataIndex: 'name',
+      key: 'permission',
+      width:"30%"
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+      width:"50%"
+    },
+    {
+      title: 'Action',
+      key: "action",
+      render: renderActionButtons,
+      width:"20%"
+    }
+  ];
+
+
 
 
 
@@ -87,24 +130,13 @@ const PermissionSettings = () => {
         <AddNewItemLayout buttonText="Add Permission" onClickButton={handleOnClickButton} />
         <Row gutter={10}>
 
-          <Col xs={24} md={12} lg={12}>
+          <Col xs={24} md={12} lg={24}>
             <Card className='shadow'>
-              <List
-                header={<h2>Permissions</h2>}
-                bordered
-                loading={isLoading}
+              <Table
+                columns={columns}
                 dataSource={permissions}
-                renderItem={(item) => (
-                  <List.Item key={item.id}
-                             actions={[
-                               [
-                                 <Button key= "edit" type='link' size='small' onClick={()=>editPermission(item)}>Edit</Button>,
-                                 <Button key= "delete" type='text' size='small' danger onClick={()=>handleDeletePermission(item.id)}>Delete</Button>
-                               ]
-                             ]}>
-                    {item.name}
-                  </List.Item>
-                )}
+                pagination={false}
+                scroll={{y: 620}}
               />
             </Card>
           </Col>
@@ -141,6 +173,18 @@ const PermissionSettings = () => {
             ]}
           >
             <Input placeholder="Permission Name" />
+          </Form.Item>
+          <Form.Item
+            name="description"
+            label="Permission description"
+            rules={[
+              {
+                required: true,
+                message: 'Enter permission description here!',
+              },
+            ]}
+          >
+            <TextArea placeholder="Permission description" />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={isLoading}>

@@ -60,7 +60,7 @@ const DeliveryFrom = () => {
 
           ]}>
           <InputNumber
-            min={1}
+            min={0}
             style={{width: "100%"}}
           />
         </Form.Item>

@@ -9,7 +9,7 @@ class PermissionService
 {
     public function getAllPermissions(): Collection
     {
-        return Permission::all(['id','name']);
+        return Permission::all(['id','name','description']);
     }
     public function createPermission($permission): bool
     {

@@ -15,17 +15,9 @@ class Product extends Model
     {
         return $this->belongsTo(Order::class);
     }
-    public function productType(): BelongsTo
+    public function fabircs(): BelongsTo
     {
-        return $this->belongsTo(ProductType::class,'type_id');
-    }
-    public function productColor(): BelongsTo
-    {
-        return $this->belongsTo(ProductColor::class, 'color_id');
-    }
-    public function productFabric(): BelongsTo
-    {
-        return $this->belongsTo(ProductFabric::class, 'fabric_id');
+        return $this->belongsTo(Fabrics::class,'fabrics_id');
     }
 
     protected function typeId(): Attribute
@@ -40,28 +32,22 @@ class Product extends Model
             },
         );
     }
-    protected function colorId(): Attribute
+
+    protected function fabricsId(): Attribute
     {
         return Attribute::make(
             get: function ($value) {
-                $productColor = ProductColor::find($value);
+                $fabrics = Fabrics::find($value);
+                $images = $fabrics->image()->get(); // Retrieve the images using the morphTo relationship
+                $imagePath = $images->pluck('id')->toArray();
+                $pathString = implode(', ', $imagePath);
                 return [
                     'value' => $value,
-                    'name' => $productColor->name,
+                    'name' => $fabrics->name,
+                    'image' => $pathString
                 ];
             },
         );
     }
-    protected function fabricId(): Attribute
-    {
-        return Attribute::make(
-            get: function ($value) {
-                $productFabric = ProductFabric::find($value);
-                return [
-                    'value' => $value,
-                    'name' => $productFabric->name,
-                ];
-            },
-        );
-    }
+
 }

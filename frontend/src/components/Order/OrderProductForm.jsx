@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, Col, Form, Input, InputNumber, Row, Select, Upload} from "antd";
+import {Avatar, Button, Col, Form, Input, InputNumber, Row, Select, Upload} from "antd";
 import {InboxOutlined, MinusOutlined, PlusOutlined} from "@ant-design/icons";
 import {colors} from "../../utils/Colors";
 import {toast} from "react-toastify";
@@ -23,7 +23,9 @@ const OrderProductForm = (props) => {
             const newFileList = props.files.slice();
             newFileList.splice(index, 1);
             props.setFiles(newFileList);
-            props.setRemovedFiles([...props.removedFiles, file]);
+            if (props.removedFiles){
+                props.setRemovedFiles([...props.removedFiles, file]);
+            }
         },
         beforeUpload(file) {
             const fileSize = file.size / 1024 / 1024; // Convert size to MB
@@ -48,8 +50,7 @@ const OrderProductForm = (props) => {
             <Col xs={24} md={12} lg={16} className="pr-4">
                 <Form.List name="products" initialValue={[{
                     productType: null,
-                    productColor: null,
-                    productFabric: null,
+                    fabrics: null,
                     productDescription: null
                 }]}>
                     {(fields, {add, remove}) => (
@@ -59,7 +60,6 @@ const OrderProductForm = (props) => {
                                 <Row gutter={24} key={key}>
                                     <Col xs={24} md={12} lg={8}>
                                         <Form.Item
-
                                             name={[name, 'productType']}
                                             label="Product Type"
                                             rules={[
@@ -69,7 +69,7 @@ const OrderProductForm = (props) => {
                                                 },
 
                                             ]}>
-                                            <Select>
+                                            <Select size="large">
                                                 {props.productTypes.map(data => {
                                                     return <Option value={data.id} key={data.id}>{data.name}</Option>
                                                 })}
@@ -78,52 +78,25 @@ const OrderProductForm = (props) => {
                                     </Col>
                                     <Col xs={24} md={12} lg={8}>
                                         <Form.Item
-                                            name={[name, 'productColor']}
-                                            label="Product Color"
+                                            name={[name, 'fabrics']}
+                                            label="Fabric"
                                             rules={[
                                                 {
                                                     required: true,
-                                                    message: 'Please select product color!',
+                                                    message: 'Please select fabric!',
                                                 },
 
                                             ]}>
-                                            <Select>
-                                                {props.productColors.map(data => {
-                                                    return <Option value={data.id} key={data.id}>{data.name}</Option>
+                                            <Select size="large">
+                                                {props.fabrics.map(data => {
+                                                    return <Option value={data.id} key={data.id}>
+                                                                <span>
+                                                                    <Avatar shape="square" src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${data.image.id}`} />
+                                                                    <span style={{ marginLeft: '10px' }}>{data.name}</span>
+                                                                </span>
+                                                    </Option>
                                                 })}
                                             </Select>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col xs={24} md={12} lg={8}>
-                                        <Form.Item
-                                            name={[name, 'productFabric']}
-                                            label="Product Fabric"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                    message: 'Please select product fabric!',
-                                                },
-
-                                            ]}>
-                                            <Select>
-                                                {props.productFabrics.map(data => {
-                                                    return <Option value={data.id} key={data.id}>{data.name}</Option>
-                                                })}
-                                            </Select>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col xs={24} md={24} lg={16}>
-                                        <Form.Item
-                                            name={[name, 'productDescription']}
-                                            label="Product description"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                    message: 'Please input product description!',
-                                                },
-                                            ]}
-                                        >
-                                            <Input.TextArea rows={2} placeholder="Additional product information ..."/>
                                         </Form.Item>
                                     </Col>
                                     <Col xs={24} md={12} lg={4}>
@@ -138,7 +111,8 @@ const OrderProductForm = (props) => {
 
                                             ]}>
                                             <InputNumber
-                                                min={1}
+                                                size="large"
+                                                min={0}
                                                 style={{width: "100%"}}
                                             />
                                         </Form.Item>
@@ -155,11 +129,27 @@ const OrderProductForm = (props) => {
 
                                             ]}>
                                             <InputNumber
-                                                min={1}
+                                                size="large"
+                                                min={0}
                                                 style={{width: "100%"}}
                                             />
                                         </Form.Item>
                                     </Col>
+                                    <Col xs={24} md={24} lg={24}>
+                                        <Form.Item
+                                            name={[name, 'productDescription']}
+                                            label="Product description"
+                                            rules={[
+                                                {
+                                                    required: true,
+                                                    message: 'Please input product description!',
+                                                },
+                                            ]}
+                                        >
+                                            <Input.TextArea rows={2} placeholder="Additional product information ..."/>
+                                        </Form.Item>
+                                    </Col>
+
                                     <Col xs={24} md={24} lg={24}>
                                         <Row gutter={[16, 16]}>
                                             <Col xs={24} md={12} lg={12}>

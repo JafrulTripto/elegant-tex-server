@@ -11,32 +11,50 @@ use Illuminate\Support\Facades\Hash;
 
 class UsersTableSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
-    public function run()
-    {
-        if (User::count() == 0) {
+  /**
+   * Run the database seeds.
+   *
+   * @return void
+   */
+  public function run()
+  {
+    if (User::count() == 0) {
 
-            $user = User::create([
-                'firstname'      => 'Jafrul',
-                'lastname'       => 'Hossain',
-                'email'          => 'jafrultripto@gmail.com',
-                'password'       => Hash::make('Ewu2013368037'),
-                'nid'            => '19943323021000036',
-            ]);
+      $user = User::create([
+        'firstname' => 'Jafrul',
+        'lastname' => 'Hossain',
+        'email' => 'jafrultripto@gmail.com',
+        'password' => Hash::make('Ewu2013368037'),
+        'nid' => '19943323021000036',
+      ]);
 
-            $address = new Address([
-                'address'   => 'house-30, Dattapara, Tongi',
-                'phone'     => '01832958858',
-                'district'  => '41',
-                'division'  => '6',
-                'upazila'  => '320',
-            ]);
-            $user->address()->save($address);
-            $user->assignRole(['SUDO']);
-        }
+      $address = new Address([
+        'address' => 'house-30, Dattapara, Tongi',
+        'phone' => '01832958858',
+        'district' => '41',
+        'division' => '6',
+        'upazila' => '320',
+      ]);
+      $user->address()->save($address);
+      $user->assignRole(['SUDO']);
     }
+    // Seed additional user with role "admin"
+    $adminUser = User::create([
+      'firstname' => 'Meer',
+      'lastname' => 'Rakibuzzaman',
+      'email' => 'dadarakib@gmail.com',
+      'password' => Hash::make('Rakib1234'),
+      'nid' => '123456789',
+    ]);
+
+    $adminAddress = new Address([
+      'address' => 'house-30, Dattapara, Tongi',
+      'phone' => '01832958858',
+      'district' => '41',
+      'division' => '6',
+      'upazila' => '320',
+    ]);
+    $adminUser->address()->save($adminAddress);
+    $adminUser->assignRole(['Admin']);
+  }
 }
