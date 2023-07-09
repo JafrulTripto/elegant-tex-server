@@ -51,6 +51,7 @@ class OrderService
         } else {
             $merchant = Merchant::findOrFail($orderData['merchant']);
             $model = $merchant;
+            $order->merchant_ref = $orderData['merchantRef'];
         }
 
         $model->order()->save($order);

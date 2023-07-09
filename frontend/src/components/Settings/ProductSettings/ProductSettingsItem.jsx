@@ -94,7 +94,7 @@ const ProductSettingsItem = (props) => {
                          pageSize: 5
                      }}
                      rowKey={"id"}
-                     size="small"
+                     size="middle"
                      columns={columns}
                      title={() => tableHeader(settingsType)}
                      dataSource={data}/>

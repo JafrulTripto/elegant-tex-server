@@ -141,6 +141,7 @@ class ProductFabricController extends Controller
             ], 400);
         }
 
+
         $productFabric->delete();
 
         return response()->json([
