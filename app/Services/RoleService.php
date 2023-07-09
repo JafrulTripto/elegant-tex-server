@@ -43,7 +43,13 @@ class RoleService
 
   public function getAllRoles(): Collection
   {
-    return Role::all(['id', 'name']);
+    $userRole = auth()->user()->roles()->pluck('name');;
+
+    if (in_array('SUDO', $userRole->toArray())) {
+      return Role::all(['id', 'name']);
+    } else {
+      return Role::where('name', '!=', 'SUDO')->get(['id', 'name']);
+    }
   }
 
   public function deleteRole($roleId): bool
