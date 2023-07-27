@@ -3,12 +3,12 @@ import {Space, Card, Row, Col, Button, Input, Table, Tag, Tabs, Select, Modal} f
 import {NavLink, useNavigate} from "react-router-dom";
 import {toast} from 'react-toastify';
 import {PlusOutlined, DeleteOutlined, EditOutlined} from '@ant-design/icons'
-import moment from 'moment';
 import {useStateContext} from "../contexts/ContextProvider.jsx";
 import useAxiosClient from "../axios-client.js";
 import Permission from "../components/Util/Permission.jsx";
 import {OrderTypeEnum} from "../utils/enums/OrderTypeEnum.js";
 import {formatOrderNumber} from "../components/Util/OrderNumberFormatter";
+import dayjs from "dayjs";
 
 
 function Sales() {
@@ -281,13 +281,13 @@ function Sales() {
       title: 'Order Date',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: (data) => moment(data).format('LL')
+      render: (data) => dayjs(data).format('MMMM DD, YYYY')
     },
     {
       title: 'Delivery Date',
       dataIndex: 'deliveryDate',
       key: 'deliveryDate',
-      render: (data) => moment(data).format('LL')
+      render: (data) => dayjs(data).format('MMMM DD, YYYY')
     },
     {
       title: 'Total Amount (Tk)',

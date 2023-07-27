@@ -1,7 +1,6 @@
 import React from 'react';
 import {Button, Tag} from "antd";
 import {CalendarOutlined, DownloadOutlined} from "@ant-design/icons";
-import moment from "moment/moment";
 import {OrderStatusEnum} from "../../utils/enums/OrderStatusEnum";
 import {formatOrderNumber} from "../Util/OrderNumberFormatter";
 import OrderInvoice from "../OrderInvoice/OrderInvoice";
@@ -48,7 +47,7 @@ const OrderHeader = ({order}) => {
         </div>
       </div>
       <CalendarOutlined className="text-zinc-500 pr-1"/>
-      <span className="text-zinc-500">{moment(order.createdAt).format('MMMM Do YYYY, h:mm a')}</span>
+      <span className="text-zinc-500">{dayjs(order.createdAt).format('MMMM Do YYYY, h:mm a')}</span>
     </div>
   );
 };

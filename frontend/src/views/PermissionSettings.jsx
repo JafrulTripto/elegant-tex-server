@@ -3,9 +3,6 @@ import {Button, Card, Col, Form, Input, List, Modal, Row, Space, Table} from "an
 import AddNewItemLayout from "../components/Layouts/AddNewItemLayout.jsx";
 import {toast} from "react-toastify";
 import useAxiosClient from "../axios-client.js";
-import {NavLink} from "react-router-dom";
-import {formatOrderNumber} from "../components/Util/OrderNumberFormatter";
-import moment from "moment/moment";
 import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
 import Permission from "../components/Util/Permission";
 import TextArea from "antd/es/input/TextArea";
