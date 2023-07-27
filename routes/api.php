@@ -133,6 +133,11 @@ Route::group([
     'prefix' => 'dashboard'
 ],function () {
     Route::get('/getOrderCountToday', [DashboardController::class, 'getOrderCountToday']);
+    Route::get('/getOrderCounts', [DashboardController::class, 'getOrderCounts']);
+    Route::get('/barChartData', [DashboardController::class, 'getBarChartData']);
+    Route::get('/barChartData', [DashboardController::class, 'getBarChartData']);
+    Route::get('/getOrdersPerMarketplace', [DashboardController::class, 'getOrdersPerMarketplace']);
+    Route::get('/getDashboardData', [DashboardController::class, 'getDashboardData']);
 });
 
 Route::group([

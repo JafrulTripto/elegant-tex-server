@@ -48,7 +48,7 @@ const ResetPassword = () => {
   return (
     <Row type="flex" justify="center" align="middle">
       <Col xl={8} md={16} sm={24} xs={24}>
-        <div className={"padding-md"}>
+        <div className="p-2">
           <Card className="shadow" headStyle={{color:colors.primary, textAlign:'center', fontSize:'30px', fontWeight:'bolder'}}>
             <div style={{width:"auto", textAlign:"center"}}>
               <img src={elegantTexLogo} alt="ET-LOGO" style={{height:"80px", marginLeft:"auto", marginRight:"auto", maxWidth:"100%"}}/>

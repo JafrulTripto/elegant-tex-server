@@ -78,11 +78,11 @@ const ProductSettingsForm = (props) => {
                     rules={[
                         {
                             required: true,
-                            message: `Please input Color!!!`,
+                            message: `Please input ${title}!!!`,
                         },
                     ]}
                 >
-                    <Input placeholder={`Color`}/>
+                    <Input placeholder={`${title}`}/>
                 </Form.Item>
                 <Form.Item>
                     <Button type="primary" htmlType="submit" loading={loading}>
