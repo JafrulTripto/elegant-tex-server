@@ -107,16 +107,14 @@ const RoleSettings = () => {
         <Row gutter={[12, 12]}>
           <Col xs={24} md={16} lg={10}>
             <Card className='shadow'>
+              {rolesListHeader}
               <List
-                style={{height: 350}}
-                header={rolesListHeader}
-                bordered
+                style={{height: 306, overflow: 'auto'}}
                 loading={isLoading}
                 dataSource={roles}
                 renderItem={(item) => (
                   <List.Item key={item.id}
                              className={item.name === role ? 'list-item-selected' : null}
-
                              actions={[
                                [
                                  <Button key="edit" type='link' size='small'
