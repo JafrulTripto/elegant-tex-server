@@ -4,11 +4,11 @@ import {toast} from "react-toastify";
 import {Avatar, Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, Tag} from "antd";
 import {DeleteOutlined, EditOutlined, InfoOutlined, PlusOutlined, UserOutlined} from "@ant-design/icons";
 import useAxiosClient from "../axios-client.js";
-import moment from "moment";
 import {useStateContext} from "../contexts/ContextProvider";
 import Permission from "../components/Util/Permission";
 import {UserStatusEnum} from "../utils/enums/UserStatusEnum";
 import {colors} from "../utils/Colors";
+import dayjs from "dayjs";
 
 const Users = (callback, deps) => {
     const axiosClient = useAxiosClient();
@@ -173,7 +173,7 @@ const Users = (callback, deps) => {
             title: 'Last Login',
             dataIndex: 'last_login',
             key: 'last_login',
-            render: (data) => data ? moment(data).format('MMMM Do YYYY, h:mm a') : "Never"
+            render: (data) => data ? dayjs(data).format('MMMM Do YYYY, h:mm a') : "Never"
         },
         {
             title: 'Status',

@@ -1,5 +1,5 @@
 import React from 'react';
-import moment from "moment";
+import dayjs from "dayjs";
 
 const DeliveryInfo = ({deliveryDate, deliveryChannel}) => {
   return (
@@ -7,7 +7,7 @@ const DeliveryInfo = ({deliveryDate, deliveryChannel}) => {
       <li className="flex items-center justify-between mb-3"><span>Delivery Channel</span><span
         className="font-semibold"><span>{deliveryChannel}</span></span></li>
       <li className="flex items-center justify-between mb-3"><span>Delivery Date</span><span
-        className="font-semibold"><span>{moment(deliveryDate).format('DD MMMM')}</span></span></li>
+        className="font-semibold"><span>{dayjs(deliveryDate).format('DD MMMM')}</span></span></li>
     </ul>
   );
 };
