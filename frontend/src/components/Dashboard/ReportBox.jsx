@@ -6,15 +6,15 @@ import { Spin } from 'antd';
 
 const ReportBox = (props) => {
 
-    const {data, loading} = props;
+    const {data, loading, text} = props;
   if (data) {
     const orderPercentage = () => {
-      if (data.change >= 0 ){
+      if (data.change > 0 ){
         return (
           <div className="ml-auto">
             <div
               className="report-box__indicator bg-green-500 tooltip cursor-pointer rounded-lg px-2 py-1 text-white font-bold">
-              {Math.abs(data.change)}%<FontAwesomeIcon icon={faChevronUp} style={{fontSize: "15px", paddingLeft:"10px"}}/>
+              {Math.abs(Math.round(data.change))}%<FontAwesomeIcon icon={faChevronUp} style={{fontSize: "15px", paddingLeft:"10px"}}/>
             </div>
           </div>
         )
@@ -23,7 +23,7 @@ const ReportBox = (props) => {
         <div className="ml-auto">
           <div
             className="report-box__indicator bg-red-500 tooltip cursor-pointer rounded-lg px-2 py-1 text-white font-bold">
-            {Math.abs(data.change)}% <FontAwesomeIcon icon={faChevronDown} className="px-1" style={{fontSize: "15px", paddingLeft:"10px"}}/>
+            {Math.abs(Math.round(data.change))}% <FontAwesomeIcon icon={faChevronDown} className="px-1" style={{fontSize: "15px", paddingLeft:"10px"}}/>
           </div>
         </div>
       )
@@ -37,7 +37,7 @@ const ReportBox = (props) => {
             {orderPercentage()}
           </div>
           <div className="text-3xl font-medium leading-8 mt-6">{props.data.total}</div>
-          <div className="text-base text-slate-500 mt-1 font-medium">Order's Today</div>
+          <div className="text-base text-slate-500 mt-1 font-medium">{text}</div>
         </div>
       </div>
     );
