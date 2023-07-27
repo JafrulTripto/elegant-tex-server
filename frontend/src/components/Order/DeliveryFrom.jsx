@@ -1,7 +1,7 @@
 import React from 'react';
 import {Col, DatePicker, Form, InputNumber, Row, Select} from "antd";
 import {useDeliveryChannels} from "../../hooks/useDeliveryChannels";
-import moment from "moment";
+import dayjs from "dayjs";
 
 const DeliveryFrom = () => {
 
@@ -10,7 +10,7 @@ const DeliveryFrom = () => {
 
   const disabledDate = (current) => {
     // Can not select days before today and today
-    return current && current < moment().endOf('day');
+    return current && current < dayjs().endOf('day');
   }
 
 
