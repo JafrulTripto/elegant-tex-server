@@ -94,7 +94,7 @@ const OrderForm = () => {
     }
     let amount = 0;
     data.products.forEach(product => {
-      amount += product.price;
+      amount += parseInt(product.price);
     })
 
     const orderData = {

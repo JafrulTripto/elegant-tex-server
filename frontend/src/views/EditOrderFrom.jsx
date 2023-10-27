@@ -43,7 +43,7 @@ const EditOrderFrom = () => {
   const {fabrics} = useFabrics();
 
 
-    const [selectedDivision, setSelectedDivision] = useState(null);
+  const [selectedDivision, setSelectedDivision] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState(null);
 
   const {divisions, divisionLoading} = useDivisions();
@@ -65,7 +65,7 @@ const EditOrderFrom = () => {
 
     if (ord.orderType === 1) {
       setSelectedDivision(+ord.customer.address.division.value);
-      setSelectedDistrict( +ord.customer.address.district.value)
+      setSelectedDistrict(+ord.customer.address.district.value)
       return {
         marketplace: ord.orderable.id,
         name: ord.customer.name,
@@ -80,14 +80,14 @@ const EditOrderFrom = () => {
         deliveryDate: dayjs(ord.deliveryDate, "YYYY-MM-DD"),
         deliveryChannel: +ord.deliveryChannel.value,
         products: ord.products.map((product) => {
-            return {
-              productDescription: product.description,
-              quantity: product.unit,
-              price: product.price,
-              productType: product.productType.value,
-              fabrics: product.fabrics.value
-            }
-          }),
+          return {
+            productDescription: product.description,
+            quantity: product.unit,
+            price: product.price,
+            productType: product.productType.value,
+            fabrics: product.fabrics.value
+          }
+        }),
 
 
       }
@@ -135,6 +135,7 @@ const EditOrderFrom = () => {
         setOrderLoading(false);
       }
     }
+
     fetchOrder();
   }, [axiosClient, navigate, state.order.id, updateOrderForm])
 
@@ -146,9 +147,9 @@ const EditOrderFrom = () => {
 
   const uploadFile = async (files) => {
     try {
-      const response =  await axiosClient.post('/files/uploadProductImage', files);
+      const response = await axiosClient.post('/files/uploadProductImage', files);
       return response.data;
-    } catch(error)  {
+    } catch (error) {
       const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
       toast.error(message);
     }
@@ -164,10 +165,10 @@ const EditOrderFrom = () => {
       imagePath: imagePath
     }
     try {
-      const response =  await axiosClient.post('/files/delete', data);
+      const response = await axiosClient.post('/files/delete', data);
 
       return response.data;
-    } catch(error)  {
+    } catch (error) {
       const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
       toast.error(message);
     }
@@ -181,10 +182,10 @@ const EditOrderFrom = () => {
     let uploadedImages = [];
 
     data.images.forEach((file) => {
-      if (file.status === 'error'){
+      if (file.status === 'error') {
         return;
       }
-      if (file.originFileObj){
+      if (file.originFileObj) {
         formData.append('images[]', file.originFileObj);
       } else {
         alreadyUploaded.push(file)
@@ -207,7 +208,7 @@ const EditOrderFrom = () => {
       images: images,
       createdBy: order.createdBy,
       orderType: order.orderType,
-      amount : order.payment.amount
+      amount: order.payment.amount
     }
 
     try {
@@ -234,7 +235,8 @@ const EditOrderFrom = () => {
         }}
         onFinish={onFinish}
       >
-        <OrderTypeFrom orderForm={updateOrderForm} orderType={state.orderType} data = {state.orderType === OrderTypeEnum.MERCHANT ? merchants : marketplaces}/>
+        <OrderTypeFrom orderForm={updateOrderForm} orderType={state.orderType}
+                       data={state.orderType === OrderTypeEnum.MERCHANT ? merchants : marketplaces}/>
         <Divider style={{color: colors.primary}}>Product Info</Divider>
         <OrderProductForm
           productTypes={productTypes}
@@ -244,7 +246,7 @@ const EditOrderFrom = () => {
           setFiles={setFiles}
           setRemovedFiles={setRemovedFiles}
           removedFiles={removedFiles}
-          files={files} />
+          files={files}/>
         {state.orderType === 1 ?
           <>
             <Divider style={{color: colors.primary}}>Customer Info</Divider>
