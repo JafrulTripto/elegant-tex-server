@@ -92,17 +92,11 @@ const OrderForm = () => {
     if (!isFormDataEmpty(formData)) {
       images = await uploadFile(formData);
     }
-    let amount = 0;
-    data.products.forEach(product => {
-      amount += parseInt(product.price);
-    })
-
     const orderData = {
       ...data,
       images: images,
       createdBy: user.id,
-      orderType,
-      amount
+      orderType
     }
     try {
       const response = await axiosClient.post(`/orders/store`, orderData)

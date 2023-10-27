@@ -29,7 +29,6 @@ class StoreOrderRequest extends FormRequest
             'createdBy' => ['required', 'integer', 'exists:users,id'],
             'deliveryChannel' => ['required', 'integer'],
             'deliveryCharge' => ['required', 'numeric', 'min:0'],
-            'amount' => ['required', 'numeric', 'min:0'],
             'images' => ['nullable', 'array'],
             'deliveryDate' => ['required', 'date'],
             'products' => ['required', 'array'],
