@@ -178,8 +178,17 @@ class OrderService
         $order->delivery_channel = $orderData['deliveryChannel'];
         $order->delivery_date = date('Y-m-d H:i:s', strtotime($orderData['deliveryDate']));
         $order->delivery_charge = $orderData['deliveryCharge'];
-        $order->amount = $orderData['amount'];
-        $order->total_amount = $orderData['amount'] + $orderData['deliveryCharge'];
+        $order->amount = $this->calculateOrderAmount($orderData);
+        $order->total_amount = $order->amount + $orderData['deliveryCharge'];
+    }
+
+    private function calculateOrderAmount($order)
+    {
+        $amount = 0;
+        foreach ($order['products'] as $product) {
+            $amount += $product['price'];
+        }
+        return $amount;
     }
 
 
