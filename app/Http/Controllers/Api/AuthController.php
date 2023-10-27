@@ -53,7 +53,7 @@ class AuthController extends Controller
     {
         $user = auth()->user();
         $roles = $user->roles()->pluck('name');
-        $userPermissions = [];
+        $userPermissions = array();
         foreach ($roles->toArray() as $value) {
             $role = Role::findByName($value);
             $permissions = $role->permissions->pluck('name')->toArray();
