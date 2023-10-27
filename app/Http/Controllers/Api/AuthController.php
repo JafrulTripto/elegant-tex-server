@@ -56,7 +56,7 @@ class AuthController extends Controller
         $userPermissions = [];
         foreach ($roles->toArray() as $value) {
             $role = Role::findByName($value);
-            $permissions = $role->permissions()->pluck('name')->toArray();
+            $permissions = $role->permissions->pluck('name')->toArray();
             $userPermissions = array_unique(array_merge($permissions,$userPermissions), SORT_REGULAR);
 
         }
