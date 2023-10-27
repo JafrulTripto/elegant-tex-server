@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 use Symfony\Component\HttpFoundation\File\Exception\UploadException;
 
 class StorageService implements IStorageService
@@ -11,10 +12,15 @@ class StorageService implements IStorageService
     public function store(UploadedFile $file, string $path)
     {
         try {
-            $imagePath = Storage::disk('s3')->put($path, $file);
+            $imageName = $file->getClientOriginalName();
+            $imageExt = $file->getClientOriginalExtension();
+            $img = Image::make($file)->encode('jpg', 60);
+            $imagePath = $path.'/'.$imageName;
+            Storage::disk('s3')->put($imagePath, $img);
+
             return [
-                "name" => $file->getClientOriginalName(),
-                "ext" => $file->getClientOriginalExtension(),
+                "name" => $imageName,
+                "ext" => $imageExt,
                 "path" => $imagePath,
                 "size" => $file->getSize()
             ];

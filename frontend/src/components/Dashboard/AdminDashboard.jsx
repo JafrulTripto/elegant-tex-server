@@ -5,7 +5,7 @@ import BarChart from "./BarChart";
 import MarketplaceOrdersChart from "./MarketplaceOrdersChart";
 import {useDashboardData} from "../../hooks/useDashboardData";
 
-const DashboardWidgets = () => {
+const AdminDashboard = () => {
 
   const {dashboardData, dashboardDataLoading} = useDashboardData();
 
@@ -46,4 +46,4 @@ const DashboardWidgets = () => {
   );
 };
 
-export default DashboardWidgets;
+export default AdminDashboard;

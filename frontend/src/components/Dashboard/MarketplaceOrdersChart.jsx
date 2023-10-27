@@ -72,7 +72,7 @@ const MarketplaceOrdersChart = () => {
       },
     },
     scales: {
-      y: {
+      x: {
         ticks: {
           stepSize: 2, // Set the step size to 1 to display integers only
         },
