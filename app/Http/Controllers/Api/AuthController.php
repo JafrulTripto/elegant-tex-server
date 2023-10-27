@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
 use Spatie\Permission\Models\Role;
 
@@ -51,24 +52,36 @@ class AuthController extends Controller
 
     public function me(): JsonResponse
     {
-        $user = auth()->user();
-        $roles = $user->roles()->pluck('name');
-        $userPermissions = array();
-        foreach ($roles->toArray() as $value) {
-            $role = Role::findByName($value);
-            $permissions = $role->permissions->pluck('name')->toArray();
-            $userPermissions = array_unique(array_merge($permissions,$userPermissions), SORT_REGULAR);
+        try {
+            $user = auth()->user();
+            $roles = $user->roles()->pluck('name');
+            $userPermissions = [];
 
+            foreach ($roles->toArray() as $value) {
+                $role = Role::findByName($value);
+                $permissions = $role->permissions->pluck('name')->toArray();
+                $userPermissions = array_unique(array_merge($permissions, $userPermissions), SORT_REGULAR);
+            }
+
+            $image = $user->image;
+
+            // Log information about the user and permissions
+            Log::info('User details retrieved successfully.', ['user' => $user, 'permissions' => $userPermissions]);
+
+            $res = [
+                "user" => $user,
+                "roles" => $roles,
+                "image" => $image,
+                "permissions" => $userPermissions
+            ];
+
+            return response()->json($res);
+        } catch (\Exception $e) {
+            // Log an error if an exception occurs
+            Log::error('An error occurred in the "me" function: ' . $e->getMessage());
+            // Handle the exception or return an error response
+            return response()->json(['error' => 'An error occurred.'], 500);
         }
-
-        $image = $user->image;
-        $res = [
-            "user" => $user,
-            "roles" => $roles,
-            "image" => $image,
-            "permissions" => $userPermissions
-        ];
-        return response()->json($res);
     }
 
     public function refresh(): JsonResponse
