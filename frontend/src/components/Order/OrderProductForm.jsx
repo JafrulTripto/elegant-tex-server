@@ -45,7 +45,10 @@ const OrderProductForm = (props) => {
         }
         return e?.fileList.filter(file => file.size <= MAX_FILE_SIZE);
     };
-    return (
+  const filterOptionFunction = (input, option) => {
+    return (option?.title ?? '').toLowerCase().includes(input.toLowerCase())
+  };
+  return (
         <Row>
             <Col xs={24} md={12} lg={16} className="pr-4">
                 <Form.List name="products" initialValue={[{
@@ -87,9 +90,14 @@ const OrderProductForm = (props) => {
                                                 },
 
                                             ]}>
-                                            <Select size="large">
+                                            <Select
+                                              size="large"
+                                              showSearch
+                                              optionFilterProp="children"
+                                              filterOption={ filterOptionFunction }
+                                            >
                                                 {props.fabrics.map(data => {
-                                                    return <Option value={data.id} key={data.id}>
+                                                    return <Option title={data.name} value={data.id} key={data.id}>
                                                                 <span>
                                                                     <Avatar shape="square" src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${data.image.id}`} />
                                                                     <span style={{ marginLeft: '10px' }}>{data.name}</span>
