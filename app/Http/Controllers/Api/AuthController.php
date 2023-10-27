@@ -60,13 +60,14 @@ class AuthController extends Controller
             foreach ($roles->toArray() as $value) {
                 $role = Role::findByName($value);
                 $permissions = $role->permissions->pluck('name')->toArray();
+                // Log information about the user and permissions
+                Log::info('User details retrieved successfully.', ['permissions' => $permissions]);
                 $userPermissions = array_unique(array_merge($permissions, $userPermissions), SORT_REGULAR);
             }
 
             $image = $user->image;
 
-            // Log information about the user and permissions
-            Log::info('User details retrieved successfully.', ['user' => $user, 'permissions' => $userPermissions]);
+
 
             $res = [
                 "user" => $user,
