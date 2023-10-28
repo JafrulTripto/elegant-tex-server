@@ -56,25 +56,20 @@ const MarketplaceOrdersChart = () => {
 
   const options = {
     responsive: true,
-    indexAxis: 'y',
-    elements: {
-      bar: {
-        borderWidth: 2,
-      },
-    },
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top'
       },
       title: {
         display: false,
-        text: "Marketplace Order's",
+        text: "Order's this Month",
       },
     },
     scales: {
-      x: {
+      y: {
         ticks: {
-          stepSize: 2, // Set the step size to 1 to display integers only
+          stepSize: 10, // Set the step size to 1 to display integers only
         },
       },
     },
@@ -93,25 +88,35 @@ const MarketplaceOrdersChart = () => {
     ],
   };
   return (
-    <div className="bg-white rounded-lg shadow-md p-5">
-      <div className="flex justify-between">
-        <h5
-          className="mb-2 text-xl font-medium leading-tight text-neutral-800">
-          Marketplace Order's
-        </h5>
-        <div>
-          <Radio.Group
-            options={switchOptions}
-            onChange={onChangeSwitch}
-            value={switchValue}
-            optionType="button"
-            buttonStyle="solid"
-          />
+      <div className="bg-white rounded-lg shadow-md p-5">
+        <div className="flex flex-row justify-between">
+          <div>
+            <h5
+                className="mb-2 text-xl font-medium leading-tight text-neutral-800">
+              Marketplace Order's
+            </h5>
+          </div>
+          <div>
+            <Radio.Group
+                options={switchOptions}
+                onChange={onChangeSwitch}
+                value={switchValue}
+                optionType="button"
+                buttonStyle="solid"
+            />
+          </div>
+        </div>
+
+        <div style={{height: "500px"}}>
+          <div className="flex justify-between">
+
+
+          </div>
+
+          {!chartDataLoading ? <Bar options={options} data={barChartData}/> :  <div className="flex justify-center align-middle"><Spin/></div>}
         </div>
       </div>
 
-      {!chartDataLoading ? <Bar options={options} data={barChartData}/> :  <div className="flex justify-center align-middle"><Spin/></div>}
-    </div>
    );
 }
 
