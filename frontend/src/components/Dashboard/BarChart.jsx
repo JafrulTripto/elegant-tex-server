@@ -43,13 +43,14 @@ const BarChart = () => {
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top'
       },
       title: {
         display: false,
-        text: "Order's this week",
+        text: "Order's this Month",
       },
     },
     scales: {

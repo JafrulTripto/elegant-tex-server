@@ -28,16 +28,21 @@ const AdminDashboard = () => {
           <ReportBox data={dashboardData ? dashboardData.total_marketplace_orders_this_month : null} loading={dashboardDataLoading}
                      text={"Marketplace order's this month"}/>
         </Col>
-        <Col xs={24} md={12} lg={12}>
-          <div className="bg-white rounded-lg shadow-md p-5">
-            <h5
-              className="mb-2 text-xl font-medium leading-tight text-neutral-800">
-              Orders this week
-            </h5>
-            <BarChart/>
+        <Col xs={24} md={24} lg={24}>
+          <div className="bg-white rounded-lg shadow-md p-5 text-center">
+            <div>
+              <h5
+                  className="mb-2 text-xl font-medium leading-tight text-neutral-800">
+                Orders this Month
+              </h5>
+            </div>
+            <div className="" style={{height:"400px"}}>
+              <BarChart/>
+            </div>
           </div>
+
         </Col>
-        <Col xs={24} md={12} lg={12}>
+        <Col xs={24} md={24} lg={24}>
           <MarketplaceOrdersChart/>
         </Col>
       </Row>
