@@ -73,33 +73,29 @@ class DashboardController extends Controller
 
   public function getBarChartData(): JsonResponse
   {
-    // Get the date seven days ago from today
-    $sevenDaysAgo = Carbon::today()->subDays(7);
+      $startDate = now()->startOfMonth(); // Get the start of the current month
+      $endDate = now()->endOfMonth(); // Get the end of the current month
 
-    $orderData = Order::select('created_at')
-      ->selectRaw('COUNT(*) as total_orders')
-      ->where('created_at', '>=', $sevenDaysAgo)
-      ->groupBy('created_at')
-      ->get();
+      // Retrieve the orders within the date range and group them by day
+      $orders = Order::whereBetween('created_at', [$startDate, $endDate])
+          ->selectRaw('DAY(created_at) as day, COUNT(*) as total')
+          ->groupBy('day')
+          ->get();
 
-    // Generate an array to store the data for each day of the week
-    $data = [
-      'Sunday' => 0,
-      'Monday' => 0,
-      'Tuesday' => 0,
-      'Wednesday' => 0,
-      'Thursday' => 0,
-      'Friday' => 0,
-      'Saturday' => 0,
-    ];
+      // Create an array with day numbers (1 to the last day of the month) and initialize them to 0
+      $result = [];
+      for ($date = $startDate; $date <= $endDate; $date->addDay()) {
+          $result[$date->format('j')] = 0;
+      }
 
-    // Loop through the results and accumulate the orders for each day of the week
-    foreach ($orderData as $item) {
-      $dayOfWeek = Carbon::parse($item->created_at)->englishDayOfWeek;
-      $data[$dayOfWeek] += $item->total_orders;
-    }
+      // Update the array with actual order counts for each day
+      foreach ($orders as $order) {
+          $result[(int)$order->day] = (int)$order->total;
+      }
 
-    return response()->json($data);
+
+
+    return response()->json($result);
   }
 
   public function getOrdersPerMarketplace(Request $request)
