@@ -1,5 +1,8 @@
-FROM php:8.2-fpm as php
+ARG PHP_VERSION=8.2
+FROM php:${PHP_VERSION}-fpm as php
 LABEL maintainer="Jafrul Hossain <jafrultripto@gmail.com>"
+ENV TZ=Asia/Dhaka
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 # Create a new user
 
 RUN usermod -u 1000 www-data
@@ -23,11 +26,6 @@ RUN apt-get update && \
 
 # Copy the application files to the container
 COPY --chown=www-data . .
-
-RUN php artisan cache:clear
-RUN php artisan config:clear
-
-
 
 RUN chmod -R 755 /var/www/html/storage
 RUN chmod -R 755 /var/www/html/bootstrap

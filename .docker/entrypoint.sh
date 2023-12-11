@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+
 echo "Checking for vendor/autoload.php file..."
 if [ ! -f "vendor/autoload.php" ]; then
     echo "Running composer install..."
@@ -15,6 +17,10 @@ if [ ! -f ".env" ]; then
 else
     echo "env file exists."
 fi
-php artisan migrate
+
+# Generate the application key and clearing the applicaiton cache and config
+php artisan key:generate
+php artisan cache:clear
+php artisan config:clear
 
 exec "$@"

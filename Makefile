@@ -7,4 +7,4 @@ restart:
 migrate:
 	docker-compose exec app php artisan migrate
 seed:
-	docker-compose exec app php db:seed
+	docker-compose exec app php artisan db:seed
