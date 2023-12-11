@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      target: php
+      dockerfile: Dockerfile
+      args:
+        - APP_NAME=${APP_NAME}
+        - APP_ENV=${APP_ENV}
+    container_name: elegant-tex-app
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - elegant-tex-network
+
+
+  nginx:
+    image: nginx:latest
+    container_name: elegant-tex-server
+    restart: unless-stopped
+    volumes:
+      - ./.docker/nginx/nginx.${APP_ENV}.conf:/etc/nginx/conf.d/default.conf
+      - .:/var/www/html
+    ports:
+      - "8000:80"
+    depends_on:
+      - app
+    networks:
+      - elegant-tex-network
+
+  db:
+    image: mysql:8.0.33
+    container_name: elegant-tex-db
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Dhaka
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - elegant-tex-network
+
+networks:
+  elegant-tex-network:
+    driver: bridge
+volumes:
+  db-data: ~
