@@ -22,6 +22,7 @@ RUN apt-get update && \
     unzip \
     libcurl4-gnutls-dev \
     curl \
+    && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg \
     && docker-php-ext-install zip pdo_mysql mbstring exif pcntl bcmath opcache gd intl
 
 # Copy the application files to the container
