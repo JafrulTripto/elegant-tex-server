@@ -35,9 +35,14 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
+# Copy the entrypoint script
+COPY .docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
-RUN chmod +x .docker/entrypoint.sh
-ENTRYPOINT [".docker/entrypoint.sh"]
+# Give execute permissions to the entrypoint script
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Set the entry point
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 CMD ["php-fpm"]
 
