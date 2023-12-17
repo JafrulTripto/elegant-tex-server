@@ -25,6 +25,13 @@ RUN apt-get update && \
     && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg \
     && docker-php-ext-install zip pdo_mysql mbstring exif pcntl bcmath opcache gd intl
 
+# Install xdebug only for local environment
+ARG DEVELOPMENT=true
+RUN if [ "$DEVELOPMENT" = "true" ]; then \
+    pecl install xdebug && \
+    docker-php-ext-enable xdebug; \
+fi
+
 # Copy the application files to the container
 COPY --chown=www-data . .
 
