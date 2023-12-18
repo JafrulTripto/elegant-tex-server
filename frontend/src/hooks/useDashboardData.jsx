@@ -13,7 +13,6 @@ export const useDashboardData = () => {
     const fetchOrderCounts = () => {
       setDashboardDataLoading(true);
       axiosClient.get(`/dashboard/getDashboardData`).then((response) => {
-        console.log(response)
         setDashboardData(response.data)
         setDashboardDataLoading(false);
       }).catch((error) => {

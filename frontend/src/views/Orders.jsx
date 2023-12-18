@@ -33,7 +33,6 @@ function Sales() {
 
 
   const checkOrderStatusChangePermission = (value, permission) => {
-
     if (permissions.includes('CHANGE_STATUS')) {
       return false;
     }
@@ -54,19 +53,19 @@ function Sales() {
     {
       label: 'APPROVED',
       value: 1,
-      color: '#122c91',
+      color: '#1640D6',
       disabled: checkOrderStatusChangePermission(1,'ORDER_APPROVE')
     },
     {
       label: 'PRODUCTION',
       value: 2,
-      color: 'purple',
+      color: '#D0A2F7',
       disabled:checkOrderStatusChangePermission(2,'ORDER_IN_PRODUCTION')
     },
     {
       label: 'QA',
       value: 3,
-      color: 'green',
+      color: '#F99417',
       disabled: checkOrderStatusChangePermission(3,'ORDER_IN_QA')
     },
     {
@@ -74,6 +73,12 @@ function Sales() {
       value: 4,
       color: '#0C6170',
       disabled: checkOrderStatusChangePermission(4,'ORDER_READY')
+    },
+    {
+      label: 'BOOKING',
+      value: 8,
+      color: '#7C93C3',
+      disabled: checkOrderStatusChangePermission(8,'ORDER_BOOKING')
     },
     {
       label: 'DELIVERED',

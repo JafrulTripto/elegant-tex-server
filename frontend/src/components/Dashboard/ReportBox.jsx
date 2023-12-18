@@ -36,7 +36,7 @@ const ReportBox = (props) => {
             <FontAwesomeIcon icon={faPersonDigging} style={{fontSize: "30px", color: colors.secondary}}/>
             {orderPercentage()}
           </div>
-          <div className="text-3xl font-medium leading-8 mt-6">{props.data.total}</div>
+          <div className="text-3xl font-medium leading-8 mt-6">{props.data.total.toLocaleString()}</div>
           <div className="text-base text-slate-500 mt-1 font-medium">{text}</div>
         </div>
       </div>
