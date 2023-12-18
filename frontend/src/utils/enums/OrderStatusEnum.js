@@ -45,5 +45,11 @@ export const OrderStatusEnum = Object.freeze([
     value: 7,
     color: '#FBC740',
     permission:'ORDER_CANCELLED'
+  },
+  {
+    label: 'BOOKING',
+    value: 8,
+    color: '#38419D',
+    permission:'ORDER_BOOKING'
   }
 ])

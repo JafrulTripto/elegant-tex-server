@@ -36,7 +36,6 @@ const MarketplaceOrdersChart = () => {
   useEffect(() => {
     setChartDataLoading(true)
     axiosClient.get(`/dashboard/getOrdersPerMarketplace?type=${switchValue}`).then((response) => {
-      console.log(response)
       setChartData(response.data);
       setChartDataLoading(false);
     })
