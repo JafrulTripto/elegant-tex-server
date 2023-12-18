@@ -11,5 +11,6 @@ enum OrderStatus : int {
     case DELIVERED = 5;
     case RETURNED = 6;
     case CANCELLED = 7;
+    case BOOKING = 8;
 }
 
