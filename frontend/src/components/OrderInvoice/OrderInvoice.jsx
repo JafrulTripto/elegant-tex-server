@@ -54,8 +54,6 @@ const OrderInvoice = ({order}) => {
             <OrderItemHeader title="Prodcut Information"/>
             <InvoiceProductTable products={order.products}/>
           </View>
-
-         <OrderImage images={order.images}/>
           <View style={{padding:"10px 0"}}>
             <PaymentDetails paymentDetails={order.payment}/>
           </View>
@@ -63,6 +61,7 @@ const OrderInvoice = ({order}) => {
             <OrderItemHeader title="Delivery Information"/>
             <OrderDeliveryDetails deliveryChannel={order.deliveryChannel.name} deliveryDate={order.deliveryDate}/>
           </View>
+          <OrderImage images={order.images}/>
         </View>
 
       </Page>

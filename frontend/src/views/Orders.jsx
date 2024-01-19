@@ -23,7 +23,7 @@ function Sales() {
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(13);
   const [orderType, setOrderType] = useState('Marketplace');
   const [orderStatus, setOrderStatus] = useState(null);
   const [currentOrderStatus, setCurrentOrderStatus] = useState(null);
@@ -31,72 +31,69 @@ function Sales() {
   const [orderId, setOrderId] = useState(null);
 
 
-
   const checkOrderStatusChangePermission = (value, permission) => {
     if (permissions.includes('CHANGE_STATUS')) {
       return false;
     }
-    if (permissions.includes(permission) && value > currentOrderStatus) {
-      return false;
-    }
-    return true;
+    return !(permissions.includes(permission) && value > currentOrderStatus);
+
 
   }
 
   const OrderStatusList = Object.freeze([
     {
-      label: 'DRAFT',
+      text: 'DRAFT',
       value: 0,
       color: '#FF0032',
       disabled: currentOrderStatus > 0
     },
     {
-      label: 'APPROVED',
+      text: 'APPROVED',
       value: 1,
       color: '#1640D6',
-      disabled: checkOrderStatusChangePermission(1,'ORDER_APPROVE')
+      disabled: checkOrderStatusChangePermission(1, 'ORDER_APPROVE')
     },
     {
-      label: 'PRODUCTION',
+      text: 'PRODUCTION',
       value: 2,
       color: '#D0A2F7',
-      disabled:checkOrderStatusChangePermission(2,'ORDER_IN_PRODUCTION')
+      disabled: checkOrderStatusChangePermission(2, 'ORDER_IN_PRODUCTION')
     },
     {
-      label: 'QA',
+      text: 'QA',
       value: 3,
       color: '#F99417',
-      disabled: checkOrderStatusChangePermission(3,'ORDER_IN_QA')
+      disabled: checkOrderStatusChangePermission(3, 'ORDER_IN_QA')
     },
     {
-      label: 'READY',
+      text: 'READY',
       value: 4,
       color: '#0C6170',
-      disabled: checkOrderStatusChangePermission(4,'ORDER_READY')
+      disabled: checkOrderStatusChangePermission(4, 'ORDER_READY')
     },
     {
-      label: 'BOOKING',
+      text: 'BOOKING',
       value: 8,
       color: '#7C93C3',
-      disabled: checkOrderStatusChangePermission(8,'ORDER_BOOKING')
+      disabled: checkOrderStatusChangePermission(8, 'ORDER_BOOKING')
     },
     {
-      label: 'DELIVERED',
+      text: 'DELIVERED',
       value: 5,
       color: '#37BEB0',
-      disabled: checkOrderStatusChangePermission(5,'ORDER_DELIVERED')
+      disabled: checkOrderStatusChangePermission(5, 'ORDER_DELIVERED')
     },
     {
-      label: 'RETURNED',
+      text: 'RETURNED',
       value: 6,
       color: '#FBC740',
-      disabled: checkOrderStatusChangePermission(6,'ORDER_RETURNED')
+      disabled: checkOrderStatusChangePermission(6, 'ORDER_RETURNED')
     },
     {
-      label: 'CANCELLED',
+      text: 'CANCELLED',
       value: 7,
       color: '#FF0032',
-      disabled: checkOrderStatusChangePermission(7,'ORDER_CANCELLED')
+      disabled: checkOrderStatusChangePermission(7, 'ORDER_CANCELLED')
     }
   ])
 
@@ -104,38 +101,48 @@ function Sales() {
     navigate('/orders/orderForm', {state: {orderType, update: false}})
   }
 
-    const fetchOrders = useCallback(async (page = 1, type = 'Marketplace') => {
-        setLoading(true);
-        let link = '';
-        const userId = user.id;
-        if (type === 'Marketplace') {
-            link = page > 1 ? `/orders/getMarketplaceOrders/${userId}?page=${page}` : `/orders/getMarketplaceOrders/${userId}`;
-        } else {
-            link = page > 1 ? `/orders/getMerchantOrders?page=${page}` : `/orders/getMerchantOrders`;
+  const fetchOrders = useCallback(async (page = 1, filter = []) => {
+    setLoading(true);
+    let link = '';
+    const userId = user.id;
 
-        }
+    if (orderType === 'Marketplace') {
+      link = `/orders/getMarketplaceOrders/${userId}?`;
+    } else {
+      link = `/orders/getMerchantOrders?`;
+    }
 
-        try {
-            const orders = await axiosClient.get(link);
-            setLoading(false);
-            const ordersData = orders.data.data.map((data) => {
-                return {...data, key: data.id}
-            })
-            setOrders(ordersData);
-            setTotal(orders.data.meta.total)
-        } catch (error) {
-            const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-            toast.error(message);
-            setLoading(false);
-        }
-    }, [axiosClient, user.id])
+    // Add page parameter
+    link += `page=${page}`;
+
+    // Check if filter is defined and not empty
+    if (filter.status && filter.status.length > 0) {
+      // Add filter parameter
+      link += `&status=${filter.status.join(',')}`;
+    }
+    try {
+      const orders = await axiosClient.get(link);
+      setLoading(false);
+
+      const ordersData = orders.data.data.map((data) => {
+        return { ...data, key: data.id };
+      });
+
+      setOrders(ordersData);
+      setTotal(orders.data.meta.total);
+    } catch (error) {
+      const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+      toast.error(message);
+      setLoading(false);
+    }
+  }, [axiosClient, user.id, orderType]);
+
 
   useEffect(() => {
-
     if (user) {
       fetchOrders();
     }
-  }, [user, fetchOrders])
+  }, [user, fetchOrders, orderType])
 
 
   const handleEditOrder = (record) => {
@@ -156,7 +163,7 @@ function Sales() {
     try {
       const data = await axiosClient.delete(`/orders/delete/${id}`);
       toast.warning(data.data.message);
-      fetchOrders(1, orderType);
+      fetchOrders(1);
 
     } catch (error) {
       const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
@@ -206,7 +213,7 @@ function Sales() {
   const onTabChange = (key) => {
     const orderType = key === 1 ? 'Marketplace' : 'Merchant'
     setOrderType(orderType);
-    fetchOrders(1, orderType);
+    // fetchOrders(1);
   }
   const showStatusModal = (data, id) => {
     setCurrentOrderStatus(data);
@@ -250,7 +257,7 @@ function Sales() {
 
   const retrieveStatusString = (statusValue) => {
     const statusObject = OrderStatusList.find((status) => status.value === statusValue);
-    return statusObject ? statusObject.label : 'Unknown';
+    return statusObject ? statusObject.text : 'Unknown';
   };
 
   const renderStatus = (data, record, index) => {
@@ -275,6 +282,7 @@ function Sales() {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
+      filters: OrderStatusList,
       render: renderStatus
     },
     {
@@ -307,6 +315,13 @@ function Sales() {
   ];
 
 
+  function handleTableChange(pagination, filter) {
+
+    setPage(pagination.current)
+    setPageSize(pagination.pageSize)
+    fetchOrders(pagination.current, filter)
+  }
+
   const renderTabItems = () => {
     const tabItems = [
       {
@@ -318,15 +333,11 @@ function Sales() {
           loading={loading}
           scroll={{x: 400}}
           size={'small'}
+          onChange={handleTableChange}
           pagination={{
             current: page,
             pageSize: pageSize,
             total: total,
-            onChange: (page, pageSize) => {
-              setPage(page)
-              setPageSize(pageSize)
-              fetchOrders(page)
-            }
           }}
         />,
       }
@@ -339,19 +350,14 @@ function Sales() {
         children: <Table
           dataSource={orders}
           columns={columns}
-
           loading={loading}
           scroll={{x: 400}}
           size={'small'}
+          onChange={handleTableChange}
           pagination={{
             current: page,
             pageSize: pageSize,
-            total: total,
-            onChange: (page, pageSize) => {
-              setPage(page)
-              setPageSize(pageSize)
-              fetchOrders(page, 'Merchant')
-            }
+            total: total
           }}
         />,
       });
