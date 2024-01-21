@@ -23,7 +23,11 @@ class OrdersResource extends JsonResource
             'id' => $this->id,
             'orderedBy' => $this->orderable_type == Marketplace::class ? Marketplace::where('id', $this->orderable_id)->value('name') : Merchant::where('id', $this->orderable_id)->value('name'),
             'createdBy' => User::where('id', $this->created_by)->value('firstname'),
-            'status' => OrderStatus::from($this->status),
+            'status' => [
+                'id' => $this->statuses[0]->id,
+                'text' => $this->statuses[0]->text,
+                'color' => $this->statuses[0]->color,
+            ],
             'totalAmount' => $this->total_amount,
             'createdAt' => $this->created_at,
             'deliveryDate' => $this->delivery_date,

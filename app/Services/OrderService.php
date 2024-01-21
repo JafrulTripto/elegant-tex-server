@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use App\Enums\OrderStatus;
 use App\Enums\OrderType;
 use App\Http\Resources\OrderResource;
 use App\Models\Marketplace;
 use App\Models\Merchant;
 use App\Models\Order;
+use App\Models\Status;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
@@ -22,9 +22,9 @@ class OrderService
 
     public function __construct(
         CustomerService $customerService,
-        ProductService $productService,
-        ImageService $imageService,
-        StorageService $storageService
+        ProductService  $productService,
+        ImageService    $imageService,
+        StorageService  $storageService
     )
     {
         $this->customerService = $customerService;
@@ -40,7 +40,6 @@ class OrderService
     {
         $model = null;
         $order = new Order();
-        $order->status = OrderStatus::DRAFT;
         $this->extracted($order, $orderData);
 
         if ($orderData['orderType'] == OrderType::MARKETPLACE->value) {
@@ -56,11 +55,14 @@ class OrderService
 
         $model->order()->save($order);
 
+        $initialStatus = Status::where('text', 'Draft')->first();
+        $order->statuses()->attach($initialStatus, ['comment' => 'Order created']);
+
         foreach ($orderData['products'] as $product) {
             $this->productService->store($product, $order);
         }
         if (array_key_exists('images', $orderData) && !empty($orderData['images'])) {
-            foreach ($orderData['images'] as $image){
+            foreach ($orderData['images'] as $image) {
                 $this->imageService->store($order, $image);
             }
         }
@@ -86,7 +88,7 @@ class OrderService
     public function changeOrderStatus($id, $status)
     {
         $order = Order::findOrFail($id);
-        if ($order){
+        if ($order) {
             $order->update(['status' => $status]);
         }
 
@@ -96,7 +98,12 @@ class OrderService
     public function getOrder($orderID)
     {
         try {
-            $order = Order::with(['customer.address','image', 'product'])->where('id', $orderID)->firstOrFail();
+            $order = Order::with(['customer.address', 'image', 'product', 'statuses' => function ($query) {
+                // Include the 'comment' column from the pivot table
+                $query->select('statuses.id', 'statuses.color', 'statuses.text', 'order_status.comment')->latest('order_status.created_at');
+            }])
+                ->findOrFail($orderID);
+
             return OrderResource::make($order);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Order not found'], 404);
@@ -158,7 +165,7 @@ class OrderService
 
         // Then, add the updated images
         if (array_key_exists('images', $orderData) && !empty($orderData['images'])) {
-            foreach ($orderData['images'] as $imageData){
+            foreach ($orderData['images'] as $imageData) {
                 $this->imageService->store($order, $imageData,);
             }
         }

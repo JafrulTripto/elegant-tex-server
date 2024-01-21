@@ -11,6 +11,7 @@ use App\Http\Resources\OrdersResource;
 use App\Models\Marketplace;
 use App\Models\Merchant;
 use App\Models\Order;
+use App\Models\Status;
 use App\Models\User;
 use App\Services\OrderService;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,189 +28,227 @@ use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 class OrderController extends Controller
 {
 
-  private OrderService $orderService;
-  private const PAGESIZE = 13;
+    private OrderService $orderService;
+    private const PAGESIZE = 13;
 
-  public function __construct(OrderService $orderService)
-  {
+    public function __construct(OrderService $orderService)
+    {
 
-    $this->orderService = $orderService;
-  }
-
-  /**
-   * Display a listing of the resource.
-   *
-   * @return ResourceCollection
-   */
-  public function index()
-  {
-
-  }
-
-  public function getOrder($orderID)
-  {
-    return $this->orderService->getOrder($orderID);
-  }
-
-  public function getMarketplaceOrders($userID, Request $request): ResourceCollection
-  {
-    $user = User::find($userID);
-    $search = $request->input('search', '');
-    $status = $request->input('status')? array_map('intval', explode(',', $request->input('status'))) : [];
-    $pageSize = OrderController::PAGESIZE;
-
-    if ($user->hasPermissionTo("VIEW_ALL_ORDERS")) {
-      $query = Order::whereHasMorph('orderable', Marketplace::class)
-        ->latest('id');
-    } else {
-      $query = Order::whereHasMorph('orderable', [Marketplace::class], function (Builder $query) use ($userID) {
-        $query->whereHas('users', function ($q) use ($userID) {
-          $q->where("marketplace_user.user_id", $userID);
-        });
-      })
-        ->latest('id');
-    }
-    // Apply search filter
-    if (!empty($search)) {
-      $query->where(function ($query) use ($search) {
-        $query->where('id', 'like', '%' . $search . '%');
-      });
-    }
-    // Apply status filter
-    if (!empty($status)) {
-      $query->whereIn('status', $status);
+        $this->orderService = $orderService;
     }
 
-    $orders = $query->paginate($pageSize);
-    return OrdersResource::collection($orders);
-  }
+    /**
+     * Display a listing of the resource.
+     *
+     * @return ResourceCollection
+     */
+    public function index()
+    {
 
-
-  public function getMerchantOrders(Request $request)
-  {
-    $search = $request->input('search', '');
-    $status = $request->input('status')? array_map('intval', explode(',', $request->input('status'))) : [];
-    $query = Order::whereHasMorph('orderable', [Merchant::class])->latest('id');
-    if (!empty($search)) {
-      $query->where('id', 'like', '%' . $search . '%');
-    }
-    if (!empty($status)) {
-      $query->whereIn('status', $status);
-    }
-    $orders = $query->paginate(OrderController::PAGESIZE);
-
-    return OrdersResource::collection($orders);
-  }
-
-
-
-
-
-  /**
-   * Show the form for creating a new resource.
-   *
-   * @return \Illuminate\Http\Response
-   */
-  public function create()
-  {
-    //
-  }
-
-  /**
-   * Store a newly created resource in storage.
-   *
-   * @param \Illuminate\Http\Request $request
-   * @return \Illuminate\Http\JsonResponse|int
-   * @throws HttpException
-   * @throws \Exception
-   */
-  public function store(StoreOrderRequest $request, OrderService $orderService)
-  {
-
-    $validatedData = $request->validated();
-
-    try {
-      $order = $orderService->store($validatedData);
-    } catch (OrderException $e) {
-      throw new \Exception($e->getMessage(), 500);
     }
 
-    return response()->json([
-      'message' => 'Order created successfully',
-      'order_id' => $order->id
-    ]);
-
-  }
-
-  public function changeOrderStatus(Request $request)
-  {
-    $id = $request->orderId;
-    $status = $request->orderStatus;
-
-    return OrdersResource::make($this->orderService->changeOrderStatus($id, $status));
-  }
-
-  /**
-   * Display the specified resource.
-   *
-   * @param \App\Models\Order $order
-   * @return \Illuminate\Http\Response
-   */
-  public function show(Order $order)
-  {
-    //
-  }
-
-  /**
-   * Show the form for editing the specified resource.
-   *
-   * @param \App\Models\Order $order
-   * @return \Illuminate\Http\Response
-   */
-  public function edit(Order $order)
-  {
-    //
-  }
-
-  /**
-   * Update the specified resource in storage.
-   *
-   * @param \Illuminate\Http\Request $request
-   * @param \App\Models\Order $order
-   * @return JsonResponse
-   */
-  public function update(UpdateOrderRequest $request, $orderId)
-  {
-    $order = Order::find($orderId);
-    $validatedData = $request->validated();
-
-    try {
-      $order = $this->orderService->update($order, $validatedData);
-    } catch (OrderException $e) {
-      throw new \Exception($e->getMessage(), 500);
+    public function getOrder($orderID)
+    {
+        return $this->orderService->getOrder($orderID);
     }
 
-    return response()->json([
-      'message' => 'Order updated successfully',
-      'order' => $order
-    ]);
-  }
+    public function getMarketplaceOrders($userID, Request $request): ResourceCollection
+    {
+        $user = User::find($userID);
+        $search = $request->input('search', '');
+        $status = $request->input('status') ? array_map('intval', explode(',', $request->input('status'))) : [];
+        $pageSize = OrderController::PAGESIZE;
 
-  /**
-   * Remove the specified resource from storage.
-   *
-   * @param \App\Models\Order $order
-   * @return \Illuminate\Http\JsonResponse
-   */
-  public function destroy($id): JsonResponse
-  {
-    try {
-      $order = Order::findOrFail($id);
-      $this->orderService->deleteOrder($order);
-      return response()->json(['message' => 'Order deleted successfully'], ResponseAlias::HTTP_OK);
-    } catch (\Exception $e) {
-      Log::error($e->getMessage());
-      return response()->json(['message' => 'An error occurred while deleting the order'], ResponseAlias::HTTP_INTERNAL_SERVER_ERROR);
+        if ($user->hasPermissionTo("VIEW_ALL_ORDERS")) {
+            $query = Order::whereHasMorph('orderable', Marketplace::class)
+                ->with(['statuses' => function ($query) {
+                    $query->latest('order_status.updated_at')->limit(1);
+                }])
+                ->latest('id');
+        } else {
+            $query = Order::whereHasMorph('orderable', [Marketplace::class], function (Builder $query) use ($userID) {
+                $query->whereHas('users', function ($q) use ($userID) {
+                    $q->where("marketplace_user.user_id", $userID);
+                });
+            })
+                ->with(['statuses' => function ($query) {
+                    $query->latest('order_status.created_at')->limit(1);
+                }])
+                ->latest('id');
+        }
+
+        // Apply search filter
+        return $this->applySearchFilter($search, $query, $status, $pageSize);
     }
-  }
+
+
+    public function getMerchantOrders(Request $request)
+    {
+        $search = $request->input('search', '');
+        $status = $request->input('status') ? array_map('intval', explode(',', $request->input('status'))) : [];
+        $pageSize = OrderController::PAGESIZE;
+
+        $query = Order::whereHasMorph('orderable', [Merchant::class])->with(['statuses' => function ($query) {
+            $query->latest('order_status.updated_at')->limit(1);
+        }])->latest('id');
+
+        // Apply search filter
+        return $this->applySearchFilter($search, $query, $status, $pageSize);
+    }
+
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse|int
+     * @throws HttpException
+     * @throws \Exception
+     */
+    public function store(StoreOrderRequest $request, OrderService $orderService)
+    {
+
+        $validatedData = $request->validated();
+
+        try {
+            $order = $orderService->store($validatedData);
+        } catch (OrderException $e) {
+            throw new \Exception($e->getMessage(), 500);
+        }
+
+        return response()->json([
+            'message' => 'Order created successfully',
+            'order_id' => $order->id
+        ]);
+
+    }
+
+    public function updateOrderStatus(Request $request)
+    {
+        $id = $request->orderId;
+        $newStatusId = $request->newStatus;
+        $statusComment = $request->statusComment;
+
+        // Find the order
+        $order = Order::find($id);
+        // Retrieve the status text based on the status ID
+        $newStatus = Status::find($newStatusId); // Assuming you have a Status model
+
+        // Set default comment if it's empty
+        $defaultComment = "Updated order status to " . ($newStatus ? $newStatus->name : '');
+        $commentToUse = empty($statusComment) ? $defaultComment : $statusComment;
+
+
+        // Attach the new status with the comment to the order
+        $order->statuses()->attach($newStatusId, ['comment' => $commentToUse]);
+
+        // Load the latest status for the order
+        $order->load(['statuses' => function ($query) {
+            $query->latest('order_status.updated_at')->limit(1);
+        }]);
+
+        return OrdersResource::make($order);
+    }
+
+
+    /**
+     * Display the specified resource.
+     *
+     * @param \App\Models\Order $order
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Order $order)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param \App\Models\Order $order
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Order $order)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Order $order
+     * @return JsonResponse
+     */
+    public function update(UpdateOrderRequest $request, $orderId)
+    {
+        $order = Order::find($orderId);
+        $validatedData = $request->validated();
+
+        try {
+            $order = $this->orderService->update($order, $validatedData);
+        } catch (OrderException $e) {
+            throw new \Exception($e->getMessage(), 500);
+        }
+
+        return response()->json([
+            'message' => 'Order updated successfully',
+            'order' => $order
+        ]);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param \App\Models\Order $order
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy($id): JsonResponse
+    {
+        try {
+            $order = Order::findOrFail($id);
+            $this->orderService->deleteOrder($order);
+            return response()->json(['message' => 'Order deleted successfully'], ResponseAlias::HTTP_OK);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json(['message' => 'An error occurred while deleting the order'], ResponseAlias::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @param mixed $search
+     * @param $query
+     * @param array $status
+     * @param int $pageSize
+     * @return AnonymousResourceCollection
+     */
+    public function applySearchFilter(mixed $search, $query, array $status, int $pageSize): AnonymousResourceCollection
+    {
+        if (!empty($search)) {
+            $query->where(function ($query) use ($search) {
+                $query->where('id', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Apply status filter
+        if (!empty($status)) {
+            $query->whereHas('statuses', function ($query) use ($status) {
+                $query->whereIn('status_id', $status);
+            });
+        }
+
+        $orders = $query->paginate($pageSize);
+
+        return OrdersResource::collection($orders);
+    }
 }

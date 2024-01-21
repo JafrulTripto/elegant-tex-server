@@ -8,10 +8,7 @@ import {PDFDownloadLink} from '@react-pdf/renderer';
 import dayjs from "dayjs";
 
 const OrderHeader = ({order}) => {
-  const generateTagColorFromStatus = (status) => {
-    let obj = OrderStatusEnum.find(o => o.label === status);
-    return obj.color;
-  }
+
   return (
     <div className="mb-3">
       <div className="flex items-center justify-between">
@@ -20,7 +17,7 @@ const OrderHeader = ({order}) => {
             Order #{formatOrderNumber(order.id)}
           </h3>
           <div className="mb-3 pl-5 font-bold">
-            <Tag color={generateTagColorFromStatus(order.status)}>{order.status}</Tag>
+            <Tag color={order.status[0].color}>{order.status[0].text}</Tag>
           </div>
         </div>
 
