@@ -209,7 +209,7 @@ function Sales() {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
-            // filters: OrderStatusList,
+            filters: transformStatusArray(statuses, 'text'),
             render: renderStatus
         },
         {

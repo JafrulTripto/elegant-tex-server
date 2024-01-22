@@ -61,8 +61,11 @@ class OrderController extends Controller
 
         if ($user->hasPermissionTo("VIEW_ALL_ORDERS")) {
             $query = Order::whereHasMorph('orderable', Marketplace::class)
-                ->with(['statuses' => function ($query) {
-                    $query->latest('order_status.updated_at')->limit(1);
+                ->with(['statuses' => function ($query) use ($status) {
+                    if (!empty($status)) {
+                        return $query->latest('order_status.updated_at')->whereIn('status_id', $status)->limit(1);
+                    }
+                    return $query->latest('order_status.updated_at')->limit(1);
                 }])
                 ->latest('id');
         } else {
@@ -71,8 +74,11 @@ class OrderController extends Controller
                     $q->where("marketplace_user.user_id", $userID);
                 });
             })
-                ->with(['statuses' => function ($query) {
-                    $query->latest('order_status.created_at')->limit(1);
+                ->with(['statuses' => function ($query) use ($status) {
+                    if (!empty($status)) {
+                        return $query->latest('order_status.updated_at')->whereIn('status_id', $status)->limit(1);
+                    }
+                    return $query->latest('order_status.updated_at')->limit(1);
                 }])
                 ->latest('id');
         }
@@ -88,9 +94,13 @@ class OrderController extends Controller
         $status = $request->input('status') ? array_map('intval', explode(',', $request->input('status'))) : [];
         $pageSize = OrderController::PAGESIZE;
 
-        $query = Order::whereHasMorph('orderable', [Merchant::class])->with(['statuses' => function ($query) {
-            $query->latest('order_status.updated_at')->limit(1);
-        }])->latest('id');
+        $query = Order::whereHasMorph('orderable', [Merchant::class])
+            ->with(['statuses' => function ($query) use ($status) {
+                if (!empty($status)) {
+                    return $query->latest('order_status.updated_at')->whereIn('status_id', $status)->limit(1);
+                }
+                return $query->latest('order_status.updated_at')->limit(1);
+            }])->latest('id');
 
         // Apply search filter
         return $this->applySearchFilter($search, $query, $status, $pageSize);
@@ -234,16 +244,9 @@ class OrderController extends Controller
      */
     public function applySearchFilter(mixed $search, $query, array $status, int $pageSize): AnonymousResourceCollection
     {
-        if (!empty($search)) {
-            $query->where(function ($query) use ($search) {
-                $query->where('id', 'like', '%' . $search . '%');
-            });
-        }
-
-        // Apply status filter
         if (!empty($status)) {
             $query->whereHas('statuses', function ($query) use ($status) {
-                $query->whereIn('status_id', $status);
+                $query->whereIn('order_status.status_id', $status);
             });
         }
 
