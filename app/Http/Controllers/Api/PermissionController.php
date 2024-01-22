@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\PermissionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller
 {
@@ -38,5 +39,28 @@ class PermissionController extends Controller
     public function check(Request $request)
     {
 
+    }
+
+    public function destroy($id): JsonResponse
+    {
+        $permission = Permission::find($id);
+
+        if (!$permission) {
+            return response()->json([
+                "message" => "Permission not found.",
+            ], 404);
+        }
+
+        $permissionDeleted = $permission->delete();
+
+        if ($permissionDeleted) {
+            return response()->json([
+                "message" => "Permission deleted successfully.",
+            ]);
+        }
+
+        return response()->json([
+            "message" => "Error deleting permission.",
+        ]);
     }
 }

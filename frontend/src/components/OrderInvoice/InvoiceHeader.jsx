@@ -42,7 +42,7 @@ const InvoiceHeader = ({order}) => {
             <Text>{formatOrderNumber(order.id)}</Text>
             <Text>{order.orderable.name}</Text>
             <Text>{dayjs(order.createdAt).format('DD MMMM YYYY')}</Text>
-            <Text style={{fontWeight: 500}}>{order.status}</Text>
+            <Text style={{fontWeight: 500}}>{order.status[0].text}</Text>
           </View>
         </View>
       </View>
