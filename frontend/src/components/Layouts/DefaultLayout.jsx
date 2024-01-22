@@ -12,6 +12,7 @@ import {ElegantTexIcon} from "../../utils/icons/ElegantTexIcon";
 import NavigationDropdown from "../NavigationDropdown";
 import BreadCrumb from "../BreadCrumb";
 import {colors} from "../../utils/Colors";
+import {Footer} from "antd/es/layout/layout";
 
 
 const {Header, Sider, Content} = Layout;
@@ -201,6 +202,12 @@ const DefaultLayout = () => {
                     }}>
                     {user && Object.keys(user).length !== 0 ? <Outlet/> : <Loading layout='default'/>}
                 </Content>
+                <Footer style={{textAlign: 'center', background:'white', padding:'5px 5px'}}>
+                    <span className="font-bold px-2 text-blue-950">Developed By : <span className="text-red-400">Tripzin.inc</span></span>
+                    <span className="font-bold px-2 text-blue-950">Version :
+                        <span className="text-red-400"> 1.0.0</span>
+                    </span>
+                </Footer>
             </Layout>
         </Layout>);
 };
