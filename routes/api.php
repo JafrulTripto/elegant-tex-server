@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\ProductColorController;
 use App\Http\Controllers\Api\ProductFabricController;
 use App\Http\Controllers\Api\ProductTypeController;
 use App\Http\Controllers\Api\RoleController;
-use App\Http\Controllers\api\StatusController;
+use App\Http\Controllers\Api\StatusController;
 use App\Http\Controllers\Api\StorageController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\BangladeshGeocodeController;
