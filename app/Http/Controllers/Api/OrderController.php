@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\OrderAlreadyInStatusException;
 use App\Exceptions\OrderException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOrderRequest;
@@ -145,30 +146,45 @@ class OrderController extends Controller
 
     public function updateOrderStatus(Request $request)
     {
-        $id = $request->orderId;
-        $newStatusId = $request->newStatus;
-        $statusComment = $request->statusComment;
+        try {
+            $id = $request->orderId;
+            $newStatusId = $request->newStatus;
+            $statusComment = $request->statusComment;
 
-        // Find the order
-        $order = Order::find($id);
-        // Retrieve the status text based on the status ID
-        $newStatus = Status::find($newStatusId); // Assuming you have a Status model
+            // Find the order
+            $order = Order::find($id);
 
-        // Set default comment if it's empty
-        $defaultComment = "Updated order status to " . ($newStatus ? $newStatus->name : '');
-        $commentToUse = empty($statusComment) ? $defaultComment : $statusComment;
+            // Check if the order is already in the specified status
+            $currentStatusId =  $order->statuses()->latest('order_status.updated_at')->firstOrFail()->id;
+            if ($currentStatusId == $newStatusId) {
+                throw new OrderAlreadyInStatusException('Order is already in the specified status.');
+            }
 
+            // Retrieve the status text based on the status ID
+            $newStatus = Status::find($newStatusId); // Assuming you have a Status model
 
-        // Attach the new status with the comment to the order
-        $order->statuses()->attach($newStatusId, ['comment' => $commentToUse]);
+            // Set default comment if it's empty
+            $defaultComment = "Updated order status to " . ($newStatus ? $newStatus->text : '');
+            $commentToUse = empty($statusComment) ? $defaultComment : $statusComment;
 
-        // Load the latest status for the order
-        $order->load(['statuses' => function ($query) {
-            $query->latest('order_status.updated_at')->limit(1);
-        }]);
+            // Attach the new status with the comment to the order
+            $order->statuses()->attach($newStatusId, ['comment' => $commentToUse]);
 
-        return OrdersResource::make($order);
+            // Load the latest status for the order
+            $order->load(['statuses' => function ($query) {
+                $query->latest('order_status.updated_at')->limit(1);
+            }]);
+
+            return OrdersResource::make($order);
+        } catch (OrderAlreadyInStatusException $e) {
+            // Handle the specific exception for orders already in the specified status
+            return response()->json(['message' => $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            // Handle other exceptions
+            return response()->json(['message' => 'An unexpected error occurred.'], 500);
+        }
     }
+
 
 
     /**
