@@ -69,7 +69,7 @@ const PermissionSettings = () => {
     })
   }
   const confirmDeletePermission = (item) => {
-    axiosClient.get(`/permissions/deletePermission?permissionId=${item}`).then(response => {
+    axiosClient.delete(`/permissions/delete/${item.id}`).then(response => {
       toast.success(response.data);
       getPermissions();
     })

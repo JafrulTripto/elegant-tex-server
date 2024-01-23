@@ -11,6 +11,7 @@ use App\Http\Resources\OrdersResource;
 use App\Models\Marketplace;
 use App\Models\Merchant;
 use App\Models\Order;
+use App\Models\Status;
 use App\Models\User;
 use App\Services\OrderService;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,6 +29,7 @@ class OrderController extends Controller
 {
 
     private OrderService $orderService;
+    private const PAGESIZE = 13;
 
     public function __construct(OrderService $orderService)
     {
@@ -50,55 +52,60 @@ class OrderController extends Controller
         return $this->orderService->getOrder($orderID);
     }
 
-    public function getMarketplaceOrders($userID, Request $request) : ResourceCollection
+    public function getMarketplaceOrders($userID, Request $request): ResourceCollection
     {
         $user = User::find($userID);
+        $search = $request->input('search', '');
+        $status = $request->input('status') ? array_map('intval', explode(',', $request->input('status'))) : [];
+        $pageSize = OrderController::PAGESIZE;
 
-        $search = '';
-        if ($request->has('search')) {
-            $search = $request->input('search');
-        }
-
-        if ($user->hasPermissionTo("VIEW_ALL_ORDERS")){
-            $orders = Order::when($search, function ($query, $search) {
-                return $query->where('id', $search);
+        if ($user->hasPermissionTo("VIEW_ALL_ORDERS")) {
+            $query = Order::whereHasMorph('orderable', Marketplace::class)
+                ->with(['statuses' => function ($query) use ($status) {
+                    if (!empty($status)) {
+                        return $query->latest('order_status.updated_at')->whereIn('status_id', $status)->limit(1);
+                    }
+                    return $query->latest('order_status.updated_at')->limit(1);
+                }])
+                ->latest('id');
+        } else {
+            $query = Order::whereHasMorph('orderable', [Marketplace::class], function (Builder $query) use ($userID) {
+                $query->whereHas('users', function ($q) use ($userID) {
+                    $q->where("marketplace_user.user_id", $userID);
+                });
             })
-                ->whereHasMorph('orderable', [Marketplace::class], function (Builder $query) {
-                    // No additional condition is required here
-                })
-                ->orderBy('id', 'DESC')
-                ->paginate(10);
-            return OrdersResource::collection($orders);
+                ->with(['statuses' => function ($query) use ($status) {
+                    if (!empty($status)) {
+                        return $query->latest('order_status.updated_at')->whereIn('status_id', $status)->limit(1);
+                    }
+                    return $query->latest('order_status.updated_at')->limit(1);
+                }])
+                ->latest('id');
         }
 
-        $orders = Order::when($search, function ($query, $search) {
-            return $query->where('id', $search);
-        })->whereHasMorph(
-            'orderable', [Marketplace::class], function (Builder $query) use ($userID) {
-            $query->whereHas('users', function ($q) use ($userID) {
-                $q->where("marketplace_user.user_id", $userID);
-            });
-        })->orderBy('id', 'DESC')->paginate(10);
-
-        return OrdersResource::collection($orders);
+        // Apply search filter
+        return $this->applySearchFilter($search, $query, $status, $pageSize);
     }
+
 
     public function getMerchantOrders(Request $request)
     {
-        $search = '';
-        if ($request->has('search')) {
-            $search = $request->input('search');
-        }
+        $search = $request->input('search', '');
+        $status = $request->input('status') ? array_map('intval', explode(',', $request->input('status'))) : [];
+        $pageSize = OrderController::PAGESIZE;
 
-        $orders = Order::when($search, function ($query, $search) {
-            return $query->where('id', $search);
-        })->whereHasMorph(
-            'orderable', [Merchant::class], function (Builder $query) {
-            return $query;
-        })->paginate(10);
+        $query = Order::whereHasMorph('orderable', [Merchant::class])
+            ->with(['statuses' => function ($query) use ($status) {
+                if (!empty($status)) {
+                    return $query->latest('order_status.updated_at')->whereIn('status_id', $status)->limit(1);
+                }
+                return $query->latest('order_status.updated_at')->limit(1);
+            }])->latest('id');
 
-        return OrdersResource::collection($orders);
+        // Apply search filter
+        return $this->applySearchFilter($search, $query, $status, $pageSize);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -118,7 +125,7 @@ class OrderController extends Controller
      * @throws HttpException
      * @throws \Exception
      */
-    public function store (StoreOrderRequest $request, OrderService $orderService)
+    public function store(StoreOrderRequest $request, OrderService $orderService)
     {
 
         $validatedData = $request->validated();
@@ -136,13 +143,33 @@ class OrderController extends Controller
 
     }
 
-    public function changeOrderStatus(Request $request)
+    public function updateOrderStatus(Request $request)
     {
         $id = $request->orderId;
-        $status = $request->orderStatus;
+        $newStatusId = $request->newStatus;
+        $statusComment = $request->statusComment;
 
-        return OrdersResource::make($this->orderService->changeOrderStatus($id, $status));
+        // Find the order
+        $order = Order::find($id);
+        // Retrieve the status text based on the status ID
+        $newStatus = Status::find($newStatusId); // Assuming you have a Status model
+
+        // Set default comment if it's empty
+        $defaultComment = "Updated order status to " . ($newStatus ? $newStatus->name : '');
+        $commentToUse = empty($statusComment) ? $defaultComment : $statusComment;
+
+
+        // Attach the new status with the comment to the order
+        $order->statuses()->attach($newStatusId, ['comment' => $commentToUse]);
+
+        // Load the latest status for the order
+        $order->load(['statuses' => function ($query) {
+            $query->latest('order_status.updated_at')->limit(1);
+        }]);
+
+        return OrdersResource::make($order);
     }
+
 
     /**
      * Display the specified resource.
@@ -206,5 +233,25 @@ class OrderController extends Controller
             Log::error($e->getMessage());
             return response()->json(['message' => 'An error occurred while deleting the order'], ResponseAlias::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * @param mixed $search
+     * @param $query
+     * @param array $status
+     * @param int $pageSize
+     * @return AnonymousResourceCollection
+     */
+    public function applySearchFilter(mixed $search, $query, array $status, int $pageSize): AnonymousResourceCollection
+    {
+        if (!empty($status)) {
+            $query->whereHas('statuses', function ($query) use ($status) {
+                $query->whereIn('order_status.status_id', $status);
+            });
+        }
+
+        $orders = $query->paginate($pageSize);
+
+        return OrdersResource::collection($orders);
     }
 }

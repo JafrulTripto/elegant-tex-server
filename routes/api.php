@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\ProductColorController;
 use App\Http\Controllers\Api\ProductFabricController;
 use App\Http\Controllers\Api\ProductTypeController;
 use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\StatusController;
 use App\Http\Controllers\Api\StorageController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\BangladeshGeocodeController;
@@ -82,9 +83,17 @@ Route::group([
     Route::get('/getOrder/{orderID}', [OrderController::class, 'getOrder']);
     Route::get('/getMerchants', [OrderController::class, 'getAllMerchants']);
     Route::delete('/delete/{id}', [OrderController::class, 'destroy']);
-    Route::post('/changeOrderStatus', [OrderController::class, 'changeOrderStatus']);
+    Route::post('/updateOrderStatus', [OrderController::class, 'updateOrderStatus']);
     Route::put('/update/{orderId}',  [OrderController::class, 'update']);
 });
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'status'
+], function ($router) {
+    Route::get('/getStatuses', [StatusController::class, 'getAllStatuses']);
+});
+
 
 Route::group([
     'middleware' => ['api','permission:VIEW_MERCHANTS'],
@@ -146,7 +155,7 @@ Route::group([
 ],function () {
     Route::get('/getPermissions', [PermissionController::class, 'getAll']);
     Route::post('/createPermission', [PermissionController::class, 'store']);
-    Route::post('/checkPermission', [PermissionController::class, 'check']);
+    Route::delete('/delete/{id}', [PermissionController::class, 'destroy']);
 });
 
 Route::prefix('settings/colors')->group(function () {
