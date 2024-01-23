@@ -18,7 +18,7 @@ class StatusSeeder extends Seeder
     {
         $divisions = array(
             array('text' => 'DRAFT','color'=>'#757575',  'created_at' => Carbon::now()->format('Y-m-d H:i:s'),'updated_at' => Carbon::now()->format('Y-m-d H:i:s')),
-            array('text' => 'APPROVED','color'=>'#4CAF50', 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),'updated_at' => Carbon::now()->format('Y-m-d H:i:s')),
+            array('text' => 'APPROVED','color'=>'#492E87', 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),'updated_at' => Carbon::now()->format('Y-m-d H:i:s')),
             array('text' => 'PRODUCTION','color'=>'#FFD700', 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),'updated_at' => Carbon::now()->format('Y-m-d H:i:s')),
             array('text' => 'QA','color'=>'#FFA500', 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),'updated_at' => Carbon::now()->format('Y-m-d H:i:s')),
             array('text' => 'READY','color'=>'#2196F3', 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),'updated_at' => Carbon::now()->format('Y-m-d H:i:s')),

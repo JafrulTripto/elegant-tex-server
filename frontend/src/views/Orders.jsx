@@ -28,6 +28,8 @@ function Sales() {
     const [pageSize, setPageSize] = useState(13);
     const [orderType, setOrderType] = useState('Marketplace');
     const [currentOrderStatus, setCurrentOrderStatus] = useState(null);
+    const [changedOrderStatus, setChangedOrderStatus] = useState(null);
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [orderId, setOrderId] = useState(null);
     const [statusForm] = Form.useForm();
@@ -179,6 +181,7 @@ function Sales() {
     const showStatusModal = (data, id) => {
         statusForm.setFieldValue('status', data);
         setCurrentOrderStatus(data);
+        setChangedOrderStatus(data);
         setIsModalOpen(true);
         setOrderId(id);
     };
@@ -292,27 +295,33 @@ function Sales() {
         return tabItems;
     }
 
-    const updateOrderStatus = (data) => {
+    const updateOrderStatus = async (data) => {
         const postData = {
             orderId,
             newStatus: data.status,
             statusComment: data.statusComment
+        };
 
-        }
         setStatusLoading(true);
-        axiosClient.post('/orders/updateOrderStatus', postData).then((response) => {
+
+        try {
+            const response = await axiosClient.post('/orders/updateOrderStatus', postData);
             const order = response.data.data;
             const target = orders.find((obj) => obj.id === order.id);
             Object.assign(target, order);
-            setStatusLoading(false)
             setIsModalOpen(false);
-            toast.success("Succesfully changed order status to updated status");
-
-        }).catch((error) => {
+            toast.success("Successfully changed order status to updated status");
+        } catch (error) {
+            console.log(error.response.data)
             const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
             toast.error(message);
-            setStatusLoading(false)
-        })
+        } finally {
+            setStatusLoading(false);
+        }
+    };
+
+    const onChangeOrderStatus = (data) => {
+        setChangedOrderStatus(data)
     };
     return (
         <Space
@@ -367,6 +376,7 @@ function Sales() {
                         label="Status"
                     >
                         <Select
+                            onChange={onChangeOrderStatus}
                             options={transformStatusArray(statuses, 'label')}
                         />
                     </Form.Item>
@@ -377,7 +387,7 @@ function Sales() {
                         <TextArea rows={4}/>
                     </Form.Item>
                     <Form.Item>
-                        <Button type="primary" className='float-right' htmlType="submit" loading={statusLoading}>
+                        <Button disabled={currentOrderStatus === changedOrderStatus} type="primary" className='float-right' htmlType="submit" loading={statusLoading}>
                             Submit
                         </Button>
                     </Form.Item>
