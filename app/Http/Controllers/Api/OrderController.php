@@ -85,7 +85,7 @@ class OrderController extends Controller
         }
 
         // Apply search filter
-        return $this->applySearchFilter($search, $query, $status, $pageSize);
+        return $this->applySearchFilter($search, $query, $pageSize);
     }
 
 
@@ -104,7 +104,7 @@ class OrderController extends Controller
             }])->latest('id');
 
         // Apply search filter
-        return $this->applySearchFilter($search, $query, $status, $pageSize);
+        return $this->applySearchFilter($search, $query, $pageSize);
     }
 
 
@@ -258,16 +258,29 @@ class OrderController extends Controller
      * @param int $pageSize
      * @return AnonymousResourceCollection
      */
-    public function applySearchFilter(mixed $search, $query, array $status, int $pageSize): AnonymousResourceCollection
+
+    protected function applySearchFilter(mixed $search, Builder $query, int $pageSize)
     {
-        if (!empty($status)) {
-            $query->whereHas('statuses', function ($query) use ($status) {
-                $query->whereIn('order_status.status_id', $status);
-            });
+        // If a search term is provided, and it is numeric, search by ID
+        if (!empty($search) && is_numeric($search)) {
+            $query->where('id', 'LIKE', '%' . $search . '%');
         }
 
+        // Paginate the results and return the resource collection
         $orders = $query->paginate($pageSize);
 
         return OrdersResource::collection($orders);
     }
+//    public function applySearchFilter(mixed $search, $query, array $status, int $pageSize): AnonymousResourceCollection
+//    {
+//        if (!empty($status)) {
+//            $query->whereHas('statuses', function ($query) use ($status) {
+//                $query->whereIn('order_status.status_id', $status);
+//            });
+//        }
+//
+//        $orders = $query->paginate($pageSize);
+//
+//        return OrdersResource::collection($orders);
+//    }
 }
