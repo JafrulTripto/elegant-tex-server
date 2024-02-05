@@ -40,6 +40,11 @@ class Order extends Model
         return '1000';
     }
 
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     public function product(): HasMany
     {
         return $this->hasMany(Product::class);
@@ -60,6 +65,12 @@ class Order extends Model
     public function statuses(): BelongsToMany
     {
         return $this->belongsToMany(Status::class)->withTimestamps();
+    }
+
+    public function latestStatuses()
+    {
+        return $this->belongsToMany(Status::class)
+            ->orderByPivot('created_at', 'desc')->limit(1);
     }
 
     protected function deliveryChannel(): Attribute

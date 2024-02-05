@@ -1,8 +1,8 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useCallback, useRef} from 'react';
 import {Space, Card, Row, Col, Button, Input, Table, Tag, Tabs, Select, Modal, Form} from 'antd';
 import {NavLink, useNavigate} from "react-router-dom";
 import {toast} from 'react-toastify';
-import {PlusOutlined, DeleteOutlined, EditOutlined} from '@ant-design/icons'
+import {PlusOutlined, DeleteOutlined, EditOutlined, SearchOutlined} from '@ant-design/icons'
 import {useStateContext} from "../contexts/ContextProvider.jsx";
 import useAxiosClient from "../axios-client.js";
 import Permission from "../components/Util/Permission.jsx";
@@ -10,6 +10,7 @@ import {OrderTypeEnum} from "../utils/enums/OrderTypeEnum.js";
 import {formatOrderNumber} from "../components/Util/OrderNumberFormatter";
 import dayjs from "dayjs";
 import TextArea from "antd/es/input/TextArea";
+import Highlighter from 'react-highlight-words';
 
 
 function Sales() {
@@ -18,7 +19,6 @@ function Sales() {
     const {Search} = Input;
     const {user, permissions} = useStateContext();
     const navigate = useNavigate();
-
     const [loading, setLoading] = useState(false);
     const [statusLoading, setStatusLoading] = useState(false);
     const [statuses, setStatuses] = useState([]);
@@ -29,7 +29,9 @@ function Sales() {
     const [orderType, setOrderType] = useState('Marketplace');
     const [currentOrderStatus, setCurrentOrderStatus] = useState(null);
     const [changedOrderStatus, setChangedOrderStatus] = useState(null);
-
+    const searchInput = useRef(null);
+    const [searchText, setSearchText] = useState('');
+    const [searchedColumn, setSearchedColumn] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [orderId, setOrderId] = useState(null);
     const [statusForm] = Form.useForm();
@@ -39,6 +41,7 @@ function Sales() {
         setStatuses(statuses.data);
     };
     const fetchOrders = useCallback(async (page = 1, filter = []) => {
+        console.log(filter)
         setLoading(true);
         let link = '';
         const userId = user.id;
@@ -56,6 +59,9 @@ function Sales() {
         if (filter.status && filter.status.length > 0) {
             // Add filter parameter
             link += `&status=${filter.status.join(',')}`;
+        }
+        if (filter.id && filter.id.length > 0) {
+            link += `&search=${filter.id[0]}`
         }
         try {
             const orders = await axiosClient.get(link);
@@ -146,33 +152,6 @@ function Sales() {
         );
     }
 
-    const onSearch = async (value, page = 1) => {
-        if (value) {
-            setLoading(true);
-            const userId = user.id;
-            try {
-                let link = '';
-                if (orderType === 'Marketplace') {
-                    link = page > 1 ? `/orders/getMarketplaceOrders/${userId}?page=${page}&search=${value}` : `/orders/getMarketplaceOrders/${userId}?search=${value}`;
-                } else {
-                    link = page > 1 ? `/orders/getMerchantOrders?page=${page}&search=${value}` : `/orders/getMerchantOrders?search=${value}`;
-
-                }
-                const orders = await axiosClient.get(link);
-                setLoading(false);
-                const ordersData = orders.data.data.map((data) => {
-                    return {...data, key: data.id}
-                })
-                setOrders(ordersData);
-                setTotal(orders.data.meta.total)
-            } catch (error) {
-                const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-                toast.error(message);
-                setLoading(false);
-            }
-        }
-    };
-
     const onTabChange = (key) => {
         const orderType = key === 1 ? 'Marketplace' : 'Merchant'
         setOrderType(orderType);
@@ -195,13 +174,113 @@ function Sales() {
                     onClick={() => showStatusModal(data.id, record.id)}>{data.text}</Tag>
     }
 
+    const handleSearch = (selectedKeys, confirm, dataIndex) => {
+        confirm();
+        setSearchText(selectedKeys[0]);
+        setSearchedColumn(dataIndex);
+    };
+    const handleReset = (clearFilters) => {
+        clearFilters();
+        setSearchText('');
+    };
+
+    const getColumnSearchProps = (dataIndex) => ({
+        filterDropdown: ({setSelectedKeys, selectedKeys, confirm, clearFilters, close}) => (
+            <div
+                style={{
+                    padding: 8,
+                }}
+                onKeyDown={(e) => e.stopPropagation()}
+            >
+                <Input
+                    ref={searchInput}
+                    placeholder={`Search ${dataIndex}`}
+                    value={selectedKeys[0]}
+                    onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                    onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                    style={{
+                        marginBottom: 8,
+                        display: 'block',
+                    }}
+                />
+                <Space>
+                    <Button
+                        type="primary"
+                        onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                        icon={<SearchOutlined/>}
+                        size="small"
+                        style={{
+                            width: 90,
+                        }}
+                    >
+                        Search
+                    </Button>
+                    <Button
+                        onClick={() => clearFilters && handleReset(clearFilters, selectedKeys, dataIndex)}
+                        size="small"
+                        style={{
+                            width: 90,
+                        }}
+                    >
+                        Reset
+                    </Button>
+                    <Button
+                        type="link"
+                        size="small"
+                        onClick={() => {
+                            confirm({
+                                closeDropdown: false,
+                            });
+                            setSearchText(selectedKeys[0]);
+                            setSearchedColumn(dataIndex);
+                        }}
+                    >
+                        Filter
+                    </Button>
+                    <Button
+                        type="link"
+                        size="small"
+                        onClick={() => {
+                            close();
+                        }}
+                    >
+                        close
+                    </Button>
+                </Space>
+            </div>
+        ),
+        filterIcon: (filtered) => (
+            <SearchOutlined
+                style={{
+                    color: filtered ? '#1677ff' : undefined,
+                }}
+            />
+        ),
+        render: (data) =>
+            searchedColumn === dataIndex ? (
+                <NavLink to={`${formatOrderNumber(data)}`}>
+                    <Highlighter
+                        highlightStyle={{
+                            backgroundColor: '#ffc069',
+                            padding: 0,
+                        }}
+                        searchWords={[searchText]}
+                        autoEscape
+                        textToHighlight={formatOrderNumber(data) ? formatOrderNumber(data) : ''}
+                    />
+                </NavLink>
+            ) : (
+                <NavLink to={`${formatOrderNumber(data)}`}>{formatOrderNumber(data)}</NavLink>
+            ),
+    });
+
 
     const columns = [
         {
             title: 'Order ID',
             dataIndex: 'id',
             key: 'id',
-            render: (data) => <NavLink to={`${formatOrderNumber(data)}`}>{formatOrderNumber(data)}</NavLink>
+            ...getColumnSearchProps('id')
         },
         {
             title: 'Ordered By',
@@ -334,7 +413,7 @@ function Sales() {
             <Card className='shadow'>
                 <Row justify='space-between'>
                     <Col xs={{span: 24}} lg={{span: 6}}>
-                        <Search placeholder="Search orders . . ." onSearch={onSearch} enterButton/>
+                        {/*// Implement Something here*/}
                     </Col>
                     <Col xs={{span: 24}} lg={{span: 12}} flex={"inherit"}>
                         <Space>
@@ -387,7 +466,8 @@ function Sales() {
                         <TextArea rows={4}/>
                     </Form.Item>
                     <Form.Item>
-                        <Button disabled={currentOrderStatus === changedOrderStatus} type="primary" className='float-right' htmlType="submit" loading={statusLoading}>
+                        <Button disabled={currentOrderStatus === changedOrderStatus} type="primary"
+                                className='float-right' htmlType="submit" loading={statusLoading}>
                             Submit
                         </Button>
                     </Form.Item>
