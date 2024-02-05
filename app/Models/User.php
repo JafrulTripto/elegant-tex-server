@@ -73,6 +73,11 @@ class User extends Authenticatable implements JWTSubject
         });
     }
 
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'created_by');
+    }
+
     public function address()
     {
         return $this->morphOne(Address::class, 'addressable');
