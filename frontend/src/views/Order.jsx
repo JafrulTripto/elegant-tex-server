@@ -9,6 +9,7 @@ import PaymentSummary from "../components/Order/PaymentSummary";
 import CustomerInfo from "../components/Order/CustomerInfo";
 import OrderHeader from "../components/Order/OrderHeader";
 import DeliveryInfo from "../components/Order/DeliveryInfo";
+import StatusTimeline from "../components/Order/StatusTimeline";
 import {extractOrderNumber} from "../components/Util/OrderNumberFormatter";
 
 
@@ -112,22 +113,34 @@ const Order = () => {
                                 <Table columns={products} rowKey="id" dataSource={order.products} pagination={false}/> :
                                 <Skeleton paragraph={{rows: 3}}/>}
                         </Col>
-                        <Col xs={24} md={24}>
-                            <Card title="Payment Summary">
-                                {order.payment ?
-                                    <PaymentSummary payment={order.payment}/> : <Skeleton paragraph={{rows: 3}}/>}
-                            </Card>
+                        <Col xs={24} md={12}>
+                            <Row gutter={[12, 12]}>
+                                <Col xs={24} md={24}>
+                                    <Card title="Delivery Info">
+                                        {order.payment ?
+                                            <DeliveryInfo deliveryDate={order.deliveryDate}
+                                                          deliveryChannel={order.deliveryChannel.name}/> :
+                                            <Skeleton paragraph={{rows: 3}}/>}
+                                    </Card>
+                                </Col>
+                                <Col xs={12} md={24}>
+                                    <Card title="Payment Summary">
+                                        {order.payment ?
+                                            <PaymentSummary payment={order.payment}/> : <Skeleton paragraph={{rows: 3}}/>}
+                                    </Card>
+                                </Col>
+
+                            </Row>
                         </Col>
-                        <Col xs={24} md={24}>
-                            <Card title="Delivery Info">
+                        <Col xs={24} md={12}>
+                            <Card title="Timeline">
                                 {order.payment ?
-                                    <DeliveryInfo deliveryDate={order.deliveryDate}
-                                                  deliveryChannel={order.deliveryChannel.name}/> :
+                                    <StatusTimeline statuses = {order.status}/> :
                                     <Skeleton paragraph={{rows: 3}}/>}
                             </Card>
                         </Col>
-                    </Row>
 
+                    </Row>
                 </Col>
 
                 <Col xs={24} md={8}>
@@ -147,11 +160,10 @@ const Order = () => {
                                 </Row> : <Empty description={"No image found."}/>}
                             </Card>
                         </Col>
+
                     </Row>
 
                 </Col>
-
-
             </Row>
         </>
 

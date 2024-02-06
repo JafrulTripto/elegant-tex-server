@@ -2,11 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Enums\OrderStatus;
 use App\Enums\OrderType;
 use App\Models\Marketplace;
 use App\Models\Merchant;
-use App\Models\User;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class OrdersResource extends JsonResource
@@ -21,12 +19,12 @@ class OrdersResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'orderedBy' => $this->orderable_type == Marketplace::class ? Marketplace::where('id', $this->orderable_id)->value('name') : Merchant::where('id', $this->orderable_id)->value('name'),
-            'createdBy' => User::where('id', $this->created_by)->value('firstname'),
+            'orderedBy' => $this->orderable->name,
+            'createdBy' => $this->createdBy->firstname ." ". $this->createdBy->lastname,
             'status' => [
-                'id' => $this->statuses[0]->id,
-                'text' => $this->statuses[0]->text,
-                'color' => $this->statuses[0]->color,
+                'id' => $this->latestStatuses[0]->id,
+                'text' => $this->latestStatuses[0]->text,
+                'color' => $this->latestStatuses[0]->color,
             ],
             'totalAmount' => $this->total_amount,
             'createdAt' => $this->created_at,

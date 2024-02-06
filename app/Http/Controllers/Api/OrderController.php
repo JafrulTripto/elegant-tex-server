@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\OrderAlreadyInStatusException;
 use App\Exceptions\OrderException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOrderRequest;
@@ -61,30 +62,49 @@ class OrderController extends Controller
 
         if ($user->hasPermissionTo("VIEW_ALL_ORDERS")) {
             $query = Order::whereHasMorph('orderable', Marketplace::class)
-                ->with(['statuses' => function ($query) use ($status) {
+                ->with(['latestStatuses' => function ($query) use ($status) {
                     if (!empty($status)) {
-                        return $query->latest('order_status.updated_at')->whereIn('status_id', $status)->limit(1);
+                        return $query->whereIn('status_id', $status);
                     }
-                    return $query->latest('order_status.updated_at')->limit(1);
-                }])
-                ->latest('id');
+                    return $query;
+                },
+                    'orderable' => function ($query) {
+                        $query->select('id', 'name');
+                    },
+                    'createdBy' => function ($query) {
+                        $query->select('id', 'firstname', 'lastname');
+                    }])->latest('id');
         } else {
             $query = Order::whereHasMorph('orderable', [Marketplace::class], function (Builder $query) use ($userID) {
                 $query->whereHas('users', function ($q) use ($userID) {
                     $q->where("marketplace_user.user_id", $userID);
                 });
             })
-                ->with(['statuses' => function ($query) use ($status) {
+                ->with(['latestStatuses' => function ($query) use ($status) {
                     if (!empty($status)) {
-                        return $query->latest('order_status.updated_at')->whereIn('status_id', $status)->limit(1);
+                        return $query->whereIn('status_id', $status);
                     }
-                    return $query->latest('order_status.updated_at')->limit(1);
-                }])
-                ->latest('id');
+                    return $query;
+                }, 'orderable' => function ($query) {
+                    $query->select('id', 'name');
+                },
+                    'createdBy' => function ($query) {
+                        $query->select('id', 'firstname', 'lastname');
+                    }])->latest('id');
         }
 
-        // Apply search filter
-        return $this->applySearchFilter($search, $query, $status, $pageSize);
+        if (!empty($status)) {
+            $query->whereHas('latestStatuses', function ($query) use ($status) {
+                $query->whereIn('status_id', $status);
+            });
+        }
+        if (!empty($search)){
+            $query->where('id', $search);
+        }
+
+        $orders = $query->paginate($pageSize);
+
+        return OrdersResource::collection($orders);
     }
 
 
@@ -95,15 +115,29 @@ class OrderController extends Controller
         $pageSize = OrderController::PAGESIZE;
 
         $query = Order::whereHasMorph('orderable', [Merchant::class])
-            ->with(['statuses' => function ($query) use ($status) {
+            ->with(['latestStatuses' => function ($query) use ($status) {
                 if (!empty($status)) {
-                    return $query->latest('order_status.updated_at')->whereIn('status_id', $status)->limit(1);
+                    return $query->whereIn('status_id', $status);
                 }
-                return $query->latest('order_status.updated_at')->limit(1);
-            }])->latest('id');
+                return $query;
+            }, 'orderable' => function ($query) {
+                $query->select('id', 'name');
+            },
+                'createdBy' => function ($query) {
+                    $query->select('id', 'firstname', 'lastname');
+                }])->latest('id');
+        // Filter by status if status IDs are provided
+        if (!empty($status)) {
+            $query->whereHas('latestStatuses', function ($query) use ($status) {
+                $query->whereIn('status_id', $status);
+            });
+        }
+        if (!empty($search)){
+            $query->where('id', $search);
+        }
+        $orders = $query->paginate($pageSize);
 
-        // Apply search filter
-        return $this->applySearchFilter($search, $query, $status, $pageSize);
+        return OrdersResource::collection($orders);
     }
 
 
@@ -145,29 +179,43 @@ class OrderController extends Controller
 
     public function updateOrderStatus(Request $request)
     {
-        $id = $request->orderId;
-        $newStatusId = $request->newStatus;
-        $statusComment = $request->statusComment;
+        try {
+            $id = $request->orderId;
+            $newStatusId = $request->newStatus;
+            $statusComment = $request->statusComment;
 
-        // Find the order
-        $order = Order::find($id);
-        // Retrieve the status text based on the status ID
-        $newStatus = Status::find($newStatusId); // Assuming you have a Status model
+            // Find the order
+            $order = Order::find($id);
 
-        // Set default comment if it's empty
-        $defaultComment = "Updated order status to " . ($newStatus ? $newStatus->name : '');
-        $commentToUse = empty($statusComment) ? $defaultComment : $statusComment;
+            // Check if the order is already in the specified status
+            $currentStatusId = $order->statuses()->latest('order_status.updated_at')->firstOrFail()->id;
+            if ($currentStatusId == $newStatusId) {
+                throw new OrderAlreadyInStatusException('Order is already in the specified status.');
+            }
 
+            // Retrieve the status text based on the status ID
+            $newStatus = Status::find($newStatusId); // Assuming you have a Status model
 
-        // Attach the new status with the comment to the order
-        $order->statuses()->attach($newStatusId, ['comment' => $commentToUse]);
+            // Set default comment if it's empty
+            $defaultComment = "Updated order status to " . ($newStatus ? $newStatus->text : '');
+            $commentToUse = empty($statusComment) ? $defaultComment : $statusComment;
 
-        // Load the latest status for the order
-        $order->load(['statuses' => function ($query) {
-            $query->latest('order_status.updated_at')->limit(1);
-        }]);
+            // Attach the new status with the comment to the order
+            $order->statuses()->attach($newStatusId, ['comment' => $commentToUse]);
 
-        return OrdersResource::make($order);
+            // Load the latest status for the order
+            $order->load(['statuses' => function ($query) {
+                $query->latest('order_status.updated_at')->limit(1);
+            }]);
+
+            return OrdersResource::make($order);
+        } catch (OrderAlreadyInStatusException $e) {
+            // Handle the specific exception for orders already in the specified status
+            return response()->json(['message' => $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            // Handle other exceptions
+            return response()->json(['message' => 'An unexpected error occurred.'], 500);
+        }
     }
 
 
@@ -235,23 +283,4 @@ class OrderController extends Controller
         }
     }
 
-    /**
-     * @param mixed $search
-     * @param $query
-     * @param array $status
-     * @param int $pageSize
-     * @return AnonymousResourceCollection
-     */
-    public function applySearchFilter(mixed $search, $query, array $status, int $pageSize): AnonymousResourceCollection
-    {
-        if (!empty($status)) {
-            $query->whereHas('statuses', function ($query) use ($status) {
-                $query->whereIn('order_status.status_id', $status);
-            });
-        }
-
-        $orders = $query->paginate($pageSize);
-
-        return OrdersResource::collection($orders);
-    }
 }
