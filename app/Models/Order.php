@@ -33,11 +33,18 @@ class Order extends Model
         $lastOrder = static::orderByDesc('id')->first();
 
         if ($lastOrder) {
-            $lastOrderNumber = (int) substr($lastOrder->order_id, -4);
-            return str_pad($lastOrderNumber + 1, 4, '0', STR_PAD_LEFT);
+            $lastOrderNumber = (int)substr($lastOrder->order_id, -4);
+            $nextOrderNumber = $lastOrderNumber + 1;
+        } else {
+            // If no last order exists, start with 1000
+            $nextOrderNumber = 1000;
         }
 
-        return '1000';
+        // Get current datetime
+        $currentDatetime = date('YmdHis');
+
+        // Combine datetime and order number
+        return $currentDatetime . str_pad($nextOrderNumber, 4, '0', STR_PAD_LEFT);
     }
 
     public function createdBy()
