@@ -2,11 +2,15 @@
 
 namespace App\Services;
 
+use App\Enums\OrderStatus;
 use App\Enums\OrderType;
+use App\Exceptions\OrderAlreadyInStatusException;
 use App\Http\Resources\OrderResource;
+use App\Models\Activity;
 use App\Models\Marketplace;
 use App\Models\Merchant;
 use App\Models\Order;
+use App\Models\OrderStatusChange;
 use App\Models\Status;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -40,6 +44,7 @@ class OrderService
     {
         $model = null;
         $order = new Order();
+        $order->status = OrderStatus::DRAFT;
         $this->extracted($order, $orderData);
 
         if ($orderData['orderType'] == OrderType::MARKETPLACE->value) {
@@ -55,8 +60,6 @@ class OrderService
 
         $model->order()->save($order);
 
-        $initialStatus = Status::where('text', 'Draft')->first();
-        $order->statuses()->attach($initialStatus, ['comment' => 'Order created']);
 
         foreach ($orderData['products'] as $product) {
             $this->productService->store($product, $order);
@@ -85,24 +88,36 @@ class OrderService
 
     }
 
-    public function changeOrderStatus($id, $status)
+    /**
+     * @throws OrderAlreadyInStatusException
+     * @throws Exception
+     */
+    public function updateOrderStatus($orderId, $newStatusId, $statusComment)
     {
-        $order = Order::findOrFail($id);
-        if ($order) {
-            $order->update(['status' => $status]);
+        try {
+            $order = Order::find($orderId);
+            if ($order->status == $newStatusId) {
+                throw new OrderAlreadyInStatusException('Order is already in the specified status.');
+            }
+            $constructedComment = "Updated order status to " . OrderStatus::from($newStatusId)->name;
+            $commentToUse = empty($statusComment) ? $constructedComment : $statusComment;
+            $order->update(['status' => $newStatusId]);
+            $this->createOrderStatusChange($order->id, $commentToUse,$newStatusId);
+            return $order;
+        } catch (OrderAlreadyInStatusException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
-
-        return $order;
     }
 
+//    TODO: Return specific columns for getOrder function
     public function getOrder($orderID)
     {
         try {
-            $order = Order::with(['customer.address', 'image', 'product', 'statuses' => function ($query) {
-                // Include the 'comment' column from the pivot table
-                $query->select('statuses.id', 'statuses.color', 'statuses.text', 'order_status.comment')->latest('order_status.created_at');
-            }])
-                ->findOrFail($orderID);
+            $order = Order::with(['customer.address', 'image', 'product', 'orderStatusChanges' => function ($query) {
+                $query->with('user');
+            }]) ->findOrFail($orderID);
 
             return OrderResource::make($order);
         } catch (ModelNotFoundException $e) {
@@ -198,5 +213,15 @@ class OrderService
         return $amount;
     }
 
+
+    private function createOrderStatusChange($orderId, $comment, $status): void
+    {
+        $activity = new OrderStatusChange();
+        $activity->order_id = $orderId;
+        $activity->user_id = auth()->user()->id;
+        $activity->status = $status;
+        $activity->comment = $comment;
+        $activity->save();
+    }
 
 }

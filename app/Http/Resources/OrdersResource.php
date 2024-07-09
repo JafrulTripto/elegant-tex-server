@@ -21,11 +21,7 @@ class OrdersResource extends JsonResource
             'id' => $this->id,
             'orderedBy' => $this->orderable->name,
             'createdBy' => $this->createdBy->firstname ." ". $this->createdBy->lastname,
-            'status' => [
-                'id' => $this->latestStatuses[0]->id,
-                'text' => $this->latestStatuses[0]->text,
-                'color' => $this->latestStatuses[0]->color,
-            ],
+            'status' => $this->status,
             'totalAmount' => $this->total_amount,
             'createdAt' => $this->created_at,
             'deliveryDate' => $this->delivery_date,

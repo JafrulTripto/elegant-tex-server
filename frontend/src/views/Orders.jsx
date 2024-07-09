@@ -11,8 +11,7 @@ import {formatOrderNumber} from "../components/Util/OrderNumberFormatter";
 import dayjs from "dayjs";
 import TextArea from "antd/es/input/TextArea";
 import Highlighter from 'react-highlight-words';
-
-
+import {OrderStatusEnum} from "../utils/enums/OrderStatusEnum";
 function Sales() {
 
     const axiosClient = useAxiosClient();
@@ -21,7 +20,6 @@ function Sales() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [statusLoading, setStatusLoading] = useState(false);
-    const [statuses, setStatuses] = useState([]);
     const [orders, setOrders] = useState([]);
     const [total, setTotal] = useState(0)
     const [page, setPage] = useState(1);
@@ -36,10 +34,7 @@ function Sales() {
     const [orderId, setOrderId] = useState(null);
     const [statusForm] = Form.useForm();
 
-    const fetchOrderStatuses = async () => {
-        let statuses = await axiosClient.get('/status/getStatuses');
-        setStatuses(statuses.data);
-    };
+
     const fetchOrders = useCallback(async (page = 1, filter = []) => {
         console.log(filter)
         setLoading(true);
@@ -84,7 +79,6 @@ function Sales() {
     useEffect(() => {
         if (user) {
             fetchOrders();
-            fetchOrderStatuses()
         }
     }, [user, fetchOrders, orderType])
 
@@ -97,12 +91,12 @@ function Sales() {
 
     }
     const transformStatusArray = (statuses, textKey) => {
-        return statuses.map(({id, text, color}) => {
+        return statuses.map(({value, label, color}) => {
             const object = {};
-            object[textKey] = text;
-            object['value'] = id;
+            object[textKey] = label;
+            object['value'] = value;
             object['color'] = color;
-            object['disabled'] = id === 1 ? currentOrderStatus > 1 : isOrderStatusDisabled(`ORDER_${text}`);
+            object['disabled'] = value === 1 ? currentOrderStatus > 1 : isOrderStatusDisabled(`ORDER_${label}`);
             return object;
         });
     }
@@ -169,9 +163,18 @@ function Sales() {
         statusForm.resetFields();
     }
 
+    const getOrderStatusInfo = (data) => {
+        const status = OrderStatusEnum.find(status => status.value === data);
+        if (status) {
+            return { label: status.label, color: status.color };
+        } else {
+            return null; // Return null if the value is not found
+        }
+    };
     const renderStatus = (data, record, index) => {
-        return <Tag color={data.color} style={{cursor: "pointer", fontWeight: 700}}
-                    onClick={() => showStatusModal(data.id, record.id)}>{data.text}</Tag>
+        const {label, color } = getOrderStatusInfo(data)
+        return <Tag color={color} style={{cursor: "pointer", fontWeight: 700}}
+                    onClick={() => showStatusModal(data, record.id)}>{label}</Tag>
     }
 
     const handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -291,7 +294,7 @@ function Sales() {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
-            filters: transformStatusArray(statuses, 'text'),
+            filters: transformStatusArray(OrderStatusEnum, 'text'),
             render: renderStatus
         },
         {
@@ -385,13 +388,12 @@ function Sales() {
 
         try {
             const response = await axiosClient.post('/orders/updateOrderStatus', postData);
-            const order = response.data.data;
+            const order = response.data;
             const target = orders.find((obj) => obj.id === order.id);
             Object.assign(target, order);
             setIsModalOpen(false);
             toast.success("Successfully changed order status to updated status");
         } catch (error) {
-            console.log(error.response.data)
             const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
             toast.error(message);
         } finally {
@@ -456,7 +458,7 @@ function Sales() {
                     >
                         <Select
                             onChange={onChangeOrderStatus}
-                            options={transformStatusArray(statuses, 'label')}
+                            options={transformStatusArray(OrderStatusEnum, 'label')}
                         />
                     </Form.Item>
                     <Form.Item

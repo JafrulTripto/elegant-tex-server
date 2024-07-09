@@ -4,39 +4,38 @@ import {ClockCircleOutlined} from "@ant-design/icons";
 import dayjs from "dayjs";
 
 const OrderTimeline = ({statuses}) => {
-
-    const renderStatus = (text, comment, color, timestamp) => {
+    const renderStatus = (user, comment, timestamp) => {
         return (
             <div>
-                <div style={{color}}>{text}</div>
+                <div>{comment}</div>
                 <div>{dayjs(timestamp).format('MMMM Do YYYY, h:mm a')}</div>
-                <div>{comment? comment : "Status changed"}</div>
+                <div>({user.firstname})</div>
             </div>
         );
     }
 
-    const timelineItems = statuses.map((status) => {
-        const { color, text, comment, pivot } = status;
-        const timestamp = new Date(pivot.created_at).getTime();
+    const timelineItems = statuses.map((statusChangeItem) => {
+        const { user, comment, created_at } = statusChangeItem;
+        const timestamp = new Date(created_at).getTime();
 
         return {
             dot: (
                 <ClockCircleOutlined
                     style={{
                         fontSize: '16px',
-                        color: color,
+                        color: 'red',
                     }}
                 />
             ),
-            color: color,
-            children: renderStatus(text, comment, color, timestamp),
+            color: 'red',
+            children: renderStatus(user, comment, timestamp),
         };
     });
 
     const sortedTimelineItems = timelineItems.sort(
         (a, b) => a.createdAt - b.createdAt
     );
-
+    // TODO: Show (No status change record found) if there is no data.
     return (
         <Timeline mode="alternate" items={sortedTimelineItems} />
     );
