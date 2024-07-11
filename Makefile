@@ -8,3 +8,5 @@ migrate:
 	docker-compose exec app php artisan migrate
 seed:
 	docker-compose exec app php artisan db:seed
+schedule:
+    docker-compose exec app php artisan schedule:run >> /dev/null 2>&1

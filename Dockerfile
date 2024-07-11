@@ -2,9 +2,11 @@ ARG PHP_VERSION=8.2
 FROM php:${PHP_VERSION}-fpm as php
 LABEL maintainer="Jafrul Hossain <jafrultripto@gmail.com>"
 ENV TZ=Asia/Dhaka
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-# Create a new user
 
+# Set the timezone
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Create a new user
 RUN usermod -u 1000 www-data
 
 # Set the working directory
@@ -22,6 +24,7 @@ RUN apt-get update && \
     unzip \
     libcurl4-gnutls-dev \
     curl \
+    default-mysql-client \
     && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg \
     && docker-php-ext-install zip pdo_mysql mbstring exif pcntl bcmath opcache gd intl
 
@@ -37,12 +40,13 @@ COPY --chown=www-data . .
 
 RUN chmod -R 755 /var/www/html/storage
 RUN chmod -R 755 /var/www/html/bootstrap
+
 # Install Composer globally
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
+
 # Copy the entrypoint script
 COPY .docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
@@ -53,5 +57,3 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 CMD ["php-fpm"]
-
-
