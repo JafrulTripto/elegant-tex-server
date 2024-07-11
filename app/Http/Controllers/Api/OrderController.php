@@ -58,42 +58,52 @@ class OrderController extends Controller
     {
         $user = User::find($userID);
         $search = $request->input('search', '');
+        $deliveryDateFilterStartDate = $request->input('startDate', '');
+        $deliveryDateFilterEndDate = $request->input('endDate', '');
         $status = $request->input('status') ? array_map('intval', explode(',', $request->input('status'))) : [];
         $pageSize = OrderController::PAGESIZE;
 
-        if ($user->hasPermissionTo("VIEW_ALL_ORDERS")) {
-            $query = Order::whereHasMorph('orderable', Marketplace::class)
-                ->with(['orderable' => function ($query) {
-                        $query->select('id', 'name');
-                    },
-                    'createdBy' => function ($query) {
-                        $query->select('id', 'firstname', 'lastname');
-                    }])->latest('id');
-        } else {
-            $query = Order::whereHasMorph('orderable', [Marketplace::class], function (Builder $query) use ($userID) {
+        $query = Order::query()
+            ->with([
+                'orderable:id,name',
+                'createdBy:id,firstname,lastname'
+            ])
+            ->latest('id');
+
+        // Apply permissions filter
+        if (!$user->hasPermissionTo("VIEW_ALL_ORDERS")) {
+            $query->whereHasMorph('orderable', [Marketplace::class], function (Builder $query) use ($userID) {
                 $query->whereHas('users', function ($q) use ($userID) {
                     $q->where("marketplace_user.user_id", $userID);
                 });
-            })
-                ->with(['orderable' => function ($query) {
-                    $query->select('id', 'name');
-                },
-                    'createdBy' => function ($query) {
-                        $query->select('id', 'firstname', 'lastname');
-                    }])->latest('id');
+            });
         }
-        if (!empty($status)){
+
+        // Apply status filter
+        if (!empty($status)) {
             $query->whereIn('status', $status);
         }
 
-        if (!empty($search)){
+        // Apply search filter
+        if (!empty($search)) {
             $query->where('id', $search);
         }
 
+        // Apply delivery date filters
+        if (!empty($deliveryDateFilterStartDate)) {
+            $query->whereDate('delivery_date', '>=', $deliveryDateFilterStartDate);
+        }
+
+        if (!empty($deliveryDateFilterEndDate)) {
+            $query->whereDate('delivery_date', '<=', $deliveryDateFilterEndDate);
+        }
+
+        // Paginate the results
         $orders = $query->paginate($pageSize);
 
         return OrdersResource::collection($orders);
     }
+
 
 
     public function getMerchantOrders(Request $request)

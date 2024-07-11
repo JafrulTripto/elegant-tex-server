@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useCallback, useRef} from 'react';
-import {Space, Card, Row, Col, Button, Input, Table, Tag, Tabs, Select, Modal, Form} from 'antd';
+import {Space, Card, Row, Col, Button, Input, Table, Tag, Tabs, Select, Modal, Form, DatePicker} from 'antd';
 import {NavLink, useNavigate} from "react-router-dom";
 import {toast} from 'react-toastify';
 import {PlusOutlined, DeleteOutlined, EditOutlined, SearchOutlined} from '@ant-design/icons'
@@ -29,10 +29,12 @@ function Sales() {
     const [changedOrderStatus, setChangedOrderStatus] = useState(null);
     const searchInput = useRef(null);
     const [searchText, setSearchText] = useState('');
+    const [filteredDeliveryDates, setFilteredDeliveryDates] = useState({})
     const [searchedColumn, setSearchedColumn] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [orderId, setOrderId] = useState(null);
     const [statusForm] = Form.useForm();
+    const { RangePicker } = DatePicker;
 
 
     const fetchOrders = useCallback(async (page = 1, filter = []) => {
@@ -54,6 +56,9 @@ function Sales() {
         if (filter.status && filter.status.length > 0) {
             // Add filter parameter
             link += `&status=${filter.status.join(',')}`;
+        }
+        if (filter.deliveryDate && filter.deliveryDate.length > 0) {
+            link += `&startDate=${filter.deliveryDate[0].format("YYYY-MM-DD")}&endDate=${filter.deliveryDate[1].format("YYYY-MM-DD")}`
         }
         if (filter.id && filter.id.length > 0) {
             link += `&search=${filter.id[0]}`
@@ -178,6 +183,7 @@ function Sales() {
     }
 
     const handleSearch = (selectedKeys, confirm, dataIndex) => {
+        console.log(selectedKeys)
         confirm();
         setSearchText(selectedKeys[0]);
         setSearchedColumn(dataIndex);
@@ -259,6 +265,7 @@ function Sales() {
                 }}
             />
         ),
+
         render: (data) =>
             searchedColumn === dataIndex ? (
                 <NavLink to={`${formatOrderNumber(data)}`}>
@@ -275,6 +282,74 @@ function Sales() {
             ) : (
                 <NavLink to={`${formatOrderNumber(data)}`}>{formatOrderNumber(data)}</NavLink>
             ),
+    });
+    const onChangeFilterDeliveryDates = (dates) => {
+        console.log(dates)
+        let filteredDates = {};
+        if(dates) {
+            filteredDates = {
+                startDate:dates[0].format("YYYY-MM-DD"),
+                endDate: dates[1].format("YYYY-MM-DD")
+            }
+        }
+
+    }
+
+    const handleFilterDeliveryDates = (dates, confirm, dataIndex) => {
+        let filteredDates = {};
+        if(dates) {
+            filteredDates = {
+                startDate:dates[0].format("YYYY-MM-DD"),
+                endDate: dates[1].format("YYYY-MM-DD")
+            }
+        }
+        setFilteredDeliveryDates(filteredDates);
+        confirm();
+    }
+    const filterDeliveryDates = (dataIndex) => ({
+        filterDropdown: ({setSelectedKeys, selectedKeys, confirm, clearFilters, close}) => (
+            <div
+                style={{
+                    padding: 8,
+                }}
+                onKeyDown={(e) => e.stopPropagation()}
+            >
+
+
+                <Space direction="vertical" size={12}>
+                    <RangePicker
+                        format="DD/MM/YYYY"
+                        onChange={(dates) => setSelectedKeys(dates)}
+                    />
+                    <Space>
+                        <Button
+                            type="primary"
+                            onClick={() => handleFilterDeliveryDates(selectedKeys, confirm, dataIndex)}
+                            icon={<SearchOutlined/>}
+                            size="small"
+                            style={{
+                                width: 90,
+                            }}
+                        >
+                            Go
+                        </Button>
+                        <Button
+                            type="link"
+                            size="small"
+                            onClick={() => {
+                                close();
+                            }}
+                        >
+                            close
+                        </Button>
+                    </Space>
+
+                </Space>
+            </div>
+        ),
+
+        render: (data) => dayjs(data).format('MMMM DD, YYYY'),
+
     });
 
 
@@ -312,7 +387,7 @@ function Sales() {
             title: 'Delivery Date',
             dataIndex: 'deliveryDate',
             key: 'deliveryDate',
-            render: (data) => dayjs(data).format('MMMM DD, YYYY')
+            ...filterDeliveryDates('deliveryDate')
         },
         {
             title: 'Total Amount (Tk)',
