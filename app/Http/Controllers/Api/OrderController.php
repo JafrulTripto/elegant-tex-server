@@ -57,15 +57,13 @@ class OrderController extends Controller
     public function getMarketplaceOrders($userID, Request $request): ResourceCollection
     {
         $user = User::find($userID);
-        $search = $request->input('search', '');
-        $status = $request->input('status') ? array_map('intval', explode(',', $request->input('status'))) : [];
         $pageSize = OrderController::PAGESIZE;
 
         if ($user->hasPermissionTo("VIEW_ALL_ORDERS")) {
             $query = Order::whereHasMorph('orderable', Marketplace::class)
                 ->with(['orderable' => function ($query) {
-                        $query->select('id', 'name');
-                    },
+                    $query->select('id', 'name');
+                },
                     'createdBy' => function ($query) {
                         $query->select('id', 'firstname', 'lastname');
                     }])->latest('id');
@@ -82,24 +80,19 @@ class OrderController extends Controller
                         $query->select('id', 'firstname', 'lastname');
                     }])->latest('id');
         }
-        if (!empty($status)){
-            $query->whereIn('status', $status);
-        }
 
-        if (!empty($search)){
-            $query->where('id', $search);
-        }
+        // Apply common filters
+        $query = $this->applyFiltersToQuery($query, $request);
 
+        // Paginate the results
         $orders = $query->paginate($pageSize);
 
         return OrdersResource::collection($orders);
     }
 
 
-    public function getMerchantOrders(Request $request)
+    public function getMerchantOrders(Request $request): ResourceCollection
     {
-        $search = $request->input('search', '');
-        $status = $request->input('status') ? array_map('intval', explode(',', $request->input('status'))) : [];
         $pageSize = OrderController::PAGESIZE;
 
         $query = Order::whereHasMorph('orderable', [Merchant::class])
@@ -109,11 +102,11 @@ class OrderController extends Controller
                 'createdBy' => function ($query) {
                     $query->select('id', 'firstname', 'lastname');
                 }])->latest('id');
-        // Filter by status if status IDs are provided
 
-        if (!empty($search)){
-            $query->where('id', $search);
-        }
+        // Apply common filters
+        $query = $this->applyFiltersToQuery($query, $request);
+
+        // Paginate the results
         $orders = $query->paginate($pageSize);
 
         return OrdersResource::collection($orders);
@@ -234,6 +227,35 @@ class OrderController extends Controller
             Log::error($e->getMessage());
             return response()->json(['message' => 'An error occurred while deleting the order'], ResponseAlias::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private function applyFiltersToQuery($query, $request)
+    {
+        $search = $request->input('search', '');
+        $deliveryDateFilterStartDate = $request->input('startDate', '');
+        $deliveryDateFilterEndDate = $request->input('endDate', '');
+        $status = $request->input('status') ? array_map('intval', explode(',', $request->input('status'))) : [];
+
+        // Apply search filter
+        if (!empty($search)) {
+            $query->where('id', $search);
+        }
+
+        // Apply status filter
+        if (!empty($status)) {
+            $query->whereIn('status', $status);
+        }
+
+        // Apply delivery date filters
+        if (!empty($deliveryDateFilterStartDate)) {
+            $query->whereDate('delivery_date', '>=', $deliveryDateFilterStartDate);
+        }
+
+        if (!empty($deliveryDateFilterEndDate)) {
+            $query->whereDate('delivery_date', '<=', $deliveryDateFilterEndDate);
+        }
+
+        return $query;
     }
 
 }

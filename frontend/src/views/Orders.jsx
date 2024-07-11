@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useCallback, useRef} from 'react';
-import {Space, Card, Row, Col, Button, Input, Table, Tag, Tabs, Select, Modal, Form} from 'antd';
+import {Space, Card, Row, Col, Button, Input, Table, Tag, Tabs, Select, Modal, Form, DatePicker} from 'antd';
 import {NavLink, useNavigate} from "react-router-dom";
 import {toast} from 'react-toastify';
 import {PlusOutlined, DeleteOutlined, EditOutlined, SearchOutlined} from '@ant-design/icons'
@@ -29,42 +29,39 @@ function Sales() {
     const [changedOrderStatus, setChangedOrderStatus] = useState(null);
     const searchInput = useRef(null);
     const [searchText, setSearchText] = useState('');
+    const [filteredDeliveryDates, setFilteredDeliveryDates] = useState({})
     const [searchedColumn, setSearchedColumn] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [orderId, setOrderId] = useState(null);
     const [statusForm] = Form.useForm();
+    const { RangePicker } = DatePicker;
 
 
-    const fetchOrders = useCallback(async (page = 1, filter = []) => {
-        console.log(filter)
+    const fetchOrders = useCallback(async (page = 1, filter = {}) => {
         setLoading(true);
-        let link = '';
         const userId = user.id;
+        let link = orderType === 'Marketplace' ? `/orders/getMarketplaceOrders/${userId}?` : `/orders/getMerchantOrders?`;
 
-        if (orderType === 'Marketplace') {
-            link = `/orders/getMarketplaceOrders/${userId}?`;
-        } else {
-            link = `/orders/getMerchantOrders?`;
-        }
+        // Construct query parameters
+        const params = {
+            page,
+            status: filter.status && filter.status.length > 0 ? filter.status.join(',') : undefined,
+            startDate: filter.deliveryDate && filter.deliveryDate.length > 0 ? filter.deliveryDate[0].format("YYYY-MM-DD") : undefined,
+            endDate: filter.deliveryDate && filter.deliveryDate.length > 0 ? filter.deliveryDate[1].format("YYYY-MM-DD") : undefined,
+            search: filter.id && filter.id.length > 0 ? filter.id[0] : undefined
+        };
 
-        // Add page parameter
-        link += `page=${page}`;
+        // Remove undefined or empty parameters
+        const queryParams = Object.entries(params)
+            .filter(([key, value]) => value !== undefined && value !== '')
+            .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+            .join('&');
 
-        // Check if filter is defined and not empty
-        if (filter.status && filter.status.length > 0) {
-            // Add filter parameter
-            link += `&status=${filter.status.join(',')}`;
-        }
-        if (filter.id && filter.id.length > 0) {
-            link += `&search=${filter.id[0]}`
-        }
         try {
-            const orders = await axiosClient.get(link);
+            const orders = await axiosClient.get(`${link}${queryParams}`);
             setLoading(false);
 
-            const ordersData = orders.data.data.map((data) => {
-                return {...data, key: data.id};
-            });
+            const ordersData = orders.data.data.map(data => ({ ...data, key: data.id }));
 
             setOrders(ordersData);
             setTotal(orders.data.meta.total);
@@ -73,7 +70,7 @@ function Sales() {
             toast.error(message);
             setLoading(false);
         }
-    }, [axiosClient, user.id, orderType]);
+    }, [axiosClient, user.id, orderType, setOrders, setTotal, setLoading, toast]);
 
 
     useEffect(() => {
@@ -259,6 +256,7 @@ function Sales() {
                 }}
             />
         ),
+
         render: (data) =>
             searchedColumn === dataIndex ? (
                 <NavLink to={`${formatOrderNumber(data)}`}>
@@ -275,6 +273,63 @@ function Sales() {
             ) : (
                 <NavLink to={`${formatOrderNumber(data)}`}>{formatOrderNumber(data)}</NavLink>
             ),
+    });
+
+    const handleFilterDeliveryDates = (dates, confirm, dataIndex) => {
+        let filteredDates = {};
+        if(dates) {
+            filteredDates = {
+                startDate:dates[0].format("YYYY-MM-DD"),
+                endDate: dates[1].format("YYYY-MM-DD")
+            }
+        }
+        setFilteredDeliveryDates(filteredDates);
+        confirm();
+    }
+    const filterDeliveryDates = (dataIndex) => ({
+        filterDropdown: ({setSelectedKeys, selectedKeys, confirm, clearFilters, close}) => (
+            <div
+                style={{
+                    padding: 8,
+                }}
+                onKeyDown={(e) => e.stopPropagation()}
+            >
+
+
+                <Space direction="vertical" size={12}>
+                    <RangePicker
+                        format="DD/MM/YYYY"
+                        onChange={(dates) => setSelectedKeys(dates)}
+                    />
+                    <Space>
+                        <Button
+                            type="primary"
+                            onClick={() => handleFilterDeliveryDates(selectedKeys, confirm, dataIndex)}
+                            icon={<SearchOutlined/>}
+                            size="small"
+                            style={{
+                                width: 90,
+                            }}
+                        >
+                            Go
+                        </Button>
+                        <Button
+                            type="link"
+                            size="small"
+                            onClick={() => {
+                                close();
+                            }}
+                        >
+                            close
+                        </Button>
+                    </Space>
+
+                </Space>
+            </div>
+        ),
+
+        render: (data) => dayjs(data).format('MMMM DD, YYYY'),
+
     });
 
 
@@ -312,7 +367,7 @@ function Sales() {
             title: 'Delivery Date',
             dataIndex: 'deliveryDate',
             key: 'deliveryDate',
-            render: (data) => dayjs(data).format('MMMM DD, YYYY')
+            ...filterDeliveryDates('deliveryDate')
         },
         {
             title: 'Total Amount (Tk)',
