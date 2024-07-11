@@ -9,44 +9,54 @@ import dayjs from "dayjs";
 
 const OrderHeader = ({order}) => {
 
-  return (
-    <div className="mb-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <h3 className="text-2xl text-stone-900">
-            Order #{formatOrderNumber(order.id)}
-          </h3>
-          <div className="mb-3 pl-5 font-bold">
-            <Tag color={order.status[0].color}>{order.status[0].text}</Tag>
-          </div>
-        </div>
+    const getOrderStatusInfo = (data) => {
+        const status = OrderStatusEnum.find(status => status.value === data);
+        console.log(status)
+        if (status) {
+            return {label: status.label, color: status.color};
+        } else {
+            return null; // Return null if the value is not found
+        }
+    };
+    let {label, color} = getOrderStatusInfo(order.status)
+    return (
+        <div className="mb-3">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                    <h3 className="text-2xl text-stone-900">
+                        Order #{formatOrderNumber(order.id)}
+                    </h3>
+                    <div className="mb-3 pl-5 font-bold">
+                        <Tag color={color}>{label}</Tag>
+                    </div>
+                </div>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-semibold text-zinc-500">
-              <span className="text-sm font-thin">Ordered By:</span> {order.orderable.name}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <div className="text-sm font-semibold text-zinc-500">
+                            <span className="text-sm font-thin">Ordered By:</span> {order.orderable.name}
+                        </div>
+                        {order.merchantRef ? <div className="text-sm font-semibold text-blue-800">
+                            <span className="text-sm font-thin">Merchant Reference:</span> {order.merchantRef}
+                        </div> : null}
+                    </div>
+
+                    <div className="pl-4">
+                        <PDFDownloadLink document={<OrderInvoice order={order}/>}
+                                         fileName={`${formatOrderNumber(order.id)}-${dayjs().unix()}.pdf`}>
+                            {({blob, url, loading, error}) =>
+                                <Button type="dashed" loading={loading} icon={<DownloadOutlined/>}
+                                >Download PDF
+                                </Button>
+                            }
+                        </PDFDownloadLink>
+                    </div>
+                </div>
             </div>
-            {order.merchantRef?<div  className="text-sm font-semibold text-blue-800">
-              <span className="text-sm font-thin">Merchant Reference:</span> {order.merchantRef}
-            </div> : null}
-          </div>
-
-          <div className="pl-4">
-            <PDFDownloadLink document={<OrderInvoice order={order}/>}
-                             fileName={`${formatOrderNumber(order.id)}-${dayjs().unix()}.pdf`}>
-              {({blob, url, loading, error}) =>
-                <Button type="dashed" loading={loading} icon={<DownloadOutlined/>}
-                >Download PDF
-                </Button>
-              }
-            </PDFDownloadLink>
-          </div>
+            <CalendarOutlined className="text-zinc-500 pr-1"/>
+            <span className="text-zinc-500">{dayjs(order.createdAt).format('MMMM Do YYYY, h:mm a')}</span>
         </div>
-      </div>
-      <CalendarOutlined className="text-zinc-500 pr-1"/>
-      <span className="text-zinc-500">{dayjs(order.createdAt).format('MMMM Do YYYY, h:mm a')}</span>
-    </div>
-  );
+    );
 };
 
 export default OrderHeader;

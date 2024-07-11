@@ -69,15 +69,9 @@ class Order extends Model
         return $this->morphMany(Image::class, 'imageable');
     }
 
-    public function statuses(): BelongsToMany
+    public function orderStatusChanges()
     {
-        return $this->belongsToMany(Status::class)->withTimestamps();
-    }
-
-    public function latestStatuses()
-    {
-        return $this->belongsToMany(Status::class)
-            ->orderByPivot('created_at', 'desc')->limit(1);
+        return $this->hasMany(OrderStatusChange::class);
     }
 
     protected function deliveryChannel(): Attribute

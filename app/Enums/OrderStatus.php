@@ -3,14 +3,14 @@
 namespace App\Enums;
 
 enum OrderStatus : int {
-    case DRAFT = 0;
-    case APPROVED = 1;
-    case PRODUCTION = 2;
-    case QA = 3;
-    case READY = 4;
-    case DELIVERED = 5;
-    case RETURNED = 6;
-    case CANCELLED = 7;
-    case BOOKING = 8;
+    case DRAFT = 1;
+    case APPROVED = 2;
+    case PRODUCTION = 3;
+    case QA = 4;
+    case READY = 5;
+    case DELIVERED = 6;
+    case RETURNED = 7;
+    case CANCELLED = 8;
+    case BOOKING = 9;
 }
 

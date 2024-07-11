@@ -91,7 +91,10 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsToMany(Marketplace::class);
     }
-
+    public function orderStatusChanges()
+    {
+        return $this->hasMany(OrderStatusChange::class);
+    }
     public function imagePath()
     {
         if ($this->image()->exists()){

@@ -134,8 +134,8 @@ const Order = () => {
                         </Col>
                         <Col xs={24} md={12}>
                             <Card title="Timeline">
-                                {order.payment ?
-                                    <StatusTimeline statuses = {order.status}/> :
+                                {order.orderStatusChanges ?
+                                    <StatusTimeline statuses = {order.orderStatusChanges}/> :
                                     <Skeleton paragraph={{rows: 3}}/>}
                             </Card>
                         </Col>
