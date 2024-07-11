@@ -37,39 +37,31 @@ function Sales() {
     const { RangePicker } = DatePicker;
 
 
-    const fetchOrders = useCallback(async (page = 1, filter = []) => {
-        console.log(filter)
+    const fetchOrders = useCallback(async (page = 1, filter = {}) => {
         setLoading(true);
-        let link = '';
         const userId = user.id;
+        let link = orderType === 'Marketplace' ? `/orders/getMarketplaceOrders/${userId}?` : `/orders/getMerchantOrders?`;
 
-        if (orderType === 'Marketplace') {
-            link = `/orders/getMarketplaceOrders/${userId}?`;
-        } else {
-            link = `/orders/getMerchantOrders?`;
-        }
+        // Construct query parameters
+        const params = {
+            page,
+            status: filter.status && filter.status.length > 0 ? filter.status.join(',') : undefined,
+            startDate: filter.deliveryDate && filter.deliveryDate.length > 0 ? filter.deliveryDate[0].format("YYYY-MM-DD") : undefined,
+            endDate: filter.deliveryDate && filter.deliveryDate.length > 0 ? filter.deliveryDate[1].format("YYYY-MM-DD") : undefined,
+            search: filter.id && filter.id.length > 0 ? filter.id[0] : undefined
+        };
 
-        // Add page parameter
-        link += `page=${page}`;
+        // Remove undefined or empty parameters
+        const queryParams = Object.entries(params)
+            .filter(([key, value]) => value !== undefined && value !== '')
+            .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+            .join('&');
 
-        // Check if filter is defined and not empty
-        if (filter.status && filter.status.length > 0) {
-            // Add filter parameter
-            link += `&status=${filter.status.join(',')}`;
-        }
-        if (filter.deliveryDate && filter.deliveryDate.length > 0) {
-            link += `&startDate=${filter.deliveryDate[0].format("YYYY-MM-DD")}&endDate=${filter.deliveryDate[1].format("YYYY-MM-DD")}`
-        }
-        if (filter.id && filter.id.length > 0) {
-            link += `&search=${filter.id[0]}`
-        }
         try {
-            const orders = await axiosClient.get(link);
+            const orders = await axiosClient.get(`${link}${queryParams}`);
             setLoading(false);
 
-            const ordersData = orders.data.data.map((data) => {
-                return {...data, key: data.id};
-            });
+            const ordersData = orders.data.data.map(data => ({ ...data, key: data.id }));
 
             setOrders(ordersData);
             setTotal(orders.data.meta.total);
@@ -78,7 +70,7 @@ function Sales() {
             toast.error(message);
             setLoading(false);
         }
-    }, [axiosClient, user.id, orderType]);
+    }, [axiosClient, user.id, orderType, setOrders, setTotal, setLoading, toast]);
 
 
     useEffect(() => {
@@ -183,7 +175,6 @@ function Sales() {
     }
 
     const handleSearch = (selectedKeys, confirm, dataIndex) => {
-        console.log(selectedKeys)
         confirm();
         setSearchText(selectedKeys[0]);
         setSearchedColumn(dataIndex);
@@ -283,17 +274,6 @@ function Sales() {
                 <NavLink to={`${formatOrderNumber(data)}`}>{formatOrderNumber(data)}</NavLink>
             ),
     });
-    const onChangeFilterDeliveryDates = (dates) => {
-        console.log(dates)
-        let filteredDates = {};
-        if(dates) {
-            filteredDates = {
-                startDate:dates[0].format("YYYY-MM-DD"),
-                endDate: dates[1].format("YYYY-MM-DD")
-            }
-        }
-
-    }
 
     const handleFilterDeliveryDates = (dates, confirm, dataIndex) => {
         let filteredDates = {};
