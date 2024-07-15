@@ -9,7 +9,7 @@ services:
     #   args:
     #     - APP_NAME=${APP_NAME}
     #     - APP_ENV=${APP_ENV}
-    image: tripzin/elegant-tex-portal:dev
+    image: tripzin/elegant-tex-app:dev
     container_name: elegant-tex-app
     restart: unless-stopped
     volumes:

@@ -4,11 +4,11 @@
 Guideline to deploy Elegant tex management portal.
 # Build Application Container (Development)
 ```bash
-docker build --no-cache --build-arg DEVELOPMENT=true -t tripzin/elegant-tex-portal:dev .
+docker build --no-cache --build-arg DEVELOPMENT=true -t tripzin/elegant-tex-app:dev .
 ```
 # Build Application Container (Production)
 ```bash
-docker build --no-cache --build-arg DEVELOPMENT=false -t tripzin/elegant-tex-portal:v1.0.0 .
+docker build --no-cache --build-arg DEVELOPMENT=false -t tripzin/elegant-tex-app:v1.0.0 .
 ```
 
 # Run Docker Containers
