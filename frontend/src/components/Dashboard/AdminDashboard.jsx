@@ -5,6 +5,7 @@ import OrderBarChart from "./OrderBarChart";
 import MarketplaceOrdersChart from "./MarketplaceOrdersChart";
 import { useDashboardData } from "../../hooks/useDashboardData";
 import TopExecutives from "./TopExecutives";
+import TopMarketplacesLineChart from "./TopMarketplacesLineChart";
 
 const AdminDashboard = () => {
   const { dashboardData, dashboardDataLoading } = useDashboardData();
@@ -102,6 +103,9 @@ const AdminDashboard = () => {
         </Col>
         <Col xs={24} md={24} lg={12}>
           <TopExecutives />
+        </Col>
+        <Col xs={24} md={24} lg={12}>
+          <TopMarketplacesLineChart />
         </Col>
       </Row>
     </>

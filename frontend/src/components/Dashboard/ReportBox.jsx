@@ -11,6 +11,7 @@ const ReportBox = (props) => {
   const showIcon = () => {
     switch (text) {
       case "Order":
+      case "My Orders":
         return faRectangleList;
         case "Marketplace":
           return faGlobe;
@@ -52,7 +53,7 @@ const ReportBox = (props) => {
             <div className="text-3xl font-bold leading-8 mt-6 ">{reportData.total}</div>
             <div className="text-3xl font-bold leading-8 mt-6 text-[#50B498]">{`${parseInt(reportData.amount).toLocaleString()} ৳`}</div>
           </div>
-          
+
           <div className="flex justify-between">
             <div className='text-base font-semibold text-mt-1 text-[#fca311]'>{showReportText()}</div>
             <div>
@@ -67,7 +68,7 @@ const ReportBox = (props) => {
       </div>
     );
   }
-  
+
   if (loading) {
     return (
       <div className="report-box zoom-in bg-white rounded-lg shadow-md">

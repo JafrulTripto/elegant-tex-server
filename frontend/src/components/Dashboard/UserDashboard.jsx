@@ -6,7 +6,7 @@ import {useUserDashboardData} from "../../hooks/useUserDashboardData";
 const UserDashboard = () => {
   const { userDashboardData, userDashboardDataLoading } = useUserDashboardData();
   const extractDataByOrderType = (data, orderType) => {
-    const orderData = {
+    return {
       firstValue: {
         total: data.today.total,
         amount: data.today.amount,
@@ -16,7 +16,6 @@ const UserDashboard = () => {
         amount: data.monthly.amount,
       },
     };
-    return orderData;
   }
   return (
     <>
@@ -25,7 +24,7 @@ const UserDashboard = () => {
           <ReportBox
             data={userDashboardData ? extractDataByOrderType(userDashboardData, 'order') : null}
             loading={userDashboardDataLoading}
-            text="Order"
+            text="My Orders"
           />
         </Col>
       </Row>

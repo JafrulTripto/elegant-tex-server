@@ -98,7 +98,7 @@ const OrderBarChart = () => {
       <div className="flex flex-row justify-between">
         <div>
           <h5 className="mb-2 text-xl font-medium leading-tight text-neutral-800">
-            Orders this Month
+            Orders This Month
           </h5>
         </div>
         <div>
