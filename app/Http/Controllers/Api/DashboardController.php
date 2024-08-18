@@ -115,59 +115,64 @@ class DashboardController extends Controller
 	}
 
 
-	public function getBarChartData(): JsonResponse
-	{
-		$startDate = now()->startOfMonth(); // Get the start of the current month
-		$endDate = now()->endOfMonth(); // Get the end of the current month
+  public function getBarChartData(): JsonResponse
+  {
+    $startDate = now()->startOfMonth();
+    $endDate = now()->endOfDay();
 
-		// Retrieve the orders within the date range and group them by day
-		$orders = Order::whereBetween('created_at', [$startDate, $endDate])
-			->selectRaw('DAY(created_at) as day, COUNT(*) as total')
-			->groupBy('day')
-			->get();
+    $orders = Order::whereBetween('created_at', [$startDate, $endDate])
+      ->selectRaw('DAY(created_at) as day, COUNT(*) as total_count, SUM(total_amount) as total_amount')
+      ->groupBy('day')
+      ->get();
 
-		// Create an array with day numbers (1 to the last day of the month) and initialize them to 0
-		$result = [];
-		for ($date = $startDate; $date <= $endDate; $date->addDay()) {
-			$result[$date->format('j')] = 0;
-		}
+    $result = [];
 
-		// Update the array with actual order counts for each day
-		foreach ($orders as $order) {
-			$result[(int)$order->day] = (int)$order->total;
-		}
+    foreach ($orders as $order) {
+      $result[(int)$order->day] = [
+        'total_count' => (int)$order->total_count,
+        'total_amount' => (float)$order->total_amount,
+      ];
+    }
+
+    return response()->json($result);
+  }
 
 
+  public function getOrdersPerMarketplace(Request $request)
+  {
+    $type = $request->input('type', 'month');
 
-		return response()->json($result);
-	}
+    if ($type === 'year') {
+      // Get data for the current year
+      $startDate = Carbon::now()->startOfYear();
+      $endDate = Carbon::now()->endOfYear();
+    } else {
+      // Get data for the current month (default)
+      $startDate = Carbon::now()->startOfMonth();
+      $endDate = Carbon::now()->endOfMonth();
+    }
 
-	public function getOrdersPerMarketplace(Request $request)
-	{
-		$type = $request->input('type', 'month');
+    $marketplaces = Marketplace::all();
 
-		if ($type === 'year') {
-			// Get data for the current year
-			$startDate = Carbon::now()->startOfYear();
-			$endDate = Carbon::now()->endOfYear();
-		} else {
-			// Get data for the current month (default)
-			$startDate = Carbon::now()->startOfMonth();
-			$endDate = Carbon::now()->endOfMonth();
-		}
+    $marketplaceOrdersData = [];
+    foreach ($marketplaces as $marketplace) {
+      $totalOrders = $marketplace->order()
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->count();
 
-		$marketplaces = Marketplace::all();
+      if ($totalOrders > 0) {
+        $marketplaceOrdersData[] = [
+          'marketplace_name' => $marketplace->name,
+          'total_orders' => $totalOrders,
+        ];
+      }
+    }
 
-		$marketplaceOrdersData = [];
-		foreach ($marketplaces as $marketplace) {
-			$marketplaceOrdersData[] = [
-				'marketplace_name' => $marketplace->name,
-				'total_orders' => $marketplace->order()
-					->whereBetween('created_at', [$startDate, $endDate])
-					->count(),
-			];
-		}
+    // Sort by total_orders in descending order
+    usort($marketplaceOrdersData, function ($a, $b) {
+      return $b['total_orders'] <=> $a['total_orders'];
+    });
 
-		return response()->json($marketplaceOrdersData);
-	}
+    return response()->json($marketplaceOrdersData);
+  }
 }

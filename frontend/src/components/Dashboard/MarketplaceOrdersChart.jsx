@@ -3,18 +3,20 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
+  ArcElement,
   BarElement,
   Title,
   Tooltip,
   Legend,
 } from 'chart.js';
-import {Bar} from 'react-chartjs-2';
+import {Doughnut} from 'react-chartjs-2';
 import useAxiosClient from "../../axios-client";
 import {Spin, Radio} from "antd";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
+  ArcElement,
   BarElement,
   Title,
   Tooltip,
@@ -49,29 +51,55 @@ const MarketplaceOrdersChart = () => {
     setSwitchValue(value);
   };
 
+  const generateColors = (numColors) => {
+    const baseColors = [
+      { r: 246, g: 114, b: 128 }, // rgb(246, 114, 128)
+      { r: 63, g: 114, b: 175 },  // rgb(63, 114, 175)
+      { r: 202, g: 247, b: 227 }, // rgb(202, 247, 227)
+      { r: 201, g: 182, b: 228 }, // rgb(201, 182, 228)
+      { r: 251, g: 168, b: 52 },  // rgb(251, 168, 52)
+    ];
+
+    const shadesPerColor = Math.ceil(numColors / baseColors.length);
+    const colors = [];
+
+    for (let i = 0; i < numColors; i++) {
+      const baseColor = baseColors[Math.floor(i / shadesPerColor)];
+      const shadeFactor = (i % shadesPerColor) * 20; // Larger increment for more differentiable shades
+
+      // Calculate new color values, ensuring they are within valid range
+      const r = Math.max(0, Math.min(255, baseColor.r - shadeFactor));
+      const g = Math.max(0, Math.min(255, baseColor.g - shadeFactor));
+      const b = Math.max(0, Math.min(255, baseColor.b - shadeFactor));
+
+      // Calculate opacity based on shadeFactor for more differentiation
+      const opacity = 1 - (shadeFactor / 255);
+      const color = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+      colors.push(color);
+    }
+
+    return colors;
+  };
+
+
+
   // Extract data from the chartData state
   const labels = chartData.map((item) => item.marketplace_name);
   const data = chartData.map((item) => item.total_orders);
+  const backgroundColor = generateColors(labels.length);
 
   const options = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top'
+        position: 'right',
       },
       title: {
         display: false,
         text: "Order's this Month",
       },
-    },
-    scales: {
-      y: {
-        ticks: {
-          stepSize: 10, // Set the step size to 1 to display integers only
-        },
-      },
-    },
+    }
 
   };
 
@@ -81,8 +109,8 @@ const MarketplaceOrdersChart = () => {
       {
         label: "Order",
         data: data,
-        backgroundColor: '#ffc300',
-        borderColor: "#fca311",
+        hoverOffset: 4,
+        backgroundColor: backgroundColor
       },
     ],
   };
@@ -100,19 +128,17 @@ const MarketplaceOrdersChart = () => {
                 options={switchOptions}
                 onChange={onChangeSwitch}
                 value={switchValue}
-                optionType="button"
-                buttonStyle="solid"
             />
           </div>
         </div>
 
-        <div style={{height: "500px"}}>
+        <div style={{height: "400px"}}>
           <div className="flex justify-between">
 
 
           </div>
 
-          {!chartDataLoading ? <Bar options={options} data={barChartData}/> :  <div className="flex justify-center align-middle"><Spin/></div>}
+          {!chartDataLoading ? <Doughnut options={options} data={barChartData}/> :  <div className="flex justify-center align-middle"><Spin/></div>}
         </div>
       </div>
 
