@@ -13,7 +13,7 @@ export const useUserDashboardData = () => {
   useEffect(() => {
     const fetchOrderCounts = () => {
       setDashboardDataLoading(true);
-      axiosClient.get(`/dashboard/getUserOrderStats?${user.id}`).then((response) => {
+      axiosClient.get(`/dashboard/getUserOrderStats?id=${user.id}`).then((response) => {
         setDashboardData(response.data)
         setDashboardDataLoading(false);
       }).catch((error) => {
