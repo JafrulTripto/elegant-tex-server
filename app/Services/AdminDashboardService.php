@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Models\Marketplace;
 use App\Models\Order;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class AdminDashboardService
@@ -189,4 +190,59 @@ class AdminDashboardService
       ->get()
       ->toArray();
   }
+
+  public function getTopMarketplacesMonthlyStats(): array
+  {
+    // Get the start of the year
+    $startOfYear = Carbon::now()->startOfYear();
+    $endOfMonth = Carbon::now()->endOfMonth();
+
+    $topMarketplaces = Order::whereHas('orderable', function ($query) {
+      $query->where('orderable_type', Marketplace::class);
+    })
+      ->whereDate('created_at', '>=', $startOfYear)
+      ->whereDate('created_at', '<=', $endOfMonth)
+      ->selectRaw('orderable_id, SUM(total_amount) as total_amount')
+      ->groupBy('orderable_id')
+      ->orderBy('total_amount', 'desc')
+      ->limit(5)
+      ->pluck('orderable_id');
+
+
+    $monthlyStats = Order::whereIn('orderable_id', $topMarketplaces)
+      ->whereDate('created_at', '>=', $startOfYear)
+      ->whereDate('created_at', '<=', $endOfMonth)
+      ->selectRaw('orderable_id, MONTH(created_at) as month, COUNT(*) as order_count, SUM(total_amount) as total_amount')
+      ->groupBy('orderable_id', 'month')
+      ->orderBy('orderable_id')
+      ->get()
+      ->groupBy('orderable_id');
+
+    $result = [];
+
+    foreach ($monthlyStats as $marketplaceId => $stats) {
+      $marketplaceName = Marketplace::find($marketplaceId)->name;
+
+      $monthlyData = [];
+
+      for ($month = 1; $month <= Carbon::now()->month; $month++) {
+        $monthData = $stats->firstWhere('month', $month);
+
+        $monthlyData[] = [
+          'month' => $month,
+          'order_count' => $monthData->order_count ?? 0,
+          'total_amount' => $monthData->total_amount ?? 0,
+        ];
+      }
+
+      $result[] = [
+        'marketplace_name' => $marketplaceName,
+        'monthly_stats' => $monthlyData,
+      ];
+    }
+
+    return $result;
+  }
+
+
 }

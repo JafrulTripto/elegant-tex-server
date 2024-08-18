@@ -34,6 +34,11 @@ class DashboardController extends Controller
     $userId =  $request->input('id');
     return $this->userDashboardService->getUserOrdersStats($userId);
   }
+  public function getTopMarketplacesMonthlyStats(Request $request): JsonResponse
+  {
+    $data = $this->adminDashboardService->getTopMarketplacesMonthlyStats();
+    return response()->json($data);
+  }
 
   public function getDashboardData(): JsonResponse
   {
