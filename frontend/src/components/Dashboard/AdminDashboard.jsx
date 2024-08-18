@@ -1,7 +1,7 @@
 import React from 'react';
 import { Col, Row } from "antd";
 import ReportBox from "./ReportBox";
-import BarChart from "./BarChart";
+import OrderBarChart from "./OrderBarChart";
 import MarketplaceOrdersChart from "./MarketplaceOrdersChart";
 import { useDashboardData } from "../../hooks/useDashboardData";
 
@@ -19,7 +19,7 @@ const AdminDashboard = () => {
         amount: data.total_orders_this_month.amount,
       },
     };
-  
+
     const marketplaceData = {
       firstValue: {
         total: data.total_marketplace_orders_today.total,
@@ -30,7 +30,7 @@ const AdminDashboard = () => {
         amount: data.total_marketplace_orders_this_month.amount,
       },
     };
-  
+
     const merchantData = {
       firstValue: {
         total: data.total_merchant_orders_today.total,
@@ -46,7 +46,7 @@ const AdminDashboard = () => {
       firstValue: data.delivered_orders_this_month,
       secondValue: data.returned_orders_this_month
     }
-  
+
     switch (orderType.toLowerCase()) {
       case 'order':
         return orderData;
@@ -93,19 +93,10 @@ const AdminDashboard = () => {
             text="Completion"
           />
         </Col>
-        <Col xs={24} md={24} lg={24}>
-          <div className="bg-white rounded-lg shadow-md p-5 text-center">
-            <div>
-              <h5 className="mb-2 text-xl font-medium leading-tight text-neutral-800">
-                Orders this Month
-              </h5>
-            </div>
-            <div className="" style={{ height: "400px" }}>
-              <BarChart />
-            </div>
-          </div>
+        <Col xs={24} md={24} lg={12}>
+          <OrderBarChart />
         </Col>
-        <Col xs={24} md={24} lg={24}>
+        <Col xs={24} md={24} lg={12}>
           <MarketplaceOrdersChart />
         </Col>
       </Row>
