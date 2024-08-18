@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Marketplace;
-use App\Models\Merchant;
 use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Enums\OrderStatus;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+
 
 class DashboardController extends Controller
 {
@@ -174,5 +174,28 @@ class DashboardController extends Controller
     });
 
     return response()->json($marketplaceOrdersData);
+  }
+
+  public function getMonthlyOrderPerUser(): JsonResponse
+  {
+    $data = Order::select(
+      'users.id',
+      DB::raw("CONCAT(users.firstname, ' ', users.lastname) as fullname"),
+      'users.email',
+      DB::raw('COUNT(orders.id) as total_orders'),
+      DB::raw('CAST(SUM(orders.total_amount) AS FLOAT) as total_amount'),
+      'images.id as image_id'
+    )
+      ->join('users', 'orders.created_by', '=', 'users.id')
+      ->leftJoin('images', function($join) {
+        $join->on('users.id', '=', 'images.imageable_id')
+          ->where('images.imageable_type', '=', 'App\\Models\\User');
+      })
+      ->whereMonth('orders.created_at', Carbon::now()->month)
+      ->whereYear('orders.created_at', Carbon::now()->year)
+      ->groupBy('users.id', 'users.firstname', 'users.lastname', 'users.email', 'images.id')
+      ->orderBy('total_amount', 'desc')
+      ->get();
+    return response()->json($data);
   }
 }
