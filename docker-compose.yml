@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    image: tripzin/elegant-tex-app:v1.0.2
+    image: tripzin/elegant-tex-app:v1.0.3
     container_name: elegant-tex-app
     restart: unless-stopped
     volumes:
