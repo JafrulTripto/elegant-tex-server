@@ -458,11 +458,12 @@ function Sales() {
     >
       <Card className='shadow'>
         <Row justify='space-between'>
-          <Permission required={'EXPORT_ORDERS'}>
-            <Col xs={{span: 24}} lg={{span: 6}}>
+          <Col xs={{span: 24}} lg={{span: 6}}>
+            <Permission required={'EXPORT_ORDERS'}>
               <ExportOrderExcel/>
-            </Col>
-          </Permission>
+            </Permission>
+          </Col>
+
           <Col xs={{span: 24}} lg={{span: 12}} flex={"inherit"}>
             <Space>
               <Permission required={'CREATE_MERCHANT_ORDER'}>

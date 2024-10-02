@@ -98,7 +98,8 @@ class OrderController extends Controller
   public function getMerchantOrders(Request $request): ResourceCollection
   {
     $pageSize = OrderController::PAGESIZE;
-
+    $paginate = $request->get('paginate', true);
+    $paginateBoolean = filter_var($paginate, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
     $query = Order::whereHasMorph('orderable', [Merchant::class])
       ->with(['orderable' => function ($query) {
         $query->select('id', 'name');
@@ -110,8 +111,11 @@ class OrderController extends Controller
     // Apply common filters
     $query = $this->applyFiltersToQuery($query, $request);
 
-    // Paginate the results
-    $orders = $query->paginate($pageSize);
+    if ($paginateBoolean) {
+      $orders = $query->paginate($pageSize);
+    } else {
+      $orders = $query->get(); // Get all results without pagination
+    }
 
     return OrdersResource::collection($orders);
   }
