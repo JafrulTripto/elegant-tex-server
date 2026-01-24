@@ -1,71 +1,44 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Navigate, Outlet, useNavigate, useLocation} from "react-router-dom";
-import {useStateContext} from "../../contexts/ContextProvider.jsx";
-import {Layout, Menu, Modal, theme} from "antd";
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Navigate, Outlet, useNavigate, useLocation } from "react-router-dom";
+import { useStateContext } from "../../contexts/ContextProvider.jsx";
+import { Layout, Menu, Modal, theme, Avatar, Dropdown, Button, Switch } from "antd";
 import {
-    MenuFoldOutlined, MenuUnfoldOutlined, DashboardFilled, ShoppingFilled, UserOutlined, SettingFilled, ShopOutlined,
+    MenuFoldOutlined,
+    MenuUnfoldOutlined,
+    DashboardOutlined,
+    ShoppingOutlined,
+    UserOutlined,
+    SettingOutlined,
+    ShopOutlined,
+    LogoutOutlined,
+    BulbOutlined,
+    BulbFilled
 } from '@ant-design/icons';
 import useAxiosClient from "../../axios-client.js";
 import Loading from "../Util/Loading.jsx";
-import {toast} from "react-toastify";
-import {ElegantTexIcon} from "../../utils/icons/ElegantTexIcon";
-import NavigationDropdown from "../NavigationDropdown";
+import { toast } from "react-toastify";
+import { ElegantTexIcon } from "../../utils/icons/ElegantTexIcon";
 import BreadCrumb from "../BreadCrumb";
-import {colors} from "../../utils/Colors";
-import {Footer} from "antd/es/layout/layout";
 
-
-const {Header, Sider, Content} = Layout;
+const { Header, Sider, Content, Footer } = Layout;
 
 const DefaultLayout = () => {
 
     const axiosClient = useAxiosClient();
     const navigate = useNavigate();
     const location = useLocation();
-    const route = location.pathname.split('/');
+
+    // Get current route key for highlighting
+    const currentKey = location.pathname.split('/')[1] || 'dashboard';
 
     const [collapsed, setCollapsed] = useState(false);
-    const [navbarWidth, setNavbarWidth] = useState("");
 
+    // Use token from theme if needed, but we rely on global CSS mostly
     const {
-        token: {colorBgContainer},
+        token: { colorBgContainer, borderRadiusLG, colorPrimary },
     } = theme.useToken();
 
-    const routes = [
-        {
-            key: 'dashboard',
-            icon: <DashboardFilled style={{color: colors.secondary, fontSize: "22px"}}/>,
-            label: 'Dashboard',
-            permission: ''
-        },
-        {
-            key: 'merchants',
-            icon: <ShopOutlined style={{color: colors.secondary, fontSize: "22px"}}/>,
-            label: 'Merchants',
-            permission: 'VIEW_MERCHANTS'
-        },
-        {
-            key: 'orders',
-            icon: <ShoppingFilled style={{color: colors.secondary, fontSize: "22px"}}/>,
-            label: 'Orders',
-            permission: 'VIEW_ORDERS'
-        },
-        {
-            key: 'users',
-            icon: <UserOutlined style={{color: colors.secondary, fontSize: "22px"}}/>,
-            label: 'Users',
-            permission: 'VIEW_USERS'
-        },
-        {
-            key: 'settings',
-            icon: <SettingFilled style={{color: colors.secondary, fontSize: "22px"}}/>,
-            label: 'Settings',
-            permission: 'VIEW_SETTINGS'
-        }
-    ];
-
-
-    const {user, token, setUser, setPermissions, setRoles, setToken, permissions} = useStateContext();
+    const { user, token, setUser, setPermissions, setRoles, setToken, permissions, darkMode, setDarkMode } = useStateContext();
     const tokenRef = useRef(token);
 
     useEffect(() => {
@@ -73,61 +46,39 @@ const DefaultLayout = () => {
     }, [token]);
 
     const fetchUser = useCallback(() => {
-        axiosClient.post('auth/me').then(({data}) => {
+        axiosClient.post('auth/me').then(({ data }) => {
             setUser(data.user);
             setPermissions(data.permissions);
             setRoles(data.roles);
         }).catch(error => {
-            tokenRef.current = null; // update tokenRef.current without causing re-render
+            tokenRef.current = null;
             const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
             toast.error(message);
         })
     }, [axiosClient, setRoles, setPermissions, setUser])
 
     useEffect(() => {
-        if (collapsed) {
-            setNavbarWidth("calc(100% - 82px)")
-        } else {
-            setNavbarWidth("calc(100% - 250px)")
-        }
         if (tokenRef.current) {
             fetchUser();
         }
-    }, [collapsed, fetchUser, tokenRef]);
+    }, [fetchUser, tokenRef]);
 
     if (!token) {
-        return <Navigate to="/login"/>
+        return <Navigate to="/login" />
     }
 
-
-    const sidebarCollapseToggle = () => {
-        setCollapsed(!collapsed)
-        if (collapsed) {
-            setNavbarWidth("calc(100% - 250px)");
-        } else {
-            setNavbarWidth("calc(100% - 82px)");
-        }
-    }
-    const onBreakpointHandler = (broken) => {
-        if (broken) {
-            setNavbarWidth("calc(100% - 82px)");
-        }
-        setCollapsed(broken)
-    }
-
-
-    const handleLogout = (e) => {
-        e.preventDefault();
+    const handleLogout = () => {
         Modal.confirm({
-            title: 'Do you want to logout?',
-            okText: "Yes",
-            okType: "primary",
-            okButtonProps: {danger: true},
+            title: 'Sign Out',
+            content: 'Are you sure you want to log out?',
+            okText: "Logout",
+            okType: "danger",
+            cancelText: "Cancel",
             onOk: () => confirmLogout()
         })
     }
-    const confirmLogout = async () => {
 
+    const confirmLogout = async () => {
         try {
             const response = await axiosClient.post(`/auth/logout`);
             toast.success(response.data.message);
@@ -136,82 +87,172 @@ const DefaultLayout = () => {
         } catch (error) {
             setToken(null);
             setUser(null);
-            const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-            toast.error(message);
+            console.error(error);
         }
-
     }
-    const generatePermittedRoutes = () => {
-        return routes.filter(route => {
-            if (route.permission === '') return route;
-            return permissions.indexOf(route.permission) > -1;
-        })
 
-    }
+    const menuItems = [
+        {
+            key: 'dashboard',
+            icon: <DashboardOutlined />,
+            label: 'Dashboard',
+            permission: ''
+        },
+        {
+            key: 'merchants',
+            icon: <ShopOutlined />,
+            label: 'Merchants',
+            permission: 'VIEW_MERCHANTS'
+        },
+        {
+            key: 'orders',
+            icon: <ShoppingOutlined />,
+            label: 'Orders',
+            permission: 'VIEW_ORDERS'
+        },
+        {
+            key: 'users',
+            icon: <UserOutlined />,
+            label: 'Users',
+            permission: 'VIEW_USERS'
+        },
+        {
+            key: 'settings',
+            icon: <SettingOutlined />,
+            label: 'Settings',
+            permission: 'VIEW_SETTINGS'
+        }
+    ];
+
+    const permittedMenuItems = menuItems.filter(item => {
+        // Optimization: If permission is empty string, always show.
+        // Otherwise check if permission exists in permission array.
+        if (!item.permission) return true;
+        return permissions.includes(item.permission);
+    });
+
+    // Profile Dropdown Menu
+    const userMenu = (
+        <Menu items={[
+            {
+                key: 'profile',
+                label: 'Profile',
+                icon: <UserOutlined />,
+                onClick: () => navigate('/profile') // Assumes /profile route exists
+            },
+            {
+                type: 'divider',
+            },
+            {
+                key: 'logout',
+                label: 'Logout',
+                icon: <LogoutOutlined />,
+                danger: true,
+                onClick: handleLogout
+            },
+        ]} />
+    );
 
 
     return (
-        <Layout style={{minHeight: "100vh"}}>
+        <Layout className="min-h-screen">
             <Sider
-                style={{
-                    overflow: "auto", height: "100vh", position: "sticky", top: 0, left: 0
-                }}
                 trigger={null}
                 collapsible
-                breakpoint={'sm'}
-                width={250}
-                collapsedWidth={70}
-                onBreakpoint={onBreakpointHandler}
-                collapsed={collapsed}>
-                <div style={{padding: "5px", display: "flex"}}>
-                    <ElegantTexIcon/>
+                collapsed={collapsed}
+                breakpoint="lg"
+                onBreakpoint={(broken) => {
+                    setCollapsed(broken);
+                }}
+                className="shadow-xl z-20"
+                width={260}
+                style={{
+                    position: 'sticky',
+                    top: 0,
+                    height: '100vh',
+                    overflowY: 'auto'
+                }}
+            >
+                <div className="h-16 flex items-center justify-center m-2 bg-slate-800/50 rounded-lg">
+                    {/* Add Logo logic here if needed, simplified for text */}
+                    <span className={`text-white font-bold text-lg transition-all duration-300 ${collapsed ? 'scale-0 w-0' : 'scale-100'}`}>
+                        Elegant Tex
+                    </span>
+                    {collapsed && <span className="text-white font-bold text-xl">ET</span>}
                 </div>
+
                 <Menu
                     theme="dark"
                     mode="inline"
-                    defaultSelectedKeys={route[1] === '' ? 'dashboard' : route[1]}
-                    items={generatePermittedRoutes()}
+                    selectedKeys={[currentKey]}
+                    items={permittedMenuItems}
                     onClick={(item) => navigate("/" + item.key)}
+                    className="border-none px-2"
                 />
             </Sider>
-            <Layout className="site-layout">
+
+            <Layout>
                 <Header
-                    style={{
-                        position: 'fixed',
-                        zIndex: 1000,
-                        width: navbarWidth,
-                        padding: "0 20px",
-                        background: colorBgContainer,
-                        transition: "350ms"
-                    }}>
-                    <div className="flex justify-between">
-                        <div>
-                            {React.createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
-                                className: 'trigger', onClick: sidebarCollapseToggle,
-                            })}
-                        </div>
-                        {user && Object.keys(user).length !== 0 ?
-                            <NavigationDropdown user={user} handleLogout={handleLogout}/> : null}
+                    className="glass-header sticky top-0 z-10 flex items-center justify-between px-6 p-0"
+                    style={{ height: 64 }}
+                >
+                    <Button
+                        type="text"
+                        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                        onClick={() => setCollapsed(!collapsed)}
+                        style={{
+                            fontSize: '16px',
+                            width: 48,
+                            height: 48,
+                        }}
+                    />
+
+                    <div className="flex items-center gap-4">
+                        <Switch
+                            checked={darkMode}
+                            onChange={() => setDarkMode(!darkMode)}
+                            checkedChildren={<BulbFilled />}
+                            unCheckedChildren={<BulbOutlined />}
+                        />
+
+                        {user && (
+                            <Dropdown overlay={userMenu} placement="bottomRight" arrow>
+                                <div className="flex items-center gap-3 cursor-pointer p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                                    <Avatar
+                                        style={{ backgroundColor: colorPrimary }}
+                                        icon={<UserOutlined />}
+                                    >
+                                        {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                                    </Avatar>
+                                    <div className="hidden md:block leading-tight">
+                                        <div className="font-semibold text-slate-700">{user.name}</div>
+                                        <div className="text-xs text-slate-500">{user.email}</div>
+                                    </div>
+                                </div>
+                            </Dropdown>
+                        )}
                     </div>
                 </Header>
-                <BreadCrumb/>
-                <Content
-                    className="sm:px-1 md:px-5 lg:px-5 mx-2 py-5"
-                    style={{
-                        minHeight: 280, background: "#f5f5f5",
-                    }}>
-                    {user && Object.keys(user).length !== 0 ? <Outlet/> : <Loading layout='default'/>}
+
+                <Content className="p-6">
+                    <BreadCrumb />
+                    <div
+                        className="mt-4 min-h-[80vh]"
+                        style={{
+                            background: 'transparent',
+                            borderRadius: borderRadiusLG,
+                        }}
+                    >
+                        {user && Object.keys(user).length !== 0 ? <Outlet /> : <Loading layout='default' />}
+                    </div>
                 </Content>
-                <Footer style={{textAlign: 'center', background:'white', padding:'5px 5px'}}>
-                    <span className="font-bold px-2 text-blue-950">Developed By : <span className="text-red-400">Tripzin.inc</span></span>
-                    <span className="font-bold px-2 text-blue-950">Version :
-                        <span className="text-red-400"> 1.0.0</span>
-                    </span>
+
+                <Footer className="text-center text-slate-400 bg-transparent">
+                    Elegant Tex Server ©{new Date().getFullYear()} Created by Tripzin.inc
                 </Footer>
             </Layout>
-        </Layout>);
+        </Layout>
+    );
 };
 
 export default DefaultLayout;
-
-

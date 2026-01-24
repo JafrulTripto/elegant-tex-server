@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom'
-import {Breadcrumb} from 'antd'
+import { Breadcrumb } from 'antd'
 
 function BreadCrumb(props) {
 
@@ -15,7 +15,7 @@ function BreadCrumb(props) {
             const isLast = index === pathnames.length - 1;
 
             return {
-                title: isLast ? <Link onClick={ (event) => event.preventDefault() } to={routeTo}>{path}</Link> : <Link to={routeTo}>{path}</Link>,
+                title: isLast ? <Link onClick={(event) => event.preventDefault()} to={routeTo}>{path}</Link> : <Link to={routeTo}>{path}</Link>,
             };
         });
 
@@ -24,7 +24,7 @@ function BreadCrumb(props) {
         }
 
         return (
-            <Breadcrumb className="px-8 pt-4" style={{ marginTop: "68px" }} items={items} />
+            <Breadcrumb items={items} className="mb-4" />
         );
     };
     return (

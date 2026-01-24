@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from 'react';
-import {Radio, Spin} from "antd";
+import React, { useEffect, useState } from 'react';
+import { Radio, Spin, Card, Skeleton } from "antd";
 import useAxiosClient from "../../axios-client";
-import {Line} from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   PointElement,
@@ -30,11 +30,11 @@ const TopMarketplacesLineChart = (props) => {
   const [switchValue, setSwitchValue] = useState('count');
   const axiosClient = useAxiosClient();
   const switchOptions = [
-    {label: 'Amount', value: 'Amount'},
-    {label: 'Count', value: 'count'},
+    { label: 'Amount', value: 'Amount' },
+    { label: 'Count', value: 'count' },
   ];
 
-  const onChangeSwitch = ({target: {value}}) => {
+  const onChangeSwitch = ({ target: { value } }) => {
     setSwitchValue(value);
   };
 
@@ -51,25 +51,21 @@ const TopMarketplacesLineChart = (props) => {
   }, []);
 
   function generateChartData(apiData) {
-    const colorArray = ['#d7263d', '#1b998b', '#2e294e', '#c5d86d', '#f46036'];
+    const colorArray = ['#007AFF', '#10b981', '#f59e0b', '#06b6d4', '#ef4444'];
     return apiData.map((marketplace, index) => {
       const { monthly_stats } = marketplace;
-
-      // Extract month labels
       const labels = monthly_stats.map(stat => `Month ${stat.month}`);
-
-      // Extract data based on switchValue
       const data = monthly_stats.map(stat => switchValue === 'count' ? stat.order_count : stat.total_amount);
-
-      // Use the color array to pick a color for each dataset
       const backgroundColor = colorArray[index % colorArray.length];
-       // Same color for border
+
       return {
         label: marketplace.marketplace_name,
         data: data,
         backgroundColor: backgroundColor,
         borderColor: backgroundColor,
-        borderWidth: 2
+        borderWidth: 2,
+        tension: 0.3, // Smooth lines
+        pointRadius: 3
       };
     });
   }
@@ -77,76 +73,70 @@ const TopMarketplacesLineChart = (props) => {
   function getMonthLabels(data) {
     const months = new Set();
     const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ];
-
     data.forEach(marketplace => {
       marketplace.monthly_stats.forEach(monthly => {
         months.add(monthly.month);
       });
     });
-
-    // Convert Set to array and sort by month number
     return Array.from(months).sort((a, b) => a - b).map(month => monthNames[month - 1]);
   }
-
 
   const options = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top'
+        position: 'top',
+        labels: { font: { family: 'Inter' } }
       },
-      title: {
-        display: false,
-        text: "Order's this Month",
-      },
+      title: { display: false },
     },
     scales: {
       y: {
         ticks: {
-          stepSize: switchValue === 'count' ? 50 : 100000, // Set the step size to 1 to display integers only
+          stepSize: switchValue === 'count' ? 50 : 100000,
+          font: { family: 'Inter' }
         },
+        grid: { color: '#f1f5f9' },
+        border: { display: false }
       },
+      x: {
+        grid: { display: false },
+        ticks: { font: { family: 'Inter' } }
+      }
     },
-
   };
 
   const data = {
-    type:'line',
-    labels:getMonthLabels(chartData),
+    type: 'line',
+    labels: getMonthLabels(chartData),
     datasets: generateChartData(chartData),
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-5">
-      <div className="flex flex-row justify-between">
-        <div>
-          <h5
-            className="mb-2 text-xl font-medium leading-tight text-neutral-800">
-            Top Marketplaces
-          </h5>
-        </div>
-        <div>
-          <Radio.Group
-            options={switchOptions}
-            onChange={onChangeSwitch}
-            value={switchValue}
-          />
-        </div>
+    <Card
+      bordered={false}
+      className="hover:shadow-lg transition-shadow duration-300 h-full"
+      title={<span className="text-lg font-semibold text-slate-700">Top Marketplaces Trend</span>}
+      extra={
+        <Radio.Group
+          options={switchOptions}
+          onChange={onChangeSwitch}
+          value={switchValue}
+          size="small"
+          buttonStyle="solid"
+        />
+      }
+    >
+      <div style={{ height: "400px" }}>
+        <Skeleton loading={chartDataLoading} active paragraph={{ rows: 10 }}>
+          <Line options={options} data={data} />
+        </Skeleton>
       </div>
-
-      <div style={{height: "400px"}}>
-        <div className="flex justify-between">
-
-
-        </div>
-        {!chartDataLoading ? <Line options={options} data={data}/> :
-          <div className="flex justify-center align-middle"><Spin/></div>}
-      </div>
-    </div>
+    </Card>
   )
 }
 
