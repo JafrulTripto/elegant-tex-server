@@ -17,4 +17,13 @@ class Image extends Model
         return $this->morphTo();
     }
 
+    protected $appends = ['url'];
+
+    public function getUrlAttribute()
+    {
+        return Storage::disk('s3')->temporaryUrl(
+            $this->path, now()->addMinutes(60)
+        );
+    }
+
 }

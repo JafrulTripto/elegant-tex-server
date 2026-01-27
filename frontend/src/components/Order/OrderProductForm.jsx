@@ -8,9 +8,20 @@ const OrderProductForm = (props) => {
 
     const { Option } = Select;
     const { Dragger } = Upload;
-    const { files } = props;
+    const { files, loadMore, hasMore, fabricsLoading } = props;
 
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+
+    const handlePopupScroll = (e) => {
+        const { target } = e;
+        if (
+            !fabricsLoading &&
+            hasMore &&
+            target.scrollTop + target.offsetHeight >= target.scrollHeight - 10
+        ) {
+            loadMore();
+        }
+    };
 
     const draggerProps = {
         name: "orderImage",
@@ -93,8 +104,16 @@ const OrderProductForm = (props) => {
                                             <Select
                                                 size="large"
                                                 showSearch
-                                                optionFilterProp="children"
-                                                filterOption={filterOptionFunction}
+                                                defaultActiveFirstOption={false}
+                                                filterOption={false}
+                                                onSearch={(value) => {
+                                                    // Simple debounce
+                                                    if (window.searchTimeout) clearTimeout(window.searchTimeout);
+                                                    window.searchTimeout = setTimeout(() => {
+                                                        props.fetchFabrics(1, value);
+                                                    }, 800);
+                                                }}
+                                                onPopupScroll={handlePopupScroll}
                                             >
                                                 {props.fabrics.map(data => {
                                                     return <Option title={data.name} value={data.id} key={data.id}>
@@ -104,6 +123,11 @@ const OrderProductForm = (props) => {
                                                         </span>
                                                     </Option>
                                                 })}
+                                                {fabricsLoading && (
+                                                    <Option value="loading" disabled>
+                                                        <div style={{ textAlign: 'center', padding: '10px' }}>Loading...</div>
+                                                    </Option>
+                                                )}
                                             </Select>
                                         </Form.Item>
                                     </Col>

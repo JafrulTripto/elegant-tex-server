@@ -31,7 +31,7 @@ const OrderForm = () => {
   const { merchants } = useMerchants();
 
   const { productTypes } = useProductTypes();
-  const { fabrics } = useFabrics();
+  const { fabrics, loadMore, hasMore, fabricsLoading, fetchFabrics } = useFabrics();
 
 
 
@@ -128,6 +128,10 @@ const OrderForm = () => {
         <OrderProductForm
           productTypes={productTypes}
           fabrics={fabrics}
+          loadMore={loadMore}
+          hasMore={hasMore}
+          fabricsLoading={fabricsLoading}
+          fetchFabrics={fetchFabrics}
           orderForm={orderForm}
           setUploading={setUploading}
           setFiles={setFiles}
