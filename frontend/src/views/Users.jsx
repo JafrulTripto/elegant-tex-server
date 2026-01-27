@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Avatar, Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, Tag, theme } from "antd";
-import { DeleteOutlined, EditOutlined, InfoOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
+import { Avatar, Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, Tag, theme, Tooltip } from "antd";
+import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
 import useAxiosClient from "../axios-client.js";
 import { useStateContext } from "../contexts/ContextProvider";
 import Permission from "../components/Util/Permission";
@@ -26,12 +26,22 @@ const Users = (callback, deps) => {
     const { token } = theme.useToken();
 
 
+    const [searchText, setSearchText] = useState('');
+    const [filterStatus, setFilterStatus] = useState(null);
+    const [sortedInfo, setSortedInfo] = useState({});
+
     const { user, roles } = useStateContext();
 
-    const fetchUsers = useCallback(async (page = 1) => {
+    const fetchUsers = useCallback(async (page = 1, search = searchText, status = filterStatus, sort = sortedInfo) => {
         setLoading(true);
         try {
-            const link = page > 1 ? `/users/index?page=${page}` : "/users/index"
+            let link = `/users/index?page=${page}`;
+            if (search) link += `&search=${search}`;
+            if (status !== null) link += `&status=${status}`;
+            if (sort.field && sort.order) {
+                link += `&sort_by=${sort.field}&sort_order=${sort.order === 'ascend' ? 'asc' : 'desc'}`;
+            }
+
             const users = await axiosClient.get(link);
             setLoading(false);
             const userData = users.data.data.map((data) => {
@@ -43,12 +53,30 @@ const Users = (callback, deps) => {
             toast.error(error.response.data.message);
             setLoading(false);
         }
-    }, [axiosClient])
+    }, [axiosClient, searchText, filterStatus, sortedInfo])
 
     useEffect(() => {
         fetchUsers();
-    }, [fetchUsers])
+    }, []) // Only run on mount
 
+    const handleSearch = (value) => {
+        setSearchText(value);
+        setPage(1);
+        fetchUsers(1, value, filterStatus, sortedInfo);
+    };
+
+    const handleFilterStatusChange = (value) => {
+        setFilterStatus(value);
+        setPage(1);
+        fetchUsers(1, searchText, value, sortedInfo);
+    };
+
+    const handleTableChange = (pagination, filters, sorter) => {
+        setPage(pagination.current);
+        setPageSize(pagination.pageSize);
+        setSortedInfo(sorter);
+        fetchUsers(pagination.current, searchText, filterStatus, sorter);
+    };
 
     const addNewUser = () => {
         navigate('/users/userForm')
@@ -63,7 +91,6 @@ const Users = (callback, deps) => {
                     src={imagePath}
                     size={{ xs: 24, sm: 32, md: 32 }}
                 />
-
             )
         }
         return <Avatar size={{ xs: 24, sm: 32, md: 32 }} icon={<UserOutlined />} />
@@ -75,13 +102,40 @@ const Users = (callback, deps) => {
 
     const renderActionButtons = (record) => {
         return (
-            <Space size="middle">
-                <Button type="primary" icon={<InfoOutlined />} size={"small"} onClick={() => handleUserDetails(record)} />
-                <Button type="primary" disabled className='edit-btn' icon={<EditOutlined />} size={"small"}
-                    onClick={() => handleEditUser(record)} />
+            <Space size="small">
+                <Tooltip title="View Details">
+                    <Button
+                        type="text"
+                        shape="circle"
+                        icon={<EyeOutlined style={{ color: token.colorPrimary }} />}
+                        onClick={() => handleUserDetails(record)}
+                    />
+                </Tooltip>
+
+                <Permission required={"UPDATE_USER"}>
+                    <Tooltip title="Edit User">
+                        <Button
+                            type="text"
+                            shape="circle"
+
+                            className='edit-btn'
+                            icon={<EditOutlined style={{ color: token.colorWarning }} />}
+                            onClick={() => handleEditUser(record)}
+                        />
+                    </Tooltip>
+                </Permission>
+
                 <Permission required={"DELETE_USER"}>
-                    <Button type="primary" danger disabled={record.id === user.id} icon={<DeleteOutlined />}
-                        size={"small"} onClick={() => handleDeleteUser(record)} />
+                    <Tooltip title="Delete User">
+                        <Button
+                            type="text"
+                            shape="circle"
+                            danger
+                            disabled={record.id === user.id}
+                            icon={<DeleteOutlined />}
+                            onClick={() => handleDeleteUser(record)}
+                        />
+                    </Tooltip>
                 </Permission>
             </Space>
         );
@@ -108,6 +162,7 @@ const Users = (callback, deps) => {
         setUserStatus(status);
     }
     const handleEditUser = (record) => {
+        navigate('/users/userForm', { state: { user: record } })
     }
 
     const handleDeleteUser = (record) => {
@@ -124,7 +179,7 @@ const Users = (callback, deps) => {
             const url = `/users/delete?id=${id}`;
             const data = await axiosClient.get(url);
             toast.warning(data.data.message);
-            fetchUsers();
+            fetchUsers(page, searchText, filterStatus, sortedInfo);
 
         } catch (error) {
             const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
@@ -162,25 +217,39 @@ const Users = (callback, deps) => {
         {
             title: 'Name',
             dataIndex: 'firstname',
-            key: 'name',
-            render: renderUserName
+            key: 'firstname',
+            render: renderUserName,
+            sorter: true,
+            sortOrder: sortedInfo.columnKey === 'firstname' && sortedInfo.order,
         },
         {
             title: 'Email',
             dataIndex: 'email',
             key: 'email',
+            sorter: true,
+            sortOrder: sortedInfo.columnKey === 'email' && sortedInfo.order,
+        },
+        {
+            title: 'Phone',
+            dataIndex: ['address', 'phone'],
+            key: 'phone',
+            render: (text) => text || <span style={{ color: token.colorTextDescription }}>N/A</span>
         },
         {
             title: 'Last Login',
             dataIndex: 'last_login',
             key: 'last_login',
-            render: (data) => data ? <span style={{ color: token.colorTextSecondary }}>{dayjs(data).format('MMM D, YYYY h:mm A')}</span> : <span style={{ color: token.colorTextDescription }}>Never</span>
+            render: (data) => data ? <span style={{ color: token.colorTextSecondary }}>{dayjs(data).format('MMM D, YYYY h:mm A')}</span> : <span style={{ color: token.colorTextDescription }}>Never</span>,
+            sorter: true,
+            sortOrder: sortedInfo.columnKey === 'last_login' && sortedInfo.order,
         },
         {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
-            render: renderStatus
+            render: renderStatus,
+            sorter: true,
+            sortOrder: sortedInfo.columnKey === 'status' && sortedInfo.order,
         },
         {
             title: 'Action',
@@ -196,7 +265,7 @@ const Users = (callback, deps) => {
                 const response = await axiosClient.put(`/users/changeStatus/${selectedUser}`, values);
                 toast.success(response.data.message)
                 setIsModalOpen(false)
-                await fetchUsers()
+                await fetchUsers(page, searchText, filterStatus, sortedInfo)
                 setStatusLoading(false);
             } catch (error) {
                 const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
@@ -215,12 +284,31 @@ const Users = (callback, deps) => {
             }}
         >
             <Card bordered={false} className='shadow-sm hover:shadow-md transition-shadow duration-300'>
-                <Row justify='space-between' align="middle">
+                <Row justify='space-between' align="middle" gutter={[16, 16]}>
                     <Col>
                         <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: token.colorTextHeading, margin: 0 }}>Users</h1>
                     </Col>
                     <Col>
-                        <Button type="primary" onClick={addNewUser} icon={<PlusOutlined />}>Add User</Button>
+                        <Space>
+                            <Input.Search
+                                placeholder="Search users..."
+                                onSearch={handleSearch}
+                                style={{ width: 250 }}
+                                allowClear
+                            />
+                            <Select
+                                placeholder="Filter by status"
+                                style={{ width: 150 }}
+                                onChange={handleFilterStatusChange}
+                                allowClear
+                                options={[
+                                    { label: 'All', value: null },
+                                    { label: 'Active', value: 1 },
+                                    { label: 'Inactive', value: 0 },
+                                ]}
+                            />
+                            <Button type="primary" onClick={addNewUser} icon={<PlusOutlined />}>Add User</Button>
+                        </Space>
                     </Col>
                 </Row>
             </Card>
@@ -231,16 +319,12 @@ const Users = (callback, deps) => {
                     loading={loading}
                     scroll={{ x: 600 }}
                     size={'middle'}
+                    onChange={handleTableChange}
                     pagination={{
                         current: page,
                         pageSize: pageSize,
                         total: total,
                         showSizeChanger: true,
-                        onChange: (page, pageSize) => {
-                            setPage(page)
-                            setPageSize(pageSize)
-                            fetchUsers(page)
-                        }
                     }}
                 />
             </Card>
