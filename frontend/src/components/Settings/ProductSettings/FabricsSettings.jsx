@@ -16,16 +16,25 @@ const FabricsSettings = () => {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const axiosClient = useAxiosClient();
-    const { fabrics, fetchFabrics, fabricsLoading } = useFabrics();
+    const { fabrics, fetchFabrics, fabricsLoading, loadMore, hasMore } = useFabrics();
 
     const [isUploadDisabled, setIsUploadDisabled] = useState(false);
     const [openForm, setOpenForm] = useState(false);
     const [updateDataId, setUpdateDataId] = useState(null);
     const [searchText, setSearchText] = useState('');
 
-    const filteredFabrics = fabrics?.filter(fabric =>
-        fabric.name.toLowerCase().includes(searchText.toLowerCase())
-    ) || [];
+    const [debounceTimeout, setDebounceTimeout] = useState(null);
+
+    const onSearch = (value) => {
+        if (debounceTimeout) {
+            clearTimeout(debounceTimeout);
+        }
+        const timeout = setTimeout(() => {
+            fetchFabrics(1, value);
+        }, 800);
+        setDebounceTimeout(timeout);
+        setSearchText(value);
+    }
 
     const handleEditProductSettings = (record) => {
         setOpenForm(true);
@@ -132,6 +141,7 @@ const FabricsSettings = () => {
 
     // Helper to get image URL safely
     const getImageUrl = (image) => {
+        if (image && image.url) return image.url;
         return image ? `${process.env.REACT_APP_API_BASE_URL}/files/upload/${image.id}` : null;
     }
 
@@ -150,7 +160,7 @@ const FabricsSettings = () => {
                             <Input
                                 placeholder="Search fabrics..."
                                 prefix={<SearchOutlined className="text-slate-400" />}
-                                onChange={(e) => setSearchText(e.target.value)}
+                                onChange={(e) => onSearch(e.target.value)}
                                 allowClear
                                 className="w-full md:w-64"
                             />
@@ -166,7 +176,7 @@ const FabricsSettings = () => {
                         <div className="text-slate-300 mb-2"><InboxOutlined style={{ fontSize: 48 }} /></div>
                         <div className="text-slate-500">Loading fabric collection...</div>
                     </div>
-                ) : filteredFabrics.length === 0 ? (
+                ) : fabrics.length === 0 ? (
                     <Empty
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                         description={<Text type="secondary">No fabrics found matching your search.</Text>}
@@ -174,7 +184,7 @@ const FabricsSettings = () => {
                 ) : (
                     <div className="max-h-[65vh] overflow-y-auto custom-scrollbar p-1">
                         <Row gutter={[24, 24]}>
-                            {filteredFabrics.map((fabric) => (
+                            {fabrics.map((fabric) => (
                                 <Col xs={12} sm={8} md={6} lg={4} xl={3} key={fabric.id}>
                                     <div className="group relative rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden bg-slate-50 dark:bg-slate-900 transition-all hover:shadow-md">
                                         {/* Image Container with Aspect Ratio */}
@@ -227,6 +237,11 @@ const FabricsSettings = () => {
                                 </Col>
                             ))}
                         </Row>
+                        {hasMore && (
+                            <div className="text-center mt-4 pb-4">
+                                <Button onClick={loadMore} loading={fabricsLoading} type="dashed">Load More</Button>
+                            </div>
+                        )}
                     </div>
                 )}
             </Card>
