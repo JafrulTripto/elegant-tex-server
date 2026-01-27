@@ -51,12 +51,25 @@ const TopMarketplacesLineChart = (props) => {
       });
   }, []);
 
+  // Standardize labels to Jan-Dec
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
   function generateChartData(apiData) {
     const colorArray = ['#007AFF', '#10b981', '#f59e0b', '#06b6d4', '#ef4444'];
+
     return apiData.map((marketplace, index) => {
-      const { monthly_stats } = marketplace;
-      const labels = monthly_stats.map(stat => `Month ${stat.month}`);
-      const data = monthly_stats.map(stat => switchValue === 'count' ? stat.order_count : stat.total_amount);
+      // Create a map of existing data for quick lookup: { monthIndex: value }
+      const dataMap = {};
+      marketplace.monthly_stats.forEach(stat => {
+        dataMap[stat.month] = switchValue === 'count' ? stat.order_count : stat.total_amount;
+      });
+
+      // Generate standardized data array for months 1-12
+      const data = [];
+      for (let m = 1; m <= 12; m++) {
+        data.push(dataMap[m] || 0); // Use existing value or 0
+      }
+
       const backgroundColor = colorArray[index % colorArray.length];
 
       return {
@@ -65,35 +78,46 @@ const TopMarketplacesLineChart = (props) => {
         backgroundColor: backgroundColor,
         borderColor: backgroundColor,
         borderWidth: 2,
-        tension: 0.3, // Smooth lines
-        pointRadius: 3
+        tension: 0.4, // Smooth lines
+        pointRadius: 3,
+        pointHoverRadius: 5,
       };
     });
   }
 
-  function getMonthLabels(data) {
-    const months = new Set();
-    const monthNames = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    data.forEach(marketplace => {
-      marketplace.monthly_stats.forEach(monthly => {
-        months.add(monthly.month);
-      });
-    });
-    return Array.from(months).sort((a, b) => a - b).map(month => monthNames[month - 1]);
-  }
+  const formatValue = (value) => {
+    if (switchValue === 'count') return value;
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
+  };
 
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
     plugins: {
       legend: {
         position: 'top',
         labels: {
           font: { family: 'Inter' },
-          color: token.colorTextDescription
+          color: token.colorTextDescription,
+          usePointStyle: true,
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += formatValue(context.parsed.y);
+            }
+            return label;
+          }
         }
       },
       title: { display: false },
@@ -101,11 +125,18 @@ const TopMarketplacesLineChart = (props) => {
     scales: {
       y: {
         ticks: {
-          stepSize: switchValue === 'count' ? 50 : 100000,
+          // Remove hardcoded stepSize to allow auto-scaling
+          callback: function (value) {
+            // Abbreviate large numbers for Y-axis space
+            if (switchValue !== 'count' && value >= 1000) {
+              return '$' + (value / 1000).toFixed(0) + 'k';
+            }
+            return formatValue(value);
+          },
           font: { family: 'Inter' },
           color: token.colorTextDescription
         },
-        grid: { color: token.colorBorderSecondary },
+        grid: { color: token.colorBorderSecondary, borderDash: [2, 2] },
         border: { display: false }
       },
       x: {
@@ -120,7 +151,7 @@ const TopMarketplacesLineChart = (props) => {
 
   const data = {
     type: 'line',
-    labels: getMonthLabels(chartData),
+    labels: monthNames, // Fix labels to standard 12 months
     datasets: generateChartData(chartData),
   };
 

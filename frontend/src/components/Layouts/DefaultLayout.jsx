@@ -17,7 +17,6 @@ import {
 import useAxiosClient from "../../axios-client.js";
 import Loading from "../Util/Loading.jsx";
 import { toast } from "react-toastify";
-import { ElegantTexIcon } from "../../utils/icons/ElegantTexIcon";
 import BreadCrumb from "../BreadCrumb";
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -171,11 +170,14 @@ const DefaultLayout = () => {
                     overflowY: 'auto'
                 }}
             >
-                <div className="h-16 flex items-center justify-center m-2 bg-slate-800/50 rounded-lg">
-                    {/* Add Logo logic here if needed, simplified for text */}
-                    <span className={`text-white font-bold text-lg transition-all duration-300 ${collapsed ? 'scale-0 w-0' : 'scale-100'}`}>
-                        Elegant Tex
-                    </span>
+                <div
+                    className="h-16 flex items-center justify-center m-2 bg-slate-800/50 rounded-lg cursor-pointer transition-colors hover:bg-slate-800/70"
+                    onClick={() => navigate('/')}
+                >
+                    <div className={`transition-all duration-300 flex items-center justify-center gap-2 ${collapsed ? 'scale-0 w-0 opacity-0 overflow-hidden' : 'scale-100 opacity-100'}`}>
+                        <img src="/eleganttexlogo.png" alt="Elegant Tex" style={{ height: '42px', width: 'auto' }} />
+                        <span className="text-white font-bold text-xl whitespace-nowrap tracking-wide">Elegant Tex</span>
+                    </div>
                     {collapsed && <span className="text-white font-bold text-xl">ET</span>}
                 </div>
 
