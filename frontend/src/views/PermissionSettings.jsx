@@ -1,9 +1,9 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import {Button, Card, Col, Form, Input, List, Modal, Row, Space, Table} from "antd";
+import React, { useCallback, useEffect, useState } from 'react';
+import { Button, Card, Col, Form, Input, List, Modal, Row, Space, Table } from "antd";
 import AddNewItemLayout from "../components/Layouts/AddNewItemLayout.jsx";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 import useAxiosClient from "../axios-client.js";
-import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import Permission from "../components/Util/Permission";
 import TextArea from "antd/es/input/TextArea";
 
@@ -11,23 +11,24 @@ const PermissionSettings = () => {
 
   const axiosClient = useAxiosClient();
   const [form] = Form.useForm();
+  const [modal, contextHolder] = Modal.useModal();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false)
   const [permissions, setPermissions] = useState([]);
 
-    const getPermissions = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            const response = await axiosClient.get(`/permissions/getPermissions`);
-            setPermissions(response.data);
-        } catch (error) {
-            toast.error(error.response.data.message);
-            setIsLoading(false);
-        }
+  const getPermissions = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await axiosClient.get(`/permissions/getPermissions`);
+      setPermissions(response.data);
+    } catch (error) {
+      toast.error(error.response.data.message);
+      setIsLoading(false);
+    }
 
-        setIsLoading(false);
-    }, [axiosClient])
+    setIsLoading(false);
+  }, [axiosClient])
 
   useEffect(() => {
     getPermissions();
@@ -61,7 +62,7 @@ const PermissionSettings = () => {
   const editPermission = (item) => {
   }
   const handleDeletePermission = (permissionId) => {
-    Modal.confirm({
+    modal.confirm({
       title: 'Are you sure want to delete this permission?',
       okText: "Yes",
       okType: "danger",
@@ -81,10 +82,10 @@ const PermissionSettings = () => {
   const renderActionButtons = (record) => {
     return (
       <Space size="middle">
-        <Button className='edit-btn' icon={<EditOutlined/>} size={"small"} onClick={() => handleEditPermission(record)}/>
+        <Button className='edit-btn' icon={<EditOutlined />} size={"small"} onClick={() => handleEditPermission(record)} />
         <Permission required={'DELETE_ORDER'}>
-          <Button type="primary" danger icon={<DeleteOutlined/>} size={"small"}
-                  onClick={() => handleDeletePermission(record)}/>
+          <Button type="primary" danger icon={<DeleteOutlined />} size={"small"}
+            onClick={() => handleDeletePermission(record)} />
         </Permission>
       </Space>
     );
@@ -95,19 +96,19 @@ const PermissionSettings = () => {
       title: 'Permission',
       dataIndex: 'name',
       key: 'permission',
-      width:"30%"
+      width: "30%"
     },
     {
       title: 'Description',
       dataIndex: 'description',
       key: 'description',
-      width:"50%"
+      width: "50%"
     },
     {
       title: 'Action',
       key: "action",
       render: renderActionButtons,
-      width:"20%"
+      width: "20%"
     }
   ];
 
@@ -133,7 +134,7 @@ const PermissionSettings = () => {
                 columns={columns}
                 dataSource={permissions}
                 pagination={false}
-                scroll={{y: 620}}
+                scroll={{ y: 620 }}
               />
             </Card>
           </Col>
@@ -190,6 +191,7 @@ const PermissionSettings = () => {
           </Form.Item>
         </Form>
       </Modal>
+      {contextHolder}
     </>)
 };
 

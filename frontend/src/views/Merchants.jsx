@@ -3,20 +3,21 @@
 import { Card, Col, Row, Button, Table, Avatar, Space, Modal } from 'antd';
 import { PlusOutlined, DeleteOutlined, EditOutlined, UserOutlined } from '@ant-design/icons'
 import { useNavigate } from "react-router-dom";
-import React, {useCallback, useEffect, useState} from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { toast } from 'react-toastify';
 import useAxiosClient from "../axios-client";
 
 
 function Merchants() {
 
-  const axiosClient = useAxiosClient();
-  const navigate = useNavigate()
-  const [Merchants, setMerchants] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [total, setTotal] = useState(0)
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+    const axiosClient = useAxiosClient();
+    const navigate = useNavigate()
+    const [Merchants, setMerchants] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [total, setTotal] = useState(0)
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [modal, contextHolder] = Modal.useModal();
 
     const fetchMerchants = useCallback(async (page = 1) => {
         setLoading(true);
@@ -35,102 +36,102 @@ function Merchants() {
         }
     }, [axiosClient])
 
-  useEffect(() => {
-      fetchMerchants();
-  },[fetchMerchants])
+    useEffect(() => {
+        fetchMerchants();
+    }, [fetchMerchants])
 
 
-  const addNewMerchant = () => {
-      navigate('/merchants/merchantForm')
-  }
+    const addNewMerchant = () => {
+        navigate('/merchants/merchantForm')
+    }
 
-  const renderMerchantAvater = (image) => {
-    if (image) {
-        const imagePath = `${process.env.REACT_APP_API_BASE_URL}/files/upload/${image.id}`
+    const renderMerchantAvater = (image) => {
+        if (image) {
+            const imagePath = `${process.env.REACT_APP_API_BASE_URL}/files/upload/${image.id}`
+            return (
+                <Avatar
+                    src={imagePath}
+                    size={{ xs: 24, sm: 32, md: 32 }}
+                />
+
+            )
+        }
+        return <Avatar size={{ xs: 24, sm: 32, md: 32 }} icon={<UserOutlined />} />
+
+    }
+
+    const renderActionButtons = (record) => {
         return (
-            <Avatar
-                src={imagePath}
-                size={{ xs: 24, sm: 32, md: 32 }}
-            />
-
-        )
+            <Space size="middle">
+                <Button className='edit-btn' icon={<EditOutlined />} size={"small"} onClick={() => handleEditMerchant(record)} />
+                <Button type="danger" icon={<DeleteOutlined />} size={"small"} onClick={() => handleDeleteMerchant(record)} />
+            </Space>
+        );
     }
-    return <Avatar size={{ xs: 24, sm: 32, md: 32 }} icon={<UserOutlined />} />
 
-}
+    const confirmDeleteMerchant = async (id) => {
+        try {
+            const data = await axiosClient.delete(`/merchants/delete/${id}`);
+            toast.warning(data.message);
+            await fetchMerchants();
 
-const renderActionButtons = (record) => {
+        } catch (error) {
+            const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+            toast.error(message);
+        }
+    }
+
+
+    const columns = [
+        {
+            title: 'Merchant',
+            dataIndex: 'image',
+            key: 'image',
+            render: renderMerchantAvater
+        },
+        {
+            title: 'Name',
+            dataIndex: 'name',
+            key: 'name',
+        },
+        {
+            title: 'Identification',
+            dataIndex: 'identification',
+            key: 'nid',
+        },
+        {
+            title: 'Phone',
+            dataIndex: 'address',
+            key: 'phone',
+            render: (address) => `${address.phone}`
+        },
+        {
+            title: 'Address',
+            dataIndex: 'address',
+            key: 'address',
+            render: (address) => `${address.address}, ${address.upazila.name} ,${address.district.name}`
+        },
+        {
+            title: 'Action',
+            key: "action",
+            render: renderActionButtons
+        }
+    ];
+
+    const handleEditMerchant = (record) => {
+    }
+    const handleDeleteMerchant = (record) => {
+        modal.confirm({
+            title: 'Are you sure want to delete this Merchant data?',
+            okText: "Yes",
+            okType: "danger",
+            onOk: () => confirmDeleteMerchant(record.id)
+        })
+    }
+
+
     return (
-        <Space size="middle">
-            <Button className='edit-btn' icon={<EditOutlined />} size={"small"} onClick={() => handleEditMerchant(record)} />
-            <Button type="danger" icon={<DeleteOutlined />} size={"small"} onClick={() => handleDeleteMerchant(record)} />
-        </Space>
-    );
-}
-
-const confirmDeleteMerchant = async (id) => {
-  try {
-      const data = await axiosClient.delete(`/merchants/delete/${id}`);
-      toast.warning(data.message);
-      await fetchMerchants();
-
-  } catch (error) {
-    const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-    toast.error(message);
-  }
-}
-
-
-  const columns = [
-    {
-        title: 'Merchant',
-        dataIndex: 'image',
-        key: 'image',
-        render: renderMerchantAvater
-    },
-    {
-        title: 'Name',
-        dataIndex: 'name',
-        key: 'name',
-    },
-    {
-        title: 'Identification',
-        dataIndex: 'identification',
-        key: 'nid',
-    },
-    {
-        title: 'Phone',
-        dataIndex: 'address',
-        key: 'phone',
-        render: (address) => `${address.phone}`
-    },
-    {
-        title: 'Address',
-        dataIndex: 'address',
-        key: 'address',
-        render: (address) => `${address.address}, ${address.upazila.name} ,${address.district.name}`
-    },
-    {
-        title: 'Action',
-        key: "action",
-        render: renderActionButtons
-    }
-];
-
-const handleEditMerchant = (record) => {
-}
-const handleDeleteMerchant = (record) => {
-    Modal.confirm({
-        title: 'Are you sure want to delete this Merchant data?',
-        okText: "Yes",
-        okType: "danger",
-        onOk: () => confirmDeleteMerchant(record.id)
-    })
-}
-
-
-  return (
-    <Space
+        <Space
             direction="vertical"
             size="middle"
             style={{
@@ -164,8 +165,9 @@ const handleDeleteMerchant = (record) => {
                     }}
                 />
             </Card>
+            {contextHolder}
         </Space>
-  )
+    )
 }
 
 export default Merchants;

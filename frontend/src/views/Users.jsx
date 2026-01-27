@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 const Users = (callback, deps) => {
     const axiosClient = useAxiosClient();
     const navigate = useNavigate()
+    const [modal, contextHolder] = Modal.useModal();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [total, setTotal] = useState(0)
@@ -166,7 +167,7 @@ const Users = (callback, deps) => {
     }
 
     const handleDeleteUser = (record) => {
-        Modal.confirm({
+        modal.confirm({
             title: 'Are you sure want to delete this user data?',
             okText: "Yes",
             okType: "danger",
@@ -276,97 +277,99 @@ const Users = (callback, deps) => {
 
     };
     return (
-        <Space
-            direction="vertical"
-            size="middle"
-            style={{
-                display: 'flex',
-            }}
-        >
-            <Card bordered={false} className='shadow-sm hover:shadow-md transition-shadow duration-300'>
-                <Row justify='space-between' align="middle" gutter={[16, 16]}>
-                    <Col>
-                        <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: token.colorTextHeading, margin: 0 }}>Users</h1>
-                    </Col>
-                    <Col>
-                        <Space>
-                            <Input.Search
-                                placeholder="Search users..."
-                                onSearch={handleSearch}
-                                style={{ width: 250 }}
-                                allowClear
-                            />
-                            <Select
-                                placeholder="Filter by status"
-                                style={{ width: 150 }}
-                                onChange={handleFilterStatusChange}
-                                allowClear
-                                options={[
-                                    { label: 'All', value: null },
-                                    { label: 'Active', value: 1 },
-                                    { label: 'Inactive', value: 0 },
-                                ]}
-                            />
-                            <Button type="primary" onClick={addNewUser} icon={<PlusOutlined />}>Add User</Button>
-                        </Space>
-                    </Col>
-                </Row>
-            </Card>
-            <Card bordered={false} className='shadow-sm'>
-                <Table
-                    dataSource={users}
-                    columns={columns}
-                    loading={loading}
-                    scroll={{ x: 600 }}
-                    size={'middle'}
-                    onChange={handleTableChange}
-                    pagination={{
-                        current: page,
-                        pageSize: pageSize,
-                        total: total,
-                        showSizeChanger: true,
-                    }}
-                />
-            </Card>
-            <Modal
-                title="Change User Status"
-                confirmLoading={statusLoading}
-                width={400}
-                onOk={submitUserStatus}
-                onCancel={handleCancel}
-                open={isModalOpen}
+        <>
+            <Space
+                direction="vertical"
+                size="middle"
+                style={{
+                    display: 'flex',
+                }}
             >
-                <Form
-                    form={statusForm}
-                    name={"statusForm"}
-                    layout='vertical'
-                    initialValues={{
-                        remember: true,
-                    }}
-                    onFinish={submitUserStatus}
+                <Card bordered={false} className='shadow-sm hover:shadow-md transition-shadow duration-300'>
+                    <Row justify='space-between' align="middle" gutter={[16, 16]}>
+                        <Col>
+                            <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: token.colorTextHeading, margin: 0 }}>Users</h1>
+                        </Col>
+                        <Col>
+                            <Space>
+                                <Input.Search
+                                    placeholder="Search users..."
+                                    onSearch={handleSearch}
+                                    style={{ width: 250 }}
+                                    allowClear
+                                />
+                                <Select
+                                    placeholder="Filter by status"
+                                    style={{ width: 150 }}
+                                    onChange={handleFilterStatusChange}
+                                    allowClear
+                                    options={[
+                                        { label: 'All', value: null },
+                                        { label: 'Active', value: 1 },
+                                        { label: 'Inactive', value: 0 },
+                                    ]}
+                                />
+                                <Button type="primary" onClick={addNewUser} icon={<PlusOutlined />}>Add User</Button>
+                            </Space>
+                        </Col>
+                    </Row>
+                </Card>
+                <Card bordered={false} className='shadow-sm'>
+                    <Table
+                        dataSource={users}
+                        columns={columns}
+                        loading={loading}
+                        scroll={{ x: 600 }}
+                        size={'middle'}
+                        onChange={handleTableChange}
+                        pagination={{
+                            current: page,
+                            pageSize: pageSize,
+                            total: total,
+                            showSizeChanger: true,
+                        }}
+                    />
+                </Card>
+                <Modal
+                    title="Change User Status"
+                    confirmLoading={statusLoading}
+                    width={400}
+                    onOk={submitUserStatus}
+                    onCancel={handleCancel}
+                    open={isModalOpen}
                 >
-                    <Form.Item
-                        name="status"
-                        label="Status"
-                        rules={[
-                            {
-                                required: true,
-                                message: `Status is required!`,
-                            },
-                        ]}
+                    <Form
+                        form={statusForm}
+                        name={"statusForm"}
+                        layout='vertical'
+                        initialValues={{
+                            remember: true,
+                        }}
+                        onFinish={submitUserStatus}
                     >
-                        <Select
-                            value={userStatus}
-                            style={{ width: "100%" }}
-                            onChange={handleStatusChange}
-                            options={userStatusOptions}
-                        />
-                    </Form.Item>
-                </Form>
+                        <Form.Item
+                            name="status"
+                            label="Status"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: `Status is required!`,
+                                },
+                            ]}
+                        >
+                            <Select
+                                value={userStatus}
+                                style={{ width: "100%" }}
+                                onChange={handleStatusChange}
+                                options={userStatusOptions}
+                            />
+                        </Form.Item>
+                    </Form>
 
-            </Modal>
-        </Space>
-
+                </Modal>
+            </Space>
+            {contextHolder}
+        </>
     )
 };
 

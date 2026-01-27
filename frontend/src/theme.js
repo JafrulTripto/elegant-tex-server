@@ -43,6 +43,9 @@ export const getThemeToken = (isDark) => {
             colorTextDescription: '#94a3b8', // Slate-400
             colorBorder: '#334155', // Slate-700
             colorSplit: '#334155',
+            colorBgContainer: '#1e293b', // Slate-800
+            colorBgElevated: '#1e293b', // Slate-800
+            colorBgLayout: '#0f172a', // Slate-900
         };
     }
     return baseToken;

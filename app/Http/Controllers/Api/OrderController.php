@@ -31,7 +31,7 @@ class OrderController extends Controller
 {
 
   private OrderService $orderService;
-  private const PAGESIZE = 13;
+  private const PAGESIZE = 10;
 
   public function __construct(OrderService $orderService)
   {
@@ -62,24 +62,26 @@ class OrderController extends Controller
     $paginateBoolean = filter_var($paginate, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
     if ($user->hasPermissionTo("VIEW_ALL_ORDERS")) {
       $query = Order::whereHasMorph('orderable', Marketplace::class)
+        ->withCount('product')
         ->with(['orderable' => function ($query) {
           $query->select('id', 'name');
         },
           'createdBy' => function ($query) {
             $query->select('id', 'firstname', 'lastname');
-          }])->latest('id');
+          }]);
     } else {
       $query = Order::whereHasMorph('orderable', [Marketplace::class], function (Builder $query) use ($userID) {
         $query->whereHas('users', function ($q) use ($userID) {
           $q->where("marketplace_user.user_id", $userID);
         });
       })
+        ->withCount('product')
         ->with(['orderable' => function ($query) {
           $query->select('id', 'name');
         },
           'createdBy' => function ($query) {
             $query->select('id', 'firstname', 'lastname');
-          }])->latest('id');
+          }]);
     }
 
     // Apply common filters
@@ -101,12 +103,13 @@ class OrderController extends Controller
     $paginate = $request->get('paginate', true);
     $paginateBoolean = filter_var($paginate, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
     $query = Order::whereHasMorph('orderable', [Merchant::class])
+      ->withCount('product')
       ->with(['orderable' => function ($query) {
         $query->select('id', 'name');
       },
         'createdBy' => function ($query) {
           $query->select('id', 'firstname', 'lastname');
-        }])->latest('id');
+        }]);
 
     // Apply common filters
     $query = $this->applyFiltersToQuery($query, $request);
@@ -118,6 +121,32 @@ class OrderController extends Controller
     }
 
     return OrdersResource::collection($orders);
+  }
+
+  public function getStats($userId)
+  {
+      $user = User::findOrFail($userId);
+      $query = Order::query();
+
+      // Filter by role/permissions similar to getMarketplaceOrders
+      // If user is Admin/SuperAdmin (VIEW_ALL_ORDERS), they see everything.
+      // Otherwise, they see orders related to their marketplaces.
+      if (!$user->hasPermissionTo("VIEW_ALL_ORDERS")) {
+          $query->whereHasMorph('orderable', [Marketplace::class], function (Builder $query) use ($user) {
+              $query->whereHas('users', function ($q) use ($user) {
+                  $q->where("marketplace_user.user_id", $user->id);
+              });
+          });
+      }
+
+      $stats = [
+          'total' => (clone $query)->count(),
+          'pending' => (clone $query)->whereIn('status', [OrderStatus::DRAFT->value, OrderStatus::BOOKING->value])->count(),
+          'processing' => (clone $query)->whereIn('status', [OrderStatus::APPROVED->value, OrderStatus::PRODUCTION->value, OrderStatus::QA->value, OrderStatus::READY->value])->count(),
+          'delivered' => (clone $query)->where('status', OrderStatus::DELIVERED->value)->count(),
+      ];
+
+      return response()->json($stats);
   }
 
 
@@ -239,16 +268,35 @@ class OrderController extends Controller
 
   private function applyFiltersToQuery($query, $request)
   {
-    $search = $request->input('search', '');
+    $search = $request->input('search', ''); // Generic search fallback
+    $searchId = $request->input('id', '');
+    $searchOrderedBy = $request->input('orderedBy', '');
+    
     $deliveryDateFilterStartDate = $request->input('startDate', '');
     $deliveryDateFilterEndDate = $request->input('endDate', '');
     $orderDateFilterStartDate = $request->input('orderDateStart', '');
     $orderDateFilterEndDate = $request->input('orderDateEnd', '');
     $status = $request->input('status') ? array_map('intval', explode(',', $request->input('status'))) : [];
 
-    // Apply search filter
-    if (!empty($search)) {
-      $query->where('id', $search);
+    $sortField = $request->input('sortField');
+    $sortOrder = $request->input('sortOrder', 'asc'); // asc or desc, default asc if not spec (but for id default is desc)
+
+    // Apply ID search
+    if (!empty($searchId)) {
+      $query->where('id', 'like', "%{$searchId}%");
+    } elseif (!empty($search)) {
+       // Fallback generic search
+       $query->where('id', 'like', "%{$search}%");
+    }
+
+    // Apply OrderedBy Search (Merchant/Marketplace Name)
+    // Note: orderedBy in Resource maps to orderable->name
+    if (!empty($searchOrderedBy)) {
+        // Since orderable is polymorphic (Marketplace or Merchant), we can query the related model.
+        // We use whereHasMorph to query polymorphic relations.
+        $query->whereHasMorph('orderable', [Marketplace::class, Merchant::class], function ($q) use ($searchOrderedBy) {
+             $q->where('name', 'like', "%{$searchOrderedBy}%");
+        });
     }
 
     // Apply status filter
@@ -271,6 +319,26 @@ class OrderController extends Controller
 
     if (!empty($orderDateFilterEndDate)) {
       $query->whereDate('created_at', '<=', $orderDateFilterEndDate);
+    }
+
+    // Sorting
+    if ($sortField) {
+        $direction = $sortOrder === 'ascend' ? 'asc' : 'desc'; // AntD sends 'ascend'/'descend'
+        if ($sortOrder === 'asc') $direction = 'asc';
+        if ($sortOrder === 'desc') $direction = 'desc';
+
+        if ($sortField === 'totalAmount') {
+             $query->orderBy('total_amount', $direction);
+        } elseif ($sortField === 'createdAt') {
+             $query->orderBy('created_at', $direction);
+        } elseif ($sortField === 'deliveryDate') {
+             $query->orderBy('delivery_date', $direction);
+        } else {
+             $query->orderBy($sortField, $direction);
+        }
+    } else {
+        // Default Sort
+        $query->latest('id');
     }
 
     return $query;
