@@ -1,16 +1,27 @@
 import React from 'react';
-import {Avatar, Button, Col, Form, Input, InputNumber, Row, Select, Upload} from "antd";
-import {InboxOutlined, MinusOutlined, PlusOutlined} from "@ant-design/icons";
-import {colors} from "../../utils/Colors";
-import {toast} from "react-toastify";
+import { Avatar, Button, Col, Form, Input, InputNumber, Row, Select, Upload } from "antd";
+import { InboxOutlined, MinusOutlined, PlusOutlined } from "@ant-design/icons";
+import { colors } from "../../utils/Colors";
+import { toast } from "react-toastify";
 
 const OrderProductForm = (props) => {
 
-    const {Option} = Select;
-    const {Dragger} = Upload;
-    const {files} = props;
+    const { Option } = Select;
+    const { Dragger } = Upload;
+    const { files, loadMore, hasMore, fabricsLoading } = props;
 
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+
+    const handlePopupScroll = (e) => {
+        const { target } = e;
+        if (
+            !fabricsLoading &&
+            hasMore &&
+            target.scrollTop + target.offsetHeight >= target.scrollHeight - 10
+        ) {
+            loadMore();
+        }
+    };
 
     const draggerProps = {
         name: "orderImage",
@@ -23,7 +34,7 @@ const OrderProductForm = (props) => {
             const newFileList = props.files.slice();
             newFileList.splice(index, 1);
             props.setFiles(newFileList);
-            if (props.removedFiles){
+            if (props.removedFiles) {
                 props.setRemovedFiles([...props.removedFiles, file]);
             }
         },
@@ -45,10 +56,10 @@ const OrderProductForm = (props) => {
         }
         return e?.fileList.filter(file => file.size <= MAX_FILE_SIZE);
     };
-  const filterOptionFunction = (input, option) => {
-    return (option?.title ?? '').toLowerCase().includes(input.toLowerCase())
-  };
-  return (
+    const filterOptionFunction = (input, option) => {
+        return (option?.title ?? '').toLowerCase().includes(input.toLowerCase())
+    };
+    return (
         <Row>
             <Col xs={24} md={12} lg={16} className="pr-4">
                 <Form.List name="products" initialValue={[{
@@ -56,9 +67,9 @@ const OrderProductForm = (props) => {
                     fabrics: null,
                     productDescription: null
                 }]}>
-                    {(fields, {add, remove}) => (
+                    {(fields, { add, remove }) => (
                         <>
-                            {fields.map(({key, name, ...restField}) => (
+                            {fields.map(({ key, name, ...restField }) => (
 
                                 <Row gutter={24} key={key}>
                                     <Col xs={24} md={12} lg={8}>
@@ -91,19 +102,32 @@ const OrderProductForm = (props) => {
 
                                             ]}>
                                             <Select
-                                              size="large"
-                                              showSearch
-                                              optionFilterProp="children"
-                                              filterOption={ filterOptionFunction }
+                                                size="large"
+                                                showSearch
+                                                defaultActiveFirstOption={false}
+                                                filterOption={false}
+                                                onSearch={(value) => {
+                                                    // Simple debounce
+                                                    if (window.searchTimeout) clearTimeout(window.searchTimeout);
+                                                    window.searchTimeout = setTimeout(() => {
+                                                        props.fetchFabrics(1, value);
+                                                    }, 800);
+                                                }}
+                                                onPopupScroll={handlePopupScroll}
                                             >
                                                 {props.fabrics.map(data => {
                                                     return <Option title={data.name} value={data.id} key={data.id}>
-                                                                <span>
-                                                                    <Avatar shape="square" src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${data.image.id}`} />
-                                                                    <span style={{ marginLeft: '10px' }}>{data.name}</span>
-                                                                </span>
+                                                        <span>
+                                                            <Avatar shape="square" src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${data.image.id}`} />
+                                                            <span style={{ marginLeft: '10px' }}>{data.name}</span>
+                                                        </span>
                                                     </Option>
                                                 })}
+                                                {fabricsLoading && (
+                                                    <Option value="loading" disabled>
+                                                        <div style={{ textAlign: 'center', padding: '10px' }}>Loading...</div>
+                                                    </Option>
+                                                )}
                                             </Select>
                                         </Form.Item>
                                     </Col>
@@ -121,7 +145,7 @@ const OrderProductForm = (props) => {
                                             <InputNumber
                                                 size="large"
                                                 min={0}
-                                                style={{width: "100%"}}
+                                                style={{ width: "100%" }}
                                             />
                                         </Form.Item>
                                     </Col>
@@ -139,7 +163,7 @@ const OrderProductForm = (props) => {
                                             <InputNumber
                                                 size="large"
                                                 min={0}
-                                                style={{width: "100%"}}
+                                                style={{ width: "100%" }}
                                             />
                                         </Form.Item>
                                     </Col>
@@ -154,7 +178,7 @@ const OrderProductForm = (props) => {
                                                 },
                                             ]}
                                         >
-                                            <Input.TextArea rows={2} placeholder="Additional product information ..."/>
+                                            <Input.TextArea rows={2} placeholder="Additional product information ..." />
                                         </Form.Item>
                                     </Col>
 
@@ -163,7 +187,7 @@ const OrderProductForm = (props) => {
                                             <Col xs={24} md={12} lg={12}>
                                                 <Form.Item>
                                                     <Button type="dashed" onClick={() => add()} block
-                                                            icon={<PlusOutlined/>}>
+                                                        icon={<PlusOutlined />}>
                                                         Add Product
                                                     </Button>
 
@@ -172,8 +196,8 @@ const OrderProductForm = (props) => {
                                             <Col xs={24} md={12} lg={12}>
                                                 <Form.Item>
                                                     <Button type="dashed" danger
-                                                            onClick={() => fields.length > 1 ? remove(key) : null}
-                                                            disabled={fields.length <= 1} block icon={<MinusOutlined/>}>
+                                                        onClick={() => fields.length > 1 ? remove(key) : null}
+                                                        disabled={fields.length <= 1} block icon={<MinusOutlined />}>
                                                         Remove Product
                                                     </Button>
                                                 </Form.Item>
@@ -195,14 +219,14 @@ const OrderProductForm = (props) => {
                 >
                     <Dragger {...draggerProps} fileList={files}>
                         <p className="ant-upload-drag-icon">
-                            <InboxOutlined style={{color: colors.secondaryDark}}/>
+                            <InboxOutlined className="text-blue-700 dark:text-blue-400" />
                         </p>
                         <p className="ant-upload-text">Click or drag file to this area to upload</p>
                         <p className="ant-upload-hint mb-1">
                             Support for a single or bulk upload. Strictly prohibit from uploading company data or other
                             band files
                         </p>
-                        <p className="ant-upload-hint font-bold" style={{color: "#E74646"}}>
+                        <p className="ant-upload-hint font-bold" style={{ color: "#E74646" }}>
                             Maximum file size must be less then 5 mb.
                         </p>
                     </Dragger>

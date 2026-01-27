@@ -1,14 +1,18 @@
 import React from 'react';
 import SettingsList from "../components/Settings/SettingsList.jsx";
-import {Card} from "antd";
+import { Typography } from 'antd';
+
+const { Title, Text } = Typography;
 
 const Settings = () => {
   return (
 
-    <div className="xl:px-10 xl:pt-12">
-      <Card title="Settings">
-        <SettingsList />
-      </Card>
+    <div className="animate-fade-in">
+      <div className="mb-8">
+        <Title level={2} className="!mb-0">Settings</Title>
+        <Text type="secondary">Manage your application configuration and preferences</Text>
+      </div>
+      <SettingsList />
     </div>
 
 

@@ -18,9 +18,16 @@ class FabricsController extends Controller
         $this->fabricsService = $fabricsService;
     }
 
-    public function index(): Collection
+    public function index()
     {
-        return Fabrics::with('image')->get();
+        $query = Fabrics::with('image');
+
+        if (request()->has('search')) {
+            $search = request('search');
+            $query->where('name', 'LIKE', "%{$search}%");
+        }
+
+        return $query->paginate(20);
     }
 
     /**

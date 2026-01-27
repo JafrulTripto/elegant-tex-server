@@ -1,7 +1,7 @@
 import React from 'react';
-import {View, Text, StyleSheet, Image} from "@react-pdf/renderer";
+import { View, Text, StyleSheet, Image } from "@react-pdf/renderer";
 
-const InvoiceProductTable = ({products}) => {
+const InvoiceProductTable = ({ products }) => {
 
     const styles = StyleSheet.create({
         table: {
@@ -47,16 +47,21 @@ const InvoiceProductTable = ({products}) => {
             fontWeight: 'bold'
         }
     });
+
+    const formatPrice = (amount) => {
+        return new Intl.NumberFormat('en-BD', { minimumFractionDigits: 0 }).format(amount || 0);
+    }
+
     return (
         <View style={styles.table}>
             <View style={styles.tableHeadRow}>
                 <View style={styles.tableHeadCol}>
                     <Text style={styles.tableHeadCell}>Product</Text>
                 </View>
-                <View style={[styles.tableHeadCol, {width: "28%"}]}>
+                <View style={[styles.tableHeadCol, { width: "28%" }]}>
                     <Text style={styles.tableHeadCell}>Fabric</Text>
                 </View>
-                <View style={[styles.tableHeadCol, {width: "30%"}]}>
+                <View style={[styles.tableHeadCol, { width: "30%" }]}>
                     <Text style={styles.tableHeadCell}>Description</Text>
                 </View>
                 <View style={styles.tableHeadCol}>
@@ -66,23 +71,23 @@ const InvoiceProductTable = ({products}) => {
                     <Text style={styles.tableHeadCell}>Price</Text>
                 </View>
             </View>
-            {products.map(product => {
+            {products.map((product, index) => {
                 return (
-                    <View style={styles.tableRow} key={product.id}>
+                    <View style={styles.tableRow} key={product.id || index}>
                         <View style={styles.tableCol}>
-                            <Text style={styles.tableCell}>{product.productType.name}</Text>
+                            <Text style={styles.tableCell}>{product.productType?.name}</Text>
                         </View>
-                        <View style={[styles.tableHeadCol, {width: "28%"}]}>
-                            <Text style={{...styles.tableCell, paddingRight: 5}}>{product.fabrics.name}</Text>
+                        <View style={[styles.tableHeadCol, { width: "28%" }]}>
+                            <Text style={{ ...styles.tableCell, paddingRight: 5 }}>{product.fabrics?.name}</Text>
                         </View>
-                        <View style={[styles.tableCol, {width: "30%"}]}>
+                        <View style={[styles.tableCol, { width: "30%" }]}>
                             <Text style={styles.tableCell}>{product.description}</Text>
                         </View>
                         <View style={styles.tableCol}>
                             <Text style={styles.tableCell}>{product.unit} pc.</Text>
                         </View>
                         <View style={styles.tableCol}>
-                            <Text style={styles.tableCell}>{product.price} tk</Text>
+                            <Text style={styles.tableCell}>{formatPrice(product.price)} BDT</Text>
                         </View>
                     </View>
                 )

@@ -51,7 +51,10 @@ class StorageController extends Controller
     public function getImage($imageId)
     {
         $image = Image::findOrFail($imageId);
-        return Storage::disk('s3')->response($image->path);
+        return Storage::disk('s3')->response($image->path, null, [
+            'Cache-Control' => 'public, max-age=31536000, immutable',
+            'Expires' => gmdate('D, d M Y H:i:s \G\M\T', time() + 31536000)
+        ]);
     }
 
     public function destroy(Request $request)

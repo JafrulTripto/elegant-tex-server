@@ -1,91 +1,119 @@
 import React, { useState } from 'react';
-import { faShop, faRectangleList, faGlobe, faCalendarCheck } from "@fortawesome/free-solid-svg-icons";
-import { colors } from "../../utils/Colors";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Spin, Typography, Segmented } from 'antd';
+import {
+  ShoppingOutlined,
+  GlobalOutlined,
+  ShopOutlined,
+  CheckCircleOutlined
+} from '@ant-design/icons';
+import { Card, Skeleton, Segmented, Statistic, theme, Switch } from 'antd';
 
 const ReportBox = (props) => {
   const { data, loading, text } = props;
   const [reportType, setReportType] = useState('day');
+  const { token } = theme.useToken();
 
-  const showIcon = () => {
+  const getIcon = () => {
+    // Use low opacity background of the primary color for dark mode compatibility
+    const opacity = 0.15;
+    const style = { fontSize: 24, padding: 8, borderRadius: 8 };
+
     switch (text) {
       case "Order":
       case "My Orders":
-        return faRectangleList;
-        case "Marketplace":
-          return faGlobe;
-          case "Merchant":
-            return faShop;
-          case "Completion":
-            return faCalendarCheck;
+        return <ShoppingOutlined style={{ ...style, color: token.colorPrimary, backgroundColor: `rgba(0, 122, 255, ${opacity})` }} />;
+      case "Marketplace":
+        return <GlobalOutlined style={{ ...style, color: token.colorInfo, backgroundColor: `rgba(6, 182, 212, ${opacity})` }} />;
+      case "Merchant":
+        return <ShopOutlined style={{ ...style, color: token.colorWarning, backgroundColor: `rgba(245, 158, 11, ${opacity})` }} />;
+      case "Completion":
+        return <CheckCircleOutlined style={{ ...style, color: token.colorSuccess, backgroundColor: `rgba(16, 185, 129, ${opacity})` }} />;
       default:
-        break;
+        return null;
     }
-  }
+  };
 
-  const showToggleVlaues = () => {
-    return text === 'Completion' ? ['Delivered' , 'Returned'] : ['Day', 'Month'];
-  }
+  const showToggleValues = () => {
+    return text === 'Completion' ? ['Delivered', 'Returned'] : ['Day', 'Month'];
+  };
 
   const handleToggleReport = (value) => {
     setReportType(value.toLowerCase());
   };
 
   const showReportText = () => {
-    return reportType === 'day' && text !=='Completion' ? 'Today' : 'Since last month'
-  }
+    return reportType === 'day' && text !== 'Completion' ? 'Today' : 'Since last month';
+  };
 
-  if (data) {
-    const reportData = reportType === 'day' || reportType === 'delivered' ? data.firstValue : data.secondValue;
-    return (
-      <div className="report-box zoom-in bg-white rounded-lg shadow-md">
-        <div className="box p-5">
-          <div className="flex justify-between">
-            <FontAwesomeIcon icon={showIcon()} style={{ fontSize: "30px", color: colors.secondary }} />
-            <div>
-              <Typography.Title level={4} style={{ margin: 0, color: colors.primary }}>
-                {text}
-              </Typography.Title>
-            </div>
-          </div>
-          <div className='flex justify-between'>
-            <div className="text-3xl font-bold leading-8 mt-6 ">{reportData.total}</div>
-            <div className="text-3xl font-bold leading-8 mt-6 text-[#50B498]">{`${parseInt(reportData.amount).toLocaleString()} ৳`}</div>
-          </div>
-
-          <div className="flex justify-between">
-            <div className='text-base font-semibold text-mt-1 text-[#fca311]'>{showReportText()}</div>
-            <div>
-              <Segmented
-                size='small'
-                options={showToggleVlaues()}
-                onChange={handleToggleReport}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="report-box zoom-in bg-white rounded-lg shadow-md">
-        <div className="flex justify-center items-center box p-5" style={{ height: "154px" }}>
-          <div className=""><Spin /></div>
-        </div>
-      </div>
-    )
-  }
+  const reportData = data
+    ? (reportType === 'day' || reportType === 'delivered' ? data.firstValue : data.secondValue)
+    : { total: 0, amount: 0 };
 
   return (
-    <div className="report-box zoom-in bg-white rounded-lg shadow-md">
-      <div className="flex justify-center items-center box p-5" style={{ height: "154px" }}>
-        <div className=""><p>No Data</p></div>
-      </div>
-    </div>
-  )
+    <Card
+      bordered={false}
+      className="h-full shadow-sm hover:shadow-md transition-all duration-300"
+      bodyStyle={{ padding: '24px' }}
+      style={{ borderRadius: token.borderRadiusLG }}
+    >
+      <Skeleton loading={loading} active avatar paragraph={{ rows: 2 }}>
+        {/* Top Row: Icon and Title aligned left, Segmented Control right */}
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center gap-3">
+              {getIcon()}
+              <div className="flex flex-col">
+                <span style={{ color: token.colorTextSecondary, fontSize: '14px', fontWeight: 500 }}>
+                  {text}
+                </span>
+                <span style={{ color: token.colorTextDescription, fontSize: '12px' }}>
+                  {showReportText()}
+                </span>
+              </div>
+            </div>
+            <Switch
+              checked={reportType === 'month' || reportType === 'returned'}
+              onChange={(checked) => {
+                if (text === 'Completion') {
+                  setReportType(checked ? 'returned' : 'delivered');
+                } else {
+                  setReportType(checked ? 'month' : 'day');
+                }
+              }}
+              checkedChildren={text === 'Completion' ? 'R' : 'M'}
+              unCheckedChildren={text === 'Completion' ? 'D' : 'D'}
+              size="small"
+            />
+          </div>
+
+          {/* Bottom Section: Value and Amount Badge */}
+          <div className="flex items-end justify-between mt-2">
+            <Statistic
+              value={reportData.total}
+              valueStyle={{ fontWeight: 700, fontSize: 32, lineHeight: 1, color: token.colorTextHeading }}
+              formatter={(value) => parseInt(value).toLocaleString()}
+            />
+
+            {data && text !== 'Completion' && (
+              <div
+                className="flex items-center justify-center cursor-default"
+                style={{
+                  backgroundColor: token.colorBgLayout,
+                  padding: '6px 12px',
+                  borderRadius: '12px',
+                  border: `1px solid ${token.colorBorderSecondary}`
+                }}
+                title="Total Amount"
+              >
+                <span style={{ fontSize: '13px', fontWeight: 600, color: token.colorSuccess }}>
+                  ৳ {parseInt(reportData.amount).toLocaleString()}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </Skeleton>
+    </Card>
+  );
 };
 
 export default ReportBox;

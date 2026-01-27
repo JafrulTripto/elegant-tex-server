@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from 'react';
-import {Radio, Spin} from "antd";
+import React, { useEffect, useState } from 'react';
+import { Radio, Spin, Card, Skeleton, theme } from "antd";
 import useAxiosClient from "../../axios-client";
-import {Line} from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   PointElement,
@@ -29,12 +29,13 @@ const TopMarketplacesLineChart = (props) => {
   const [chartDataLoading, setChartDataLoading] = useState(false);
   const [switchValue, setSwitchValue] = useState('count');
   const axiosClient = useAxiosClient();
+  const { token } = theme.useToken();
   const switchOptions = [
-    {label: 'Amount', value: 'Amount'},
-    {label: 'Count', value: 'count'},
+    { label: 'Amount', value: 'Amount' },
+    { label: 'Count', value: 'count' },
   ];
 
-  const onChangeSwitch = ({target: {value}}) => {
+  const onChangeSwitch = ({ target: { value } }) => {
     setSwitchValue(value);
   };
 
@@ -50,103 +51,131 @@ const TopMarketplacesLineChart = (props) => {
       });
   }, []);
 
+  // Standardize labels to Jan-Dec
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
   function generateChartData(apiData) {
-    const colorArray = ['#d7263d', '#1b998b', '#2e294e', '#c5d86d', '#f46036'];
+    const colorArray = ['#007AFF', '#10b981', '#f59e0b', '#06b6d4', '#ef4444'];
+
     return apiData.map((marketplace, index) => {
-      const { monthly_stats } = marketplace;
+      // Create a map of existing data for quick lookup: { monthIndex: value }
+      const dataMap = {};
+      marketplace.monthly_stats.forEach(stat => {
+        dataMap[stat.month] = switchValue === 'count' ? stat.order_count : stat.total_amount;
+      });
 
-      // Extract month labels
-      const labels = monthly_stats.map(stat => `Month ${stat.month}`);
+      // Generate standardized data array for months 1-12
+      const data = [];
+      for (let m = 1; m <= 12; m++) {
+        data.push(dataMap[m] || 0); // Use existing value or 0
+      }
 
-      // Extract data based on switchValue
-      const data = monthly_stats.map(stat => switchValue === 'count' ? stat.order_count : stat.total_amount);
-
-      // Use the color array to pick a color for each dataset
       const backgroundColor = colorArray[index % colorArray.length];
-       // Same color for border
+
       return {
         label: marketplace.marketplace_name,
         data: data,
         backgroundColor: backgroundColor,
         borderColor: backgroundColor,
-        borderWidth: 2
+        borderWidth: 2,
+        tension: 0.4, // Smooth lines
+        pointRadius: 3,
+        pointHoverRadius: 5,
       };
     });
   }
 
-  function getMonthLabels(data) {
-    const months = new Set();
-    const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-
-    data.forEach(marketplace => {
-      marketplace.monthly_stats.forEach(monthly => {
-        months.add(monthly.month);
-      });
-    });
-
-    // Convert Set to array and sort by month number
-    return Array.from(months).sort((a, b) => a - b).map(month => monthNames[month - 1]);
-  }
-
+  const formatValue = (value) => {
+    if (switchValue === 'count') return value;
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
+  };
 
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
     plugins: {
       legend: {
-        position: 'top'
+        position: 'top',
+        labels: {
+          font: { family: 'Inter' },
+          color: token.colorTextDescription,
+          usePointStyle: true,
+        }
       },
-      title: {
-        display: false,
-        text: "Order's this Month",
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += formatValue(context.parsed.y);
+            }
+            return label;
+          }
+        }
       },
+      title: { display: false },
     },
     scales: {
       y: {
         ticks: {
-          stepSize: switchValue === 'count' ? 50 : 100000, // Set the step size to 1 to display integers only
+          // Remove hardcoded stepSize to allow auto-scaling
+          callback: function (value) {
+            // Abbreviate large numbers for Y-axis space
+            if (switchValue !== 'count' && value >= 1000) {
+              return '$' + (value / 1000).toFixed(0) + 'k';
+            }
+            return formatValue(value);
+          },
+          font: { family: 'Inter' },
+          color: token.colorTextDescription
         },
+        grid: { color: token.colorBorderSecondary, borderDash: [2, 2] },
+        border: { display: false }
       },
+      x: {
+        grid: { display: false },
+        ticks: {
+          font: { family: 'Inter' },
+          color: token.colorTextDescription
+        }
+      }
     },
-
   };
 
   const data = {
-    type:'line',
-    labels:getMonthLabels(chartData),
+    type: 'line',
+    labels: monthNames, // Fix labels to standard 12 months
     datasets: generateChartData(chartData),
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-5">
-      <div className="flex flex-row justify-between">
-        <div>
-          <h5
-            className="mb-2 text-xl font-medium leading-tight text-neutral-800">
-            Top Marketplaces
-          </h5>
-        </div>
-        <div>
-          <Radio.Group
-            options={switchOptions}
-            onChange={onChangeSwitch}
-            value={switchValue}
-          />
-        </div>
+    <Card
+      bordered={false}
+      className="hover:shadow-lg transition-shadow duration-300 h-full"
+      title={<span style={{ color: token.colorTextHeading }}>Top Marketplaces Trend</span>}
+      extra={
+        <Radio.Group
+          options={switchOptions}
+          onChange={onChangeSwitch}
+          value={switchValue}
+          size="small"
+          buttonStyle="solid"
+        />
+      }
+    >
+      <div style={{ height: "400px" }}>
+        <Skeleton loading={chartDataLoading} active paragraph={{ rows: 10 }}>
+          <Line options={options} data={data} />
+        </Skeleton>
       </div>
-
-      <div style={{height: "400px"}}>
-        <div className="flex justify-between">
-
-
-        </div>
-        {!chartDataLoading ? <Line options={options} data={data}/> :
-          <div className="flex justify-center align-middle"><Spin/></div>}
-      </div>
-    </div>
+    </Card>
   )
 }
 
