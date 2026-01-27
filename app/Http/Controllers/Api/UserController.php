@@ -26,9 +26,10 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = $this->userService->getAll();
+        $filters = $request->only(['search', 'status', 'sort_by', 'sort_order']);
+        $users = $this->userService->getAll($filters);
         return response()->json($users);
     }
 
@@ -101,7 +102,24 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        //
+        $userData = [
+            'firstName' => $request->firstName,
+            'lastName' => $request->lastName,
+            'email' => $request->email,
+            'password' => $request->password,
+            'nid' => $request->nid,
+            'address' => $request->address,
+            'phone' => $request->phone,
+            'upazila' => $request->upazila,
+            'district' => $request->district,
+            'division' => $request->division,
+            'image' => $request->image
+        ];
+
+        $this->userService->update($user, $userData);
+         return response()->json([
+            "message" => "User updated successfully."
+        ]);
     }
 
     public function changeUserStatus(Request $request, $id): JsonResponse

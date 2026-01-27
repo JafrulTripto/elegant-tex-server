@@ -51,6 +51,7 @@ Route::group([
     Route::get('/getRoleUsers', [UserController::class, 'getRoleUsers']);
     Route::get('/user/{id}', [UserController::class, 'getUser']);
     Route::put('/changeStatus/{id}', [UserController::class, 'changeUserStatus']);
+    Route::put('/update/{id}', [UserController::class, 'update']);
 });
 Route::group([
     'prefix' => 'settings/marketplace',
