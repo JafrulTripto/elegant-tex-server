@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Radio, Spin, Card, Skeleton } from "antd";
+import { Radio, Spin, Card, Skeleton, theme } from "antd";
 import useAxiosClient from "../../axios-client";
 import { Line } from "react-chartjs-2";
 import {
@@ -29,6 +29,7 @@ const TopMarketplacesLineChart = (props) => {
   const [chartDataLoading, setChartDataLoading] = useState(false);
   const [switchValue, setSwitchValue] = useState('count');
   const axiosClient = useAxiosClient();
+  const { token } = theme.useToken();
   const switchOptions = [
     { label: 'Amount', value: 'Amount' },
     { label: 'Count', value: 'count' },
@@ -90,7 +91,10 @@ const TopMarketplacesLineChart = (props) => {
     plugins: {
       legend: {
         position: 'top',
-        labels: { font: { family: 'Inter' } }
+        labels: {
+          font: { family: 'Inter' },
+          color: token.colorTextDescription
+        }
       },
       title: { display: false },
     },
@@ -98,14 +102,18 @@ const TopMarketplacesLineChart = (props) => {
       y: {
         ticks: {
           stepSize: switchValue === 'count' ? 50 : 100000,
-          font: { family: 'Inter' }
+          font: { family: 'Inter' },
+          color: token.colorTextDescription
         },
-        grid: { color: '#f1f5f9' },
+        grid: { color: token.colorBorderSecondary },
         border: { display: false }
       },
       x: {
         grid: { display: false },
-        ticks: { font: { family: 'Inter' } }
+        ticks: {
+          font: { family: 'Inter' },
+          color: token.colorTextDescription
+        }
       }
     },
   };
@@ -120,7 +128,7 @@ const TopMarketplacesLineChart = (props) => {
     <Card
       bordered={false}
       className="hover:shadow-lg transition-shadow duration-300 h-full"
-      title={<span className="text-lg font-semibold text-slate-700">Top Marketplaces Trend</span>}
+      title={<span style={{ color: token.colorTextHeading }}>Top Marketplaces Trend</span>}
       extra={
         <Radio.Group
           options={switchOptions}

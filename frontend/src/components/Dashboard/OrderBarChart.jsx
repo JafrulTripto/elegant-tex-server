@@ -67,7 +67,8 @@ const OrderBarChart = () => {
       legend: {
         position: 'top',
         labels: {
-          font: { family: 'Inter' }
+          font: { family: 'Inter' },
+          color: token.colorTextDescription
         }
       },
       title: {
@@ -78,14 +79,18 @@ const OrderBarChart = () => {
       y: {
         ticks: {
           stepSize: switchValue === 'order' ? 10 : 20000,
-          font: { family: 'Inter' }
+          font: { family: 'Inter' },
+          color: token.colorTextDescription
         },
         grid: {
-          color: '#f1f5f9'
+          color: token.colorBorderSecondary
         }
       },
       x: {
-        ticks: { font: { family: 'Inter' } },
+        ticks: {
+          font: { family: 'Inter' },
+          color: token.colorTextDescription
+        },
         grid: { display: false }
       }
     },
@@ -108,7 +113,7 @@ const OrderBarChart = () => {
     <Card
       bordered={false}
       className="hover:shadow-lg transition-shadow duration-300 h-full"
-      title={<span className="text-lg font-semibold text-slate-700">Orders This Month</span>}
+      title={<span style={{ color: token.colorTextHeading }}>Orders This Month</span>}
       extra={
         <Radio.Group
           options={switchOptions}

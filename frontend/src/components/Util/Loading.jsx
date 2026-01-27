@@ -1,26 +1,38 @@
 import React from 'react';
-import {Spin, Typography} from "antd";
-import {Loading3QuartersOutlined} from '@ant-design/icons';
-import {colors} from "../../utils/Colors";
+import { Spin, Typography, theme } from "antd";
+import { LoadingOutlined } from '@ant-design/icons';
 
-const antIcon = <Loading3QuartersOutlined style={{fontSize: 56}} spin/>;
-const Loading = (props) => {
+const Loading = ({ fullScreen = false }) => {
+  const { Title, Text } = Typography;
+  const { token } = theme.useToken();
 
-  const { Title } = Typography;
+  const antIcon = <LoadingOutlined style={{ fontSize: 40, color: token.colorPrimary }} spin />;
 
-  const calculateHeight = () =>{
-    if (props.layout === 'default'){
-      return "calc(100vh - 148px)";
-    }
-    return "100vh";
-  }
+  const containerStyle = {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "column",
+    height: fullScreen ? "100vh" : "100%",
+    minHeight: fullScreen ? "100vh" : "300px", // Ensure at least some height if parent is collapsed
+    width: "100%",
+    backgroundColor: "transparent"
+  };
+
   return (
-    <>
-      <div style={{display: "flex", justifyContent: "center", alignItems: "center", height: calculateHeight(), flexDirection: "column"}}>
-        <Spin indicator={antIcon} size="large"/>
-        <Title level={4} style={{paddingTop:"15px",paddingLeft:"15px", color: colors.secondary}}>Please wait. Loading . . .</Title>
-      </div>
-    </>
+    <div style={containerStyle} className="animate-fade-in">
+      <Spin indicator={antIcon} />
+      <Text
+        style={{
+          marginTop: 16,
+          fontSize: 16,
+          fontWeight: 500,
+          color: token.colorTextSecondary
+        }}
+      >
+        Loading...
+      </Text>
+    </div>
   );
 };
 

@@ -1,23 +1,24 @@
-import React, {useEffect, useState} from 'react';
-import {Button, Card, Divider, Form} from "antd";
+import React, { useEffect, useState } from 'react';
+import { Button, Card, Divider, Form } from "antd";
 import OrderTypeFrom from "../components/Order/OrderTypeFrom";
-import {colors} from "../utils/Colors";
+import { colors } from "../utils/Colors";
 import OrderProductForm from "../components/Order/OrderProductForm";
 import OrderCustomerForm from "../components/Order/OrderCustomerForm";
 import DeliveryFrom from "../components/Order/DeliveryFrom";
-import {useLocation, useNavigate} from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useAxiosClient from "../axios-client";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 import Loading from "../components/Util/Loading";
-import {useMerchants} from "../hooks/useMerchants";
-import {useMarketplaces} from "../hooks/useMarketplaces";
-import {OrderTypeEnum} from "../utils/enums/OrderTypeEnum";
+import { useMerchants } from "../hooks/useMerchants";
+import { useMarketplaces } from "../hooks/useMarketplaces";
+import { OrderTypeEnum } from "../utils/enums/OrderTypeEnum";
 import * as dayjs from 'dayjs'
-import {useProductTypes} from "../hooks/useProductTypes";
-import {useDistricts} from "../hooks/useDistricts";
-import {useUpazilas} from "../hooks/useUpazilas";
-import {useDivisions} from "../hooks/useDivisions";
-import {useFabrics} from "../hooks/useFabrics";
+import { useProductTypes } from "../hooks/useProductTypes";
+import { useDistricts } from "../hooks/useDistricts";
+import { useUpazilas } from "../hooks/useUpazilas";
+import { useDivisions } from "../hooks/useDivisions";
+import { useFabrics } from "../hooks/useFabrics";
+import { extractOrderNumber } from "../components/Util/OrderNumberFormatter";
 
 const EditOrderFrom = () => {
 
@@ -25,7 +26,11 @@ const EditOrderFrom = () => {
 
   const navigate = useNavigate()
   const [updateOrderForm] = Form.useForm();
-  const {state} = useLocation();
+  const { state } = useLocation();
+  const { id } = useParams(); // Get ID from URL
+
+  // orderId logic: URL param > state > null
+  const orderId = id ? extractOrderNumber(id) : state?.order?.id;
 
   const [files, setFiles] = useState([]);
   const [removedFiles, setRemovedFiles] = useState([]);
@@ -35,21 +40,22 @@ const EditOrderFrom = () => {
   const [order, setOrder] = useState({});
   const [orderLoading, setOrderLoading] = useState(true);
 
-  const {marketplaces} = useMarketplaces();
-  const {merchants} = useMerchants();
+  const { marketplaces } = useMarketplaces();
+  const { merchants } = useMerchants();
 
 
-  const {productTypes} = useProductTypes();
-  const {fabrics} = useFabrics();
+  const { productTypes } = useProductTypes();
+  const { fabrics } = useFabrics();
 
 
   const [selectedDivision, setSelectedDivision] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState(null);
 
-  const {divisions, divisionLoading} = useDivisions();
-  const {districts, districtLoading} = useDistricts(selectedDivision);
-  const {upazilas, upazilaLoading} = useUpazilas(selectedDistrict);
+  const { divisions, divisionLoading } = useDivisions();
+  const { districts, districtLoading } = useDistricts(selectedDivision);
+  const { upazilas, upazilaLoading } = useUpazilas(selectedDistrict);
 
+  // ... (select handlers skipped, same as before)
   const onDivisionSelect = (data) => {
     updateOrderForm.setFieldValue('district', null);
     updateOrderForm.setFieldValue('upazila', null);
@@ -61,6 +67,7 @@ const EditOrderFrom = () => {
     setSelectedDistrict(data);
   }
 
+  // ... (setNewValues logic same as before, no changes needed inside function)
   function setNewValues(ord) {
 
     if (ord.orderType === 1) {
@@ -112,10 +119,14 @@ const EditOrderFrom = () => {
 
   useEffect(() => {
     async function fetchOrder() {
+      if (!orderId) {
+        // Handle missing ID?
+        return;
+      }
       try {
         setOrderLoading(true)
-        const result = await axiosClient.get(`/orders/getOrder/${state.order.id}`);
-        setOrder({...result.data.data})
+        const result = await axiosClient.get(`/orders/getOrder/${orderId}`);
+        setOrder({ ...result.data.data })
         const o = result.data.data;
 
         const newValues = setNewValues(o);
@@ -130,21 +141,20 @@ const EditOrderFrom = () => {
         setOrderLoading(false)
       } catch (error) {
         const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-        navigate('/notFound');
+        // navigate('/notFound'); // Optional: redirect if fetch fails
         toast.error(message);
         setOrderLoading(false);
       }
     }
 
     fetchOrder();
-  }, [axiosClient, navigate, state.order.id, updateOrderForm])
+  }, [axiosClient, navigate, orderId, updateOrderForm]) // Dependency changed to orderId
 
-  if (order
-    && Object.keys(order).length === 0
-    && Object.getPrototypeOf(order) === Object.prototype && orderLoading) {
-    return <Loading layout={'default'}/>
+  if (orderLoading) { // Simplistic loading check
+    return <Loading layout={'default'} />
   }
 
+  // ... (upload logic same)
   const uploadFile = async (files) => {
     try {
       const response = await axiosClient.post('/files/uploadProductImage', files);
@@ -181,16 +191,20 @@ const EditOrderFrom = () => {
     let images = [];
     let uploadedImages = [];
 
-    data.images.forEach((file) => {
-      if (file.status === 'error') {
-        return;
-      }
-      if (file.originFileObj) {
-        formData.append('images[]', file.originFileObj);
-      } else {
-        alreadyUploaded.push(file)
-      }
-    });
+    // Safety check for images
+    if (data.images) {
+      data.images.forEach((file) => {
+        if (file.status === 'error') {
+          return;
+        }
+        if (file.originFileObj) {
+          formData.append('images[]', file.originFileObj);
+        } else {
+          alreadyUploaded.push(file)
+        }
+      });
+    }
+
     if (!isFormDataEmpty(formData)) {
       uploadedImages = [...await uploadFile(formData)];
     }
@@ -212,7 +226,7 @@ const EditOrderFrom = () => {
     }
 
     try {
-      const response = await axiosClient.put(`/orders/update/${order.id}`, orderData); // `orderId` is the ID of the order you want to update
+      const response = await axiosClient.put(`/orders/update/${order.id}`, orderData);
       toast.success(response.data.message);
       setLoading(false);
       navigate('/orders');
@@ -224,7 +238,7 @@ const EditOrderFrom = () => {
 
   }
   return (
-    <Card title="UPDATE ORDER" className="shadow" bodyStyle={{borderRadius: "10px", padding: "20px"}}>
+    <Card title="UPDATE ORDER" className="shadow" bodyStyle={{ borderRadius: "10px", padding: "20px" }}>
       <Form
         name="update_order_form"
         form={updateOrderForm}
@@ -235,9 +249,9 @@ const EditOrderFrom = () => {
         }}
         onFinish={onFinish}
       >
-        <OrderTypeFrom orderForm={updateOrderForm} orderType={state.orderType}
-                       data={state.orderType === OrderTypeEnum.MERCHANT ? merchants : marketplaces}/>
-        <Divider style={{color: colors.primary}}>Product Info</Divider>
+        <OrderTypeFrom orderForm={updateOrderForm} orderType={order.orderType}
+          data={order.orderType === OrderTypeEnum.MERCHANT ? merchants : marketplaces} />
+        <Divider>Product Info</Divider>
         <OrderProductForm
           productTypes={productTypes}
           fabrics={fabrics}
@@ -246,10 +260,10 @@ const EditOrderFrom = () => {
           setFiles={setFiles}
           setRemovedFiles={setRemovedFiles}
           removedFiles={removedFiles}
-          files={files}/>
-        {state.orderType === 1 ?
+          files={files} />
+        {order.orderType === 1 ?
           <>
-            <Divider style={{color: colors.primary}}>Customer Info</Divider>
+            <Divider>Customer Info</Divider>
             <OrderCustomerForm
               divisions={divisions}
               districts={districts}
@@ -263,9 +277,9 @@ const EditOrderFrom = () => {
             />
           </>
           : null}
-        <Divider style={{color: colors.primary}}>Delivery & Billing</Divider>
-        <DeliveryFrom/>
-        <Form.Item style={{float: 'right'}}>
+        <Divider>Delivery & Billing</Divider>
+        <DeliveryFrom />
+        <Form.Item style={{ float: 'right' }}>
           <Button type="primary" htmlType="submit" loading={loading} disabled={uploading}>
             Update Order
           </Button>

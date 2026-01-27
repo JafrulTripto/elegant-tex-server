@@ -11,7 +11,7 @@ import {
 } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import useAxiosClient from "../../axios-client";
-import { Spin, Radio, Card, Skeleton } from "antd";
+import { Spin, Radio, Card, Skeleton, theme } from "antd";
 
 ChartJS.register(
   CategoryScale,
@@ -28,6 +28,7 @@ const MarketplaceOrdersChart = () => {
   const [chartDataLoading, setChartDataLoading] = useState(false);
   const [switchValue, setSwitchValue] = useState('month');
   const axiosClient = useAxiosClient();
+  const { token } = theme.useToken();
 
   const switchOptions = [
     { label: 'Monthly', value: 'month' },
@@ -74,7 +75,10 @@ const MarketplaceOrdersChart = () => {
     plugins: {
       legend: {
         position: 'right',
-        labels: { font: { family: 'Inter' } }
+        labels: {
+          font: { family: 'Inter' },
+          color: token.colorTextDescription
+        }
       },
       title: { display: false },
     }
@@ -97,7 +101,7 @@ const MarketplaceOrdersChart = () => {
     <Card
       bordered={false}
       className="hover:shadow-lg transition-shadow duration-300 h-full"
-      title={<span className="text-lg font-semibold text-slate-700">Marketplace Orders</span>}
+      title={<span style={{ color: token.colorTextHeading }}>Marketplace Orders</span>}
       extra={
         <Radio.Group
           options={switchOptions}

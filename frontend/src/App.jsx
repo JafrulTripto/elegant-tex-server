@@ -1,7 +1,7 @@
 import React from 'react';
 import { ContextProvider, useStateContext } from "./contexts/ContextProvider.jsx";
 import { ConfigProvider, theme } from "antd";
-import { themeToken, getComponentTheme } from "./theme";
+import { themeToken, getComponentTheme, getThemeToken } from "./theme";
 import { ToastContainer } from "react-toastify";
 import { RouterProvider } from "react-router-dom";
 import router from "./router.jsx";
@@ -25,7 +25,7 @@ const AppContent = () => {
         <ConfigProvider
             theme={{
                 algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
-                token: themeToken,
+                token: getThemeToken(darkMode),
                 components: getComponentTheme(darkMode)
             }}>
             <ToastContainer

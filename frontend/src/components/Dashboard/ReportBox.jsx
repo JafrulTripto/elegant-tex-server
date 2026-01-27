@@ -5,7 +5,7 @@ import {
   ShopOutlined,
   CheckCircleOutlined
 } from '@ant-design/icons';
-import { Card, Skeleton, Segmented, Statistic, theme } from 'antd';
+import { Card, Skeleton, Segmented, Statistic, theme, Switch } from 'antd';
 
 const ReportBox = (props) => {
   const { data, loading, text } = props;
@@ -13,17 +13,20 @@ const ReportBox = (props) => {
   const { token } = theme.useToken();
 
   const getIcon = () => {
+    // Use low opacity background of the primary color for dark mode compatibility
+    const opacity = 0.15;
     const style = { fontSize: 24, padding: 8, borderRadius: 8 };
+
     switch (text) {
       case "Order":
       case "My Orders":
-        return <ShoppingOutlined style={{ ...style, color: token.colorPrimary, background: '#e6f4ff' }} />;
+        return <ShoppingOutlined style={{ ...style, color: token.colorPrimary, backgroundColor: `rgba(0, 122, 255, ${opacity})` }} />;
       case "Marketplace":
-        return <GlobalOutlined style={{ ...style, color: token.colorInfo, background: '#cffafe' }} />;
+        return <GlobalOutlined style={{ ...style, color: token.colorInfo, backgroundColor: `rgba(6, 182, 212, ${opacity})` }} />;
       case "Merchant":
-        return <ShopOutlined style={{ ...style, color: token.colorWarning, background: '#fef3c7' }} />;
+        return <ShopOutlined style={{ ...style, color: token.colorWarning, backgroundColor: `rgba(245, 158, 11, ${opacity})` }} />;
       case "Completion":
-        return <CheckCircleOutlined style={{ ...style, color: token.colorSuccess, background: '#d1fae5' }} />;
+        return <CheckCircleOutlined style={{ ...style, color: token.colorSuccess, backgroundColor: `rgba(16, 185, 129, ${opacity})` }} />;
       default:
         return null;
     }
@@ -48,36 +51,64 @@ const ReportBox = (props) => {
   return (
     <Card
       bordered={false}
-      className="hover:shadow-lg transition-shadow duration-300 h-full"
-      bodyStyle={{ padding: '20px' }}
+      className="h-full shadow-sm hover:shadow-md transition-all duration-300"
+      bodyStyle={{ padding: '24px' }}
+      style={{ borderRadius: token.borderRadiusLG }}
     >
       <Skeleton loading={loading} active avatar paragraph={{ rows: 2 }}>
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex items-center gap-3">
-            {getIcon()}
-            <span className="text-slate-500 font-medium text-base">{text}</span>
+        {/* Top Row: Icon and Title aligned left, Segmented Control right */}
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center gap-3">
+              {getIcon()}
+              <div className="flex flex-col">
+                <span style={{ color: token.colorTextSecondary, fontSize: '14px', fontWeight: 500 }}>
+                  {text}
+                </span>
+                <span style={{ color: token.colorTextDescription, fontSize: '12px' }}>
+                  {showReportText()}
+                </span>
+              </div>
+            </div>
+            <Switch
+              checked={reportType === 'month' || reportType === 'returned'}
+              onChange={(checked) => {
+                if (text === 'Completion') {
+                  setReportType(checked ? 'returned' : 'delivered');
+                } else {
+                  setReportType(checked ? 'month' : 'day');
+                }
+              }}
+              checkedChildren={text === 'Completion' ? 'R' : 'M'}
+              unCheckedChildren={text === 'Completion' ? 'D' : 'D'}
+              size="small"
+            />
           </div>
-          <Segmented
-            size='small'
-            options={showToggleValues()}
-            onChange={handleToggleReport}
-          />
-        </div>
 
-        <div className="flex flex-col gap-1">
-          <div className="flex items-baseline justify-between">
+          {/* Bottom Section: Value and Amount Badge */}
+          <div className="flex items-end justify-between mt-2">
             <Statistic
               value={reportData.total}
-              valueStyle={{ fontWeight: 700, fontSize: 28 }}
+              valueStyle={{ fontWeight: 700, fontSize: 32, lineHeight: 1, color: token.colorTextHeading }}
+              formatter={(value) => parseInt(value).toLocaleString()}
             />
-            <div className="text-right">
-              <div className="text-xs text-slate-400 mb-1">{showReportText()}</div>
-              {data && text !== 'Completion' && (
-                <div className="text-sm font-semibold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full inline-block">
+
+            {data && text !== 'Completion' && (
+              <div
+                className="flex items-center justify-center cursor-default"
+                style={{
+                  backgroundColor: token.colorBgLayout,
+                  padding: '6px 12px',
+                  borderRadius: '12px',
+                  border: `1px solid ${token.colorBorderSecondary}`
+                }}
+                title="Total Amount"
+              >
+                <span style={{ fontSize: '13px', fontWeight: 600, color: token.colorSuccess }}>
                   ৳ {parseInt(reportData.amount).toLocaleString()}
-                </div>
-              )}
-            </div>
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </Skeleton>

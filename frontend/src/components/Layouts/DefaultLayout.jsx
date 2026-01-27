@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Navigate, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useStateContext } from "../../contexts/ContextProvider.jsx";
-import { Layout, Menu, Modal, theme, Avatar, Dropdown, Button, Switch } from "antd";
+import { Layout, Menu, Modal, theme, Avatar, Dropdown, Button, Switch, Typography } from "antd";
 import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
@@ -155,7 +155,7 @@ const DefaultLayout = () => {
 
 
     return (
-        <Layout className="min-h-screen">
+        <Layout className="h-screen overflow-hidden">
             <Sider
                 trigger={null}
                 collapsible
@@ -167,8 +167,6 @@ const DefaultLayout = () => {
                 className="shadow-xl z-20"
                 width={260}
                 style={{
-                    position: 'sticky',
-                    top: 0,
                     height: '100vh',
                     overflowY: 'auto'
                 }}
@@ -182,7 +180,6 @@ const DefaultLayout = () => {
                 </div>
 
                 <Menu
-                    theme="dark"
                     mode="inline"
                     selectedKeys={[currentKey]}
                     items={permittedMenuItems}
@@ -191,7 +188,7 @@ const DefaultLayout = () => {
                 />
             </Sider>
 
-            <Layout>
+            <Layout className="h-full overflow-hidden relative flex flex-col">
                 <Header
                     className="glass-header sticky top-0 z-10 flex items-center justify-between px-6 p-0"
                     style={{ height: 64 }}
@@ -234,10 +231,10 @@ const DefaultLayout = () => {
                     </div>
                 </Header>
 
-                <Content className="p-6">
+                <Content className="p-2 flex-1 flex flex-col shadow-inner overflow-y-auto">
                     <BreadCrumb />
                     <div
-                        className="mt-4 min-h-[80vh]"
+                        className="mt-4 flex-1"
                         style={{
                             background: 'transparent',
                             borderRadius: borderRadiusLG,
@@ -247,8 +244,10 @@ const DefaultLayout = () => {
                     </div>
                 </Content>
 
-                <Footer className="text-center text-slate-400 bg-transparent">
-                    Elegant Tex Server ©{new Date().getFullYear()} Created by Tripzin.inc
+                <Footer className="text-center bg-transparent p-1">
+                    <Typography.Text type="secondary">
+                        Elegant Tex Server ©{new Date().getFullYear()} Created by Tripzin.inc
+                    </Typography.Text>
                 </Footer>
             </Layout>
         </Layout>

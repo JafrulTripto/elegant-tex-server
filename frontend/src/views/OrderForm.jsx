@@ -1,37 +1,37 @@
-import React, {useEffect, useState} from 'react';
-import {Button, Card, Divider, Form} from "antd";
-import {useLocation, useNavigate} from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { Button, Card, Divider, Form } from "antd";
+import { useLocation, useNavigate } from "react-router-dom";
 import OrderTypeFrom from "../components/Order/OrderTypeFrom";
 import OrderProductForm from "../components/Order/OrderProductForm";
 import OrderCustomerForm from "../components/Order/OrderCustomerForm";
-import {colors} from "../utils/Colors";
+import { colors } from "../utils/Colors";
 import DeliveryFrom from "../components/Order/DeliveryFrom";
 import useAxiosClient from "../axios-client";
-import {toast} from "react-toastify";
-import {useStateContext} from "../contexts/ContextProvider";
-import {OrderTypeEnum} from "../utils/enums/OrderTypeEnum";
-import {useMarketplaces} from "../hooks/useMarketplaces";
-import {useMerchants} from "../hooks/useMerchants";
-import {useProductTypes} from "../hooks/useProductTypes";
-import {useDivisions} from "../hooks/useDivisions";
-import {useDistricts} from "../hooks/useDistricts";
-import {useUpazilas} from "../hooks/useUpazilas";
-import {useFabrics} from "../hooks/useFabrics";
+import { toast } from "react-toastify";
+import { useStateContext } from "../contexts/ContextProvider";
+import { OrderTypeEnum } from "../utils/enums/OrderTypeEnum";
+import { useMarketplaces } from "../hooks/useMarketplaces";
+import { useMerchants } from "../hooks/useMerchants";
+import { useProductTypes } from "../hooks/useProductTypes";
+import { useDivisions } from "../hooks/useDivisions";
+import { useDistricts } from "../hooks/useDistricts";
+import { useUpazilas } from "../hooks/useUpazilas";
+import { useFabrics } from "../hooks/useFabrics";
 
 const OrderForm = () => {
   const axiosClient = useAxiosClient();
-  const {state} = useLocation();
+  const { state } = useLocation();
   const navigate = useNavigate()
-  const {user} = useStateContext();
+  const { user } = useStateContext();
   const [orderForm] = Form.useForm();
   const [files, setFiles] = useState([]);
-  const {orderType} = state ? state : {};
+  const { orderType } = state ? state : {};
 
-  const {marketplaces} = useMarketplaces();
-  const {merchants} = useMerchants();
+  const { marketplaces } = useMarketplaces();
+  const { merchants } = useMerchants();
 
-  const {productTypes} = useProductTypes();
-  const {fabrics} = useFabrics();
+  const { productTypes } = useProductTypes();
+  const { fabrics } = useFabrics();
 
 
 
@@ -48,9 +48,9 @@ const OrderForm = () => {
   const [selectedDivision, setSelectedDivision] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState(null);
 
-  const {divisions, divisionLoading} = useDivisions();
-  const {districts, districtLoading} = useDistricts(selectedDivision);
-  const {upazilas, upazilaLoading} = useUpazilas(selectedDistrict);
+  const { divisions, divisionLoading } = useDivisions();
+  const { districts, districtLoading } = useDistricts(selectedDivision);
+  const { upazilas, upazilaLoading } = useUpazilas(selectedDistrict);
 
   const onDivisionSelect = (data) => {
     orderForm.setFieldValue('district', null);
@@ -65,10 +65,10 @@ const OrderForm = () => {
 
   const uploadFile = async (file) => {
     try {
-      const response =  await axiosClient.post('/files/uploadProductImage', file);
+      const response = await axiosClient.post('/files/uploadProductImage', file);
 
       return response.data;
-    } catch(error)  {
+    } catch (error) {
       const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
       toast.error(message);
     }
@@ -83,12 +83,12 @@ const OrderForm = () => {
     setLoading(true);
     const formData = new FormData();
     data.images.forEach((file) => {
-      if (file.status === 'error'){
+      if (file.status === 'error') {
         return;
       }
       formData.append('images[]', file.originFileObj);
     });
-    let images =[];
+    let images = [];
     if (!isFormDataEmpty(formData)) {
       images = await uploadFile(formData);
     }
@@ -112,7 +112,7 @@ const OrderForm = () => {
   }
 
   return (
-    <Card title="CREATE NEW ORDER" className="shadow" bodyStyle={{borderRadius: "10px", padding: "20px"}}>
+    <Card title="CREATE NEW ORDER" className="shadow" bodyStyle={{ borderRadius: "10px", padding: "20px" }}>
       <Form
         name="order_form"
         form={orderForm}
@@ -123,18 +123,18 @@ const OrderForm = () => {
         }}
         onFinish={onFinish}
       >
-        <OrderTypeFrom orderForm={orderForm} orderType={state.orderType} data = {state.orderType === OrderTypeEnum.MERCHANT ? merchants : marketplaces}/>
-        <Divider style={{color: colors.primary}}>Product Info</Divider>
+        <OrderTypeFrom orderForm={orderForm} orderType={state.orderType} data={state.orderType === OrderTypeEnum.MERCHANT ? merchants : marketplaces} />
+        <Divider>Product Info</Divider>
         <OrderProductForm
           productTypes={productTypes}
           fabrics={fabrics}
           orderForm={orderForm}
           setUploading={setUploading}
           setFiles={setFiles}
-          files={files}/>
+          files={files} />
         {orderType === 1 ?
           <>
-            <Divider style={{color: colors.primary}}>Customer Info</Divider>
+            <Divider>Customer Info</Divider>
             <OrderCustomerForm
               divisions={divisions}
               districts={districts}
@@ -144,12 +144,12 @@ const OrderForm = () => {
               upazilaLoading={upazilaLoading}
               onDivisionSelect={onDivisionSelect}
               onDistrictSelect={onDistrictSelect}
-              orderForm={orderForm}/>
+              orderForm={orderForm} />
           </>
           : null}
-        <Divider style={{color: colors.primary}}>Delivery & Billing</Divider>
-        <DeliveryFrom/>
-        <Form.Item style={{float: 'right'}}>
+        <Divider>Delivery & Billing</Divider>
+        <DeliveryFrom />
+        <Form.Item style={{ float: 'right' }}>
           <Button type="primary" htmlType="submit" loading={loading} disabled={uploading}>
             Submit Order
           </Button>

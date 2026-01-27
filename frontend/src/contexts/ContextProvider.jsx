@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 
 const StateContext = createContext({
   user: null,
@@ -21,12 +21,12 @@ export const ContextProvider = ({ children }) => {
   const [message, setMessage] = useState("");
   const [darkMode, _setDarkMode] = useState(localStorage.getItem("DARK_MODE") === 'true');
 
-  const setDarkMode = (isDark) => {
+  const setDarkMode = useCallback((isDark) => {
     _setDarkMode(isDark);
     localStorage.setItem("DARK_MODE", isDark);
-  }
+  }, []);
 
-  const setToken = (token, expireTime) => {
+  const setToken = useCallback((token, expireTime) => {
     _setToken(token);
     if (token) {
       localStorage.setItem('ACCESS_TOKEN', token);
@@ -35,7 +35,7 @@ export const ContextProvider = ({ children }) => {
       localStorage.removeItem('ACCESS_TOKEN');
       localStorage.removeItem('TOKEN_EXPIRATION');
     }
-  }
+  }, []);
 
   return (
     <StateContext.Provider value={{

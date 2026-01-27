@@ -13,7 +13,7 @@
  * - Slate Grays (Tailwind Slate)
  */
 
-export const themeToken = {
+const baseToken = {
     colorPrimary: '#007AFF', // Modern iOS-like Blue
     colorSuccess: '#10b981',
     colorWarning: '#f59e0b',
@@ -27,6 +27,24 @@ export const themeToken = {
     fontSizeHeading2: 24,
     fontSizeHeading3: 20,
 };
+
+export const getThemeToken = (isDark) => {
+    if (isDark) {
+        return {
+            ...baseToken,
+            colorTextBase: '#f8fafc', // Slate-50 for better readability
+            colorTextHeading: '#ffffff',
+            colorTextSecondary: '#cbd5e1', // Slate-300
+            colorTextDescription: '#94a3b8', // Slate-400
+            colorBorder: '#334155', // Slate-700
+            colorSplit: '#334155',
+        };
+    }
+    return baseToken;
+};
+
+// Backward compatibility
+export const themeToken = baseToken;
 
 // Light Theme Component Overrides
 const lightComponentTheme = {
@@ -45,6 +63,18 @@ const lightComponentTheme = {
         borderRadius: 8,
         colorBgContainer: '#f8fafc', // Slate-50
         colorBorder: '#e2e8f0', // Slate-200
+    },
+    InputNumber: {
+        controlHeight: 40,
+        borderRadius: 8,
+        colorBgContainer: '#f8fafc',
+        colorBorder: '#e2e8f0',
+    },
+    DatePicker: {
+        controlHeight: 40,
+        borderRadius: 8,
+        colorBgContainer: '#f8fafc',
+        colorBorder: '#e2e8f0',
     },
     Select: {
         controlHeight: 40,
@@ -86,6 +116,8 @@ const darkComponentTheme = {
         borderRadius: 8,
         fontWeight: 600,
         colorPrimaryShadow: '0 4px 14px 0 rgba(0, 122, 255, 0.2)',
+        borderColor: '#475569', // Slate-600 for visibility
+        colorText: '#e2e8f0', // Slate-200
     },
     Input: {
         controlHeight: 40,
@@ -95,21 +127,42 @@ const darkComponentTheme = {
         colorBgContainer: '#1e293b', // Slate-800
         colorBorder: '#334155', // Slate-700
     },
+    InputNumber: {
+        controlHeight: 40,
+        borderRadius: 8,
+        colorBgContainer: '#1e293b',
+        colorBorder: '#334155',
+    },
+    DatePicker: {
+        controlHeight: 40,
+        borderRadius: 8,
+        colorBgContainer: '#1e293b',
+        colorBorder: '#334155',
+    },
     Select: {
         controlHeight: 40,
         borderRadius: 8,
         colorBgContainer: '#1e293b', // Slate-800
+        colorBorder: '#334155',
+        optionSelectedBg: '#334155', // Slate-700
     },
     Card: {
         borderRadiusLG: 16,
         colorBgContainer: '#1e293b', // Slate-800
         boxShadowTertiary: 'none',
     },
+    Divider: {
+        colorSplit: '#334155', // Slate-700
+    },
     Table: {
         borderRadiusLG: 12,
         headerBg: '#1e293b', // Slate-800
         headerColor: '#cbd5e1', // Slate-300
         headerSplitColor: 'transparent',
+        bodySortBg: '#1e293b',
+        borderColor: '#334155',
+        colorBgContainer: '#1e293b', // Explicitly set body background
+        rowHoverBg: '#334155', // Slate-700
     },
     Layout: {
         colorBgHeader: 'rgba(15, 23, 42, 0.8)', // Slate-900 glass
@@ -121,8 +174,42 @@ const darkComponentTheme = {
         colorItemText: '#94a3b8', // Slate-400
         colorItemTextSelected: '#ffffff',
         colorItemBgSelected: '#007AFF',
+        colorItemBgHover: 'rgba(255, 255, 255, 0.1)',
+        colorItemTextHover: '#ffffff',
         itemBorderRadius: 8,
         itemMarginInline: 8,
+        popupBg: '#1e293b', // Slate-800 for submenus
+    },
+    Switch: {
+        handleBg: '#ffffff',
+        colorPrimary: '#007AFF',
+        colorPrimaryHover: '#005ec4',
+    },
+    Pagination: {
+        itemBg: '#1e293b', // Slate-800
+        itemActiveBg: '#334155', // Slate-700
+    },
+    Modal: {
+        contentBg: '#1e293b', // Slate-800
+        headerBg: '#1e293b',
+        footerBg: '#1e293b',
+    },
+    Dropdown: {
+        colorBgElevated: '#1e293b', // Slate-800
+    },
+    Popconfirm: {
+        colorBgElevated: '#1e293b', // Slate-800
+    },
+    Message: {
+        contentBg: '#1e293b', // Slate-800
+    },
+    Notification: {
+        colorBgElevated: '#1e293b', // Slate-800
+    },
+    Segmented: {
+        colorBgLayout: '#0f172a', // Slate-900 track
+        colorBgElevated: '#334155', // Slate-700 selected item
+        itemSelectedColor: '#ffffff'
     }
 };
 

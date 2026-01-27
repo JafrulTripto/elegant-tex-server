@@ -133,7 +133,7 @@ const Users = (callback, deps) => {
     }
 
     const renderUserName = (record, user) => {
-        return <span className='font-semibold text-slate-700'>{user.firstname} {user.lastname}</span>;
+        return <span style={{ fontWeight: 600, color: token.colorTextHeading }}>{user.firstname} {user.lastname}</span>; // Use colorTextHeading
     }
 
     const renderStatus = (data, record, index) => {
@@ -174,7 +174,7 @@ const Users = (callback, deps) => {
             title: 'Last Login',
             dataIndex: 'last_login',
             key: 'last_login',
-            render: (data) => data ? <span className="text-slate-500">{dayjs(data).format('MMM D, YYYY h:mm A')}</span> : <span className="text-slate-400">Never</span>
+            render: (data) => data ? <span style={{ color: token.colorTextSecondary }}>{dayjs(data).format('MMM D, YYYY h:mm A')}</span> : <span style={{ color: token.colorTextDescription }}>Never</span>
         },
         {
             title: 'Status',
@@ -217,7 +217,7 @@ const Users = (callback, deps) => {
             <Card bordered={false} className='shadow-sm hover:shadow-md transition-shadow duration-300'>
                 <Row justify='space-between' align="middle">
                     <Col>
-                        <h1 className="text-xl font-bold text-slate-700 m-0">Users</h1>
+                        <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: token.colorTextHeading, margin: 0 }}>Users</h1>
                     </Col>
                     <Col>
                         <Button type="primary" onClick={addNewUser} icon={<PlusOutlined />}>Add User</Button>
