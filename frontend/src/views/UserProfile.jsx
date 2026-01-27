@@ -17,38 +17,61 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { UserOutlined, MailOutlined, PhoneOutlined, HomeOutlined, SafetyCertificateOutlined, LockOutlined } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import useAxiosClient from "../axios-client";
+import { useStateContext } from "../contexts/ContextProvider";
 
 const { Title, Text } = Typography;
 
 const UserProfile = () => {
   const { state } = useLocation();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false)
   const [fetchedUser, setFetchedUser] = useState(null)
   const axiosClient = useAxiosClient();
   const navigate = useNavigate();
   const { token } = theme.useToken();
+  const { user } = useStateContext(); // Get logged-in user
 
   useEffect(() => {
     const getUserData = async () => {
       try {
         setIsLoading(true);
-        // Fallback if state is missing (e.g. direct link access attempt without state)
-        if (!state?.id) {
+
+        let userId = state?.id;
+
+        // If no ID passed but we are on /profile, use logged-in user's ID
+        if (!userId && location.pathname === '/profile' && user?.id) {
+          userId = user.id;
+        }
+
+        // Fallback if still no ID
+        if (!userId) {
+          // Verify we aren't waiting for user context to load
+          if (location.pathname === '/profile' && !user) {
+            // Keep loading if user context is fetching
+            return;
+          }
           navigate('/users');
           return;
         }
-        const response = await axiosClient.get(`/users/user/${state.id}`);
+
+        const response = await axiosClient.get(`/users/user/${userId}`);
         // API returns data wrapped in data object based on typical Laravel resource response
         setFetchedUser(response.data.data ? response.data.data : response.data)
         setIsLoading(false);
       } catch (error) {
         const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-        toast.error(message);
+        // Don't show error if we are just waiting for auth
+        if (location.pathname !== '/profile') {
+          toast.error(message);
+        }
         setIsLoading(false);
       }
     }
-    getUserData()
-  }, [state, axiosClient, navigate])
+
+    if (user || state?.id) {
+      getUserData();
+    }
+  }, [state, axiosClient, navigate, location.pathname, user])
 
   const resetUserPassword = () => {
     if (fetchedUser) {

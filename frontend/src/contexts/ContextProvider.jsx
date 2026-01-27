@@ -19,7 +19,8 @@ export const ContextProvider = ({ children }) => {
   const [permissions, setPermissions] = useState([]);
   const [token, _setToken] = useState(localStorage.getItem("ACCESS_TOKEN"));
   const [message, setMessage] = useState("");
-  const [darkMode, _setDarkMode] = useState(localStorage.getItem("DARK_MODE") === 'true');
+  // Default to Dark Mode if no preference is stored
+  const [darkMode, _setDarkMode] = useState(localStorage.getItem("DARK_MODE") === null ? true : localStorage.getItem("DARK_MODE") === 'true');
 
   const setDarkMode = useCallback((isDark) => {
     _setDarkMode(isDark);

@@ -69,6 +69,40 @@ const MarketplaceOrdersChart = () => {
   const data = chartData.map((item) => item.total_orders);
   const backgroundColor = generateColors(labels.length);
 
+  // Calculate total for percentages
+  const totalOrders = data.reduce((acc, curr) => acc + curr, 0);
+
+  const textCenter = {
+    id: 'textCenter',
+    beforeDatasetsDraw(chart, args, pluginOptions) {
+      const { ctx, data } = chart;
+      const meta = chart.getDatasetMeta(0);
+
+      if (meta.data.length > 0) {
+        ctx.save();
+        const xCoor = meta.data[0].x;
+        const yCoor = meta.data[0].y;
+
+        // Calculate total (or use pre-calculated)
+        const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+
+        ctx.font = 'bold 24px Inter';
+        ctx.fillStyle = token.colorTextHeading;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // Draw Total
+        ctx.fillText(total, xCoor, yCoor - 10);
+
+        ctx.font = '14px Inter';
+        ctx.fillStyle = token.colorTextDescription;
+        ctx.fillText('Total Orders', xCoor, yCoor + 15);
+
+        ctx.restore();
+      }
+    }
+  };
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -77,10 +111,21 @@ const MarketplaceOrdersChart = () => {
         position: 'right',
         labels: {
           font: { family: 'Inter' },
-          color: token.colorTextDescription
+          color: token.colorTextDescription,
+          usePointStyle: true,
         }
       },
       title: { display: false },
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            const label = context.label || '';
+            const value = context.raw || 0;
+            const percentage = totalOrders > 0 ? Math.round((value / totalOrders) * 100) + '%' : '0%';
+            return `${label}: ${value} (${percentage})`;
+          }
+        }
+      }
     }
   };
 
@@ -93,6 +138,7 @@ const MarketplaceOrdersChart = () => {
         hoverOffset: 4,
         backgroundColor: backgroundColor,
         borderWidth: 0,
+        cutout: '75%', // Thinner ring
       },
     ],
   };
@@ -114,7 +160,7 @@ const MarketplaceOrdersChart = () => {
     >
       <div style={{ height: "400px" }}>
         <Skeleton loading={chartDataLoading} active paragraph={{ rows: 10 }}>
-          <Doughnut options={options} data={barChartData} />
+          <Doughnut options={options} data={barChartData} plugins={[textCenter]} />
         </Skeleton>
       </div>
     </Card>

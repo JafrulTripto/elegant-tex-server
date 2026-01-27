@@ -60,6 +60,11 @@ const OrderBarChart = () => {
     }
   }
 
+  const formatValue = (value) => {
+    if (switchValue === 'order') return value;
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
+  };
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -68,7 +73,22 @@ const OrderBarChart = () => {
         position: 'top',
         labels: {
           font: { family: 'Inter' },
-          color: token.colorTextDescription
+          color: token.colorTextDescription,
+          usePointStyle: true,
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += formatValue(context.parsed.y);
+            }
+            return label;
+          }
         }
       },
       title: {
@@ -78,13 +98,21 @@ const OrderBarChart = () => {
     scales: {
       y: {
         ticks: {
-          stepSize: switchValue === 'order' ? 10 : 20000,
+          // Auto-scale by removing hardcoded stepSize
+          callback: function (value) {
+            if (switchValue === 'amount' && value >= 1000) {
+              return '$' + (value / 1000).toFixed(0) + 'k';
+            }
+            return formatValue(value);
+          },
           font: { family: 'Inter' },
           color: token.colorTextDescription
         },
         grid: {
-          color: token.colorBorderSecondary
-        }
+          color: token.colorBorderSecondary,
+          borderDash: [2, 2]
+        },
+        border: { display: false }
       },
       x: {
         ticks: {
@@ -102,7 +130,8 @@ const OrderBarChart = () => {
       {
         label: switchValue === 'order' ? 'Total Orders' : 'Total Amount',
         data: getValues(chartData),
-        backgroundColor: token.colorPrimary,
+        // Use Green for Amount to distinguish visual context, Blue for Orders
+        backgroundColor: switchValue === 'order' ? token.colorPrimary : '#10b981',
         borderRadius: 4,
         barPercentage: 0.6,
       },
