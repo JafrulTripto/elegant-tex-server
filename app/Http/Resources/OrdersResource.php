@@ -25,6 +25,7 @@ class OrdersResource extends JsonResource
             'totalAmount' => $this->total_amount,
             'createdAt' => $this->created_at,
             'deliveryDate' => $this->delivery_date,
+            'itemsCount' => $this->product_count,
             'orderType'=> class_basename($this->orderable_type) === "Marketplace" ? OrderType::MARKETPLACE->value : OrderType::MERCHANT->value,
         ];
     }

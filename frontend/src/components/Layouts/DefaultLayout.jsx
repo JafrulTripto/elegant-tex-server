@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Navigate, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useStateContext } from "../../contexts/ContextProvider.jsx";
-import { Layout, Menu, Modal, theme, Avatar, Dropdown, Button, Switch, Typography } from "antd";
+import { Layout, Menu, Modal, theme, Avatar, Dropdown, Button, Switch, Typography, ConfigProvider } from "antd";
 import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
-    DashboardOutlined,
-    ShoppingOutlined,
+    AppstoreOutlined,
+    ContainerOutlined,
+    TeamOutlined,
     UserOutlined,
     SettingOutlined,
     ShopOutlined,
@@ -93,7 +94,7 @@ const DefaultLayout = () => {
     const menuItems = [
         {
             key: 'dashboard',
-            icon: <DashboardOutlined />,
+            icon: <AppstoreOutlined />,
             label: 'Dashboard',
             permission: ''
         },
@@ -105,13 +106,13 @@ const DefaultLayout = () => {
         },
         {
             key: 'orders',
-            icon: <ShoppingOutlined />,
+            icon: <ContainerOutlined />,
             label: 'Orders',
             permission: 'VIEW_ORDERS'
         },
         {
             key: 'users',
-            icon: <UserOutlined />,
+            icon: <TeamOutlined />,
             label: 'Users',
             permission: 'VIEW_USERS'
         },
@@ -163,31 +164,67 @@ const DefaultLayout = () => {
                 onBreakpoint={(broken) => {
                     setCollapsed(broken);
                 }}
-                className="shadow-xl z-20"
+                className={`z-20 ${darkMode ? 'bg-slate-900' : 'bg-white border-r border-slate-200'} transition-all duration-300`}
                 width={260}
+                theme={darkMode ? 'dark' : 'light'}
                 style={{
                     height: '100vh',
-                    overflowY: 'auto'
+                    overflowY: 'auto',
+                    backgroundColor: darkMode ? '#0f172a' : '#ffffff'
                 }}
             >
+                {/* Logo Section */}
                 <div
-                    className="h-16 flex items-center justify-center m-2 bg-slate-800/50 rounded-lg cursor-pointer transition-colors hover:bg-slate-800/70"
+                    className={`h-16 flex items-center ${collapsed ? 'justify-center' : 'justify-start px-6'} mb-6 cursor-pointer transition-all duration-300`}
                     onClick={() => navigate('/')}
                 >
-                    <div className={`transition-all duration-300 flex items-center justify-center gap-2 ${collapsed ? 'scale-0 w-0 opacity-0 overflow-hidden' : 'scale-100 opacity-100'}`}>
-                        <img src="/eleganttexlogo.png" alt="Elegant Tex" style={{ height: '42px', width: 'auto' }} />
-                        <span className="text-white font-bold text-xl whitespace-nowrap tracking-wide">Elegant Tex</span>
+                    <div className={`transition-all duration-300 flex items-center gap-3 ${collapsed ? 'scale-0 w-0 opacity-0 overflow-hidden' : 'scale-100 opacity-100'}`}>
+                        {/* Logo Image */}
+                        <img src="/eleganttexlogo.png" alt="Elegant Tex" className="h-10 w-auto" />
+
+                        {/* Brand Name */}
+                        <span className={`font-extrabold text-xl whitespace-nowrap tracking-widest ${darkMode ? 'text-white' : 'text-slate-800'}`}>
+                            ELEGANT TEX
+                        </span>
                     </div>
-                    {collapsed && <span className="text-white font-bold text-xl">ET</span>}
+
+                    {/* Collapsed State Logo (Optional: Use simpler icon or text) */}
+                    {collapsed && (
+                        <div className="flex items-center justify-center w-full h-full">
+                            <span className={`font-bold text-xl ${darkMode ? 'text-white' : 'text-slate-800'}`}>ET</span>
+                        </div>
+                    )}
                 </div>
 
-                <Menu
-                    mode="inline"
-                    selectedKeys={[currentKey]}
-                    items={permittedMenuItems}
-                    onClick={(item) => navigate("/" + item.key)}
-                    className="border-none px-2"
-                />
+                {/* Menu with Custom "Pill" Styling */}
+                <ConfigProvider
+                    theme={{
+                        components: {
+                            Menu: {
+                                itemBorderRadius: 8, // Pill shape
+                                itemMarginInline: 12, // Spacing from edges
+                                itemHeight: 44,
+                                fontSize: 15, // Slightly larger for readability
+
+                                // Light Mode Colors
+                                itemSelectedBg: darkMode ? 'rgba(59, 130, 246, 0.15)' : '#eff6ff', // blue-50
+                                itemSelectedColor: darkMode ? '#60a5fa' : '#2563eb', // blue-600
+                                // Hover
+                                itemHoverBg: darkMode ? 'rgba(255, 255, 255, 0.05)' : '#f8fafc',
+                            }
+                        }
+                    }}
+                >
+                    <Menu
+                        mode="inline"
+                        theme={darkMode ? 'dark' : 'light'}
+                        selectedKeys={[currentKey]}
+                        items={permittedMenuItems}
+                        onClick={(item) => navigate("/" + item.key)}
+                        className="border-none bg-transparent font-medium"
+                        style={{ background: 'transparent' }}
+                    />
+                </ConfigProvider>
             </Sider>
 
             <Layout className="h-full overflow-hidden relative flex flex-col">

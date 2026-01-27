@@ -12,6 +12,7 @@ const RoleSettings = () => {
 
   const axiosClient = useAxiosClient();
   const [form] = Form.useForm();
+  const [modal, contextHolder] = Modal.useModal();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false)
   const [roles, setRoles] = useState([]);
@@ -69,7 +70,7 @@ const RoleSettings = () => {
   }
   const handleDeleteRole = (role) => {
     const roleId = role.id;
-    Modal.confirm({
+    modal.confirm({
       title: `Are you sure want to delete ${role.name} role?`,
       okText: "Yes",
       okType: "danger",
@@ -192,9 +193,11 @@ const RoleSettings = () => {
               </Button>
             </Space>
           </Form.Item>
+
         </Form>
       </Modal>
-    </div>
+      {contextHolder}
+    </div >
   );
 };
 
