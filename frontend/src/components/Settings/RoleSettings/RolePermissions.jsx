@@ -1,10 +1,10 @@
-import {Card, Table, Switch, message} from 'antd';
-import React, {useEffect, useState} from 'react'
-import {toast} from 'react-toastify';
+import { Card, Table, Switch, message } from 'antd';
+import React, { useEffect, useState } from 'react'
+import { toast } from 'react-toastify';
 import useAxiosClient from "../../../axios-client.js";
 
 
-function RolePermissions({role}) {
+function RolePermissions({ role }) {
 
   const axiosClient = useAxiosClient();
   const [rolePermissions, setRolePermissions] = useState([]);
@@ -96,7 +96,7 @@ function RolePermissions({role}) {
       title: 'Permission',
       dataIndex: 'permission',
       key: 'permission',
-      width:"30%"
+      width: "30%"
     },
     {
       title: 'Description',
@@ -110,23 +110,22 @@ function RolePermissions({role}) {
       key: 'value',
       width: "20%",
       render: (e, record) => <Switch loading={record.key === loadingSwithcKey && permissionLoading}
-                                     disabled={loadingSwithcKey || record.permission === 'PERMISSION_SETTINGS'}
-                                     checked={record.value} onChange={(value) => onChange(record, value)}/>
+        disabled={loadingSwithcKey || record.permission === 'PERMISSION_SETTINGS'}
+        checked={record.value} onChange={(value) => onChange(record, value)} />
     },
 
   ];
 
   return (
-    <Card className='shadow'>
-      <Table
-        columns={columns}
-        loading={rolePermissionLoading}
-        dataSource={rolePermissions}
-        scroll={{y: 300}}
-        pagination={false}
-        size={'small'}
-      />
-    </Card>
+    <Table
+      columns={columns}
+      loading={rolePermissionLoading}
+      dataSource={rolePermissions}
+      scroll={{ y: 500 }} // Increased scroll height for better view
+      pagination={false}
+      size={'small'}
+      title={() => <div className="font-semibold text-slate-500">Enable/Disable Permissions</div>}
+    />
   )
 }
 

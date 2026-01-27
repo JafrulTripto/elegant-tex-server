@@ -1,6 +1,5 @@
 import React from 'react';
 import SettingsList from "../components/Settings/SettingsList.jsx";
-import { Card } from "antd";
 
 const Settings = () => {
   return (
