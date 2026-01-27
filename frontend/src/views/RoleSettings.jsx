@@ -16,7 +16,7 @@ const RoleSettings = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [roles, setRoles] = useState([]);
   const [role, setRole] = useState(null);
-  const { Title } = Typography;
+  const { Title, Text } = Typography;
 
 
   const getRoles = useCallback(async () => {
@@ -135,12 +135,12 @@ const RoleSettings = () => {
         {/* Right Content: Tabs & Details */}
         <Col xs={24} md={16} lg={18} className="h-full flex flex-col pl-4">
           {role ? (
-            <Card className="h-full shadow-sm flex flex-col" bodyStyle={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Card className="h-full shadow-sm flex flex-col !bg-white dark:!bg-slate-800" bodyStyle={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               {/* Header */}
               <div className="flex justify-between items-center mb-6 border-b border-slate-100 dark:border-slate-700 pb-4">
                 <div>
                   <Title level={3} style={{ margin: 0 }}>{role}</Title>
-                  <span className="text-slate-400 text-sm">Manage permissions and users for this role</span>
+                  <Text type="secondary">Manage permissions and users for this role</Text>
                 </div>
                 <Space>
                   {/* Only show delete if not basic roles? Logic kept simple as per original */}

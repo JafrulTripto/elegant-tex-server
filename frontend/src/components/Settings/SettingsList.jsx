@@ -57,7 +57,7 @@ const SettingsList = () => {
           <Col xs={24} md={12} lg={8} xl={6}>
             <div
               onClick={() => navigate(item.link)}
-              className="group relative h-full bg-white dark:bg-slate-800 rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-slate-100 dark:border-slate-700"
+              className="group relative h-full !bg-white dark:!bg-slate-800 rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-slate-200 dark:border-slate-700"
             >
               {/* Icon Bubble */}
               <div
@@ -69,12 +69,12 @@ const SettingsList = () => {
 
               {/* Content */}
               <div>
-                <Title level={4} style={{ marginBottom: '8px', fontSize: '18px' }}>
+                <h3 className="text-lg font-semibold mb-2 text-slate-800 dark:text-white">
                   {item.title}
-                </Title>
-                <Text type="secondary" style={{ fontSize: '14px', lineHeight: '1.5' }}>
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                   {item.description}
-                </Text>
+                </p>
               </div>
 
               {/* Hover Indicator (Optional Arrow or Glow) */}

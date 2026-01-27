@@ -1,11 +1,11 @@
-import React, {useState} from 'react';
-import {Button, Form, Input, Modal} from "antd";
-import {toast} from "react-toastify";
+import React, { useState } from 'react';
+import { Button, Form, Input, Modal } from "antd";
+import { toast } from "react-toastify";
 import useAxiosClient from "../../../axios-client.js";
 
 const ProductSettingsForm = (props) => {
 
-    const {openForm, setOpenForm, fetch, title, settings, form, productSettingsId, setProductSettingsId} = props;
+    const { openForm, setOpenForm, fetch, title, settings, form, productSettingsId, setProductSettingsId } = props;
 
     const [loading, setLoading] = useState(false);
     const axiosClient = useAxiosClient();
@@ -82,12 +82,15 @@ const ProductSettingsForm = (props) => {
                         },
                     ]}
                 >
-                    <Input placeholder={`${title}`}/>
+                    <Input placeholder={`${title}`} />
                 </Form.Item>
                 <Form.Item>
-                    <Button type="primary" htmlType="submit" loading={loading}>
-                        Submit
-                    </Button>
+                    <div className="flex justify-end pt-4 space-x-2">
+                        <Button onClick={handleCancel}>Cancel</Button>
+                        <Button type="primary" htmlType="submit" loading={loading}>
+                            {productSettingsId ? "Update" : "Submit"}
+                        </Button>
+                    </div>
                 </Form.Item>
             </Form>
         </Modal>

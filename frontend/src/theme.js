@@ -26,6 +26,11 @@ const baseToken = {
     fontSizeHeading1: 32,
     fontSizeHeading2: 24,
     fontSizeHeading3: 20,
+    // Explicit Light Mode Defaults (Slate Scale)
+    colorTextBase: '#0f172a',    // Slate-900 (High contrast body text)
+    colorTextHeading: '#1e293b', // Slate-800 (Headings)
+    colorTextSecondary: '#64748b', // Slate-500 (Muted text)
+    colorTextDescription: '#94a3b8', // Slate-400
 };
 
 export const getThemeToken = (isDark) => {
