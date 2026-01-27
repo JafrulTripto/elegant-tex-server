@@ -1,35 +1,42 @@
-import {createContext, useContext, useState} from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 
 const StateContext = createContext({
   user: null,
   token: null,
-  roles:[],
-  permissions:[],
-  setUser: () => {},
-  setToken: () => {},
-  setRoles: () => {},
-  setPermissions:()=> {},
-  setMessage:()=> {}
+  roles: [],
+  permissions: [],
+  setUser: () => { },
+  setToken: () => { },
+  setRoles: () => { },
+  setPermissions: () => { },
+  setMessage: () => { }
 })
 
-export const ContextProvider = ({children}) => {
+export const ContextProvider = ({ children }) => {
 
   const [user, setUser] = useState({});
   const [roles, setRoles] = useState([]);
   const [permissions, setPermissions] = useState([]);
   const [token, _setToken] = useState(localStorage.getItem("ACCESS_TOKEN"));
   const [message, setMessage] = useState("");
+  // Default to Dark Mode if no preference is stored
+  const [darkMode, _setDarkMode] = useState(localStorage.getItem("DARK_MODE") === null ? true : localStorage.getItem("DARK_MODE") === 'true');
 
-  const setToken = (token, expireTime) => {
+  const setDarkMode = useCallback((isDark) => {
+    _setDarkMode(isDark);
+    localStorage.setItem("DARK_MODE", isDark);
+  }, []);
+
+  const setToken = useCallback((token, expireTime) => {
     _setToken(token);
     if (token) {
       localStorage.setItem('ACCESS_TOKEN', token);
-      localStorage.setItem('TOKEN_EXPIRATION', new Date(Date.now() +expireTime * 1000).toString());
+      localStorage.setItem('TOKEN_EXPIRATION', new Date(Date.now() + expireTime * 1000).toString());
     } else {
       localStorage.removeItem('ACCESS_TOKEN');
       localStorage.removeItem('TOKEN_EXPIRATION');
     }
-  }
+  }, []);
 
   return (
     <StateContext.Provider value={{
@@ -42,7 +49,9 @@ export const ContextProvider = ({children}) => {
       setToken,
       setRoles,
       setPermissions,
-      setMessage
+      setMessage,
+      darkMode,
+      setDarkMode
     }}>
       {children}
     </StateContext.Provider>

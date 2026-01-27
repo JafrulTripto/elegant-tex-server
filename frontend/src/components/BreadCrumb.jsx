@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom'
-import {Breadcrumb} from 'antd'
+import { Breadcrumb } from 'antd'
+import { HomeOutlined } from '@ant-design/icons';
 
 function BreadCrumb(props) {
 
@@ -9,22 +10,27 @@ function BreadCrumb(props) {
     const breadCrumbView = () => {
         const { pathname } = location;
         const pathnames = pathname.split("/").filter(item => item);
+        const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
-        const items = pathnames.map((path, index) => {
+        const items = [
+            {
+                title: <Link to="/"><HomeOutlined /></Link>
+            }
+        ];
+
+        pathnames.forEach((path, index) => {
             const routeTo = `/${pathnames.slice(0, index + 1).join("/")}`;
             const isLast = index === pathnames.length - 1;
+            const isId = /^\d+$/.test(path);
+            const title = isId ? `#${path}` : capitalize(path);
 
-            return {
-                title: isLast ? <Link onClick={ (event) => event.preventDefault() } to={routeTo}>{path}</Link> : <Link to={routeTo}>{path}</Link>,
-            };
+            items.push({
+                title: isLast ? <span>{title}</span> : <Link to={routeTo}>{title}</Link>,
+            });
         });
 
-        if (pathnames.length === 0) {
-            items.push({ title: <Link to="/">dashboard</Link> });
-        }
-
         return (
-            <Breadcrumb className="px-8 pt-4" style={{ marginTop: "68px" }} items={items} />
+            <Breadcrumb items={items} className="mb-2" />
         );
     };
     return (

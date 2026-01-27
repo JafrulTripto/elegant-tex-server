@@ -1,4 +1,4 @@
-import {createBrowserRouter} from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import Login from "./views/Login.jsx";
 import Dashboard from "./views/Dashboard.jsx";
 import DefaultLayout from "./components/Layouts/DefaultLayout.jsx";
@@ -25,99 +25,107 @@ import FabricsSettings from "./components/Settings/ProductSettings/FabricsSettin
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <DefaultLayout/>,
-    children:[
+    element: <DefaultLayout />,
+    children: [
       {
         path: '/',
-        element: <Dashboard/>
+        element: <Dashboard />
       },
       {
         path: '/dashboard',
-        element: <Dashboard/>
+        element: <Dashboard />
+      },
+      {
+        path: '/profile',
+        element: <UserProfile />
       },
       {
         path: '/merchants',
-        element: <Merchants/>
+        element: <Merchants />
       },
       {
         path: '/merchants/merchantForm',
-        element: <MerchantForm/>
+        element: <MerchantForm />
       },
       {
         path: '/orders',
-        element: <Orders/>
+        element: <Orders />
       },
       {
         path: '/orders/orderForm',
-        element: <OrderForm/>
+        element: <OrderForm />
       },
       {
         path: '/orders/editOrderForm',
-        element: <EditOrderFrom/>
+        element: <EditOrderFrom />
       },
       {
         path: '/orders/:id',
-        element: <Order/>
+        element: <Order />
+      },
+      {
+        path: '/orders/:id/edit',
+        element: <EditOrderFrom />
       },
       {
         path: '/settings',
-        element: <Settings/>,
+        element: <Settings />,
       },
       {
         path: '/users',
-        element: <Users/>,
+        element: <Users />,
       },
       {
         path: '/users/userForm',
-        element: <UserForm/>,
+        element: <UserForm />,
       },
       {
         path: '/users/:userName',
-        element: <UserProfile/>,
+        element: <UserProfile />,
       },
       {
         path: '/settings/roleSettings',
-        element: <RoleSettings/>
+        element: <RoleSettings />
       },
       {
         path: '/settings/permissionSettings',
-        element: <PermissionSettings/>
+        element: <PermissionSettings />
       },
       {
         path: '/settings/productSettings',
-        element: <ProductSettings/>
+        element: <ProductSettings />
       },
       {
         path: '/settings/marketplaceSettings',
-        element: <MarketplaceSettings/>
+        element: <MarketplaceSettings />
       },
       {
         path: '/notFound',
-        element: <NotFound/>
+        element: <NotFound />
       },
       {
         path: '/resetPassword',
-        element: <ResetPassword/>
+        element: <ResetPassword />
       }
     ]
   },
   {
-    path:'/',
-    element: <GuestLayout/>,
+    path: '/',
+    element: <GuestLayout />,
     children: [
       {
         path: '/login',
-        element: <Login/>
+        element: <Login />
       },
       {
         path: '/error',
-        element: <Error/>
+        element: <Error />
       }
     ]
   },
   {
     path: '*',
-    element: <NotFound/>
+    element: <NotFound />
   }
 
 ]);

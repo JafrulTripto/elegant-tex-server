@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,9 +9,9 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import {Doughnut} from 'react-chartjs-2';
+import { Doughnut } from 'react-chartjs-2';
 import useAxiosClient from "../../axios-client";
-import {Spin, Radio} from "antd";
+import { Spin, Radio, Card, Skeleton, theme } from "antd";
 
 ChartJS.register(
   CategoryScale,
@@ -23,16 +23,16 @@ ChartJS.register(
   Legend
 );
 
-
 const MarketplaceOrdersChart = () => {
   const [chartData, setChartData] = useState([]);
   const [chartDataLoading, setChartDataLoading] = useState(false);
   const [switchValue, setSwitchValue] = useState('month');
   const axiosClient = useAxiosClient();
+  const { token } = theme.useToken();
 
   const switchOptions = [
-    {label: 'Monthly', value: 'month'},
-    {label: 'Yearly', value: 'year'},
+    { label: 'Monthly', value: 'month' },
+    { label: 'Yearly', value: 'year' },
   ];
 
   useEffect(() => {
@@ -47,46 +47,61 @@ const MarketplaceOrdersChart = () => {
       });
   }, [switchValue]);
 
-  const onChangeSwitch = ({target: {value}}) => {
+  const onChangeSwitch = ({ target: { value } }) => {
     setSwitchValue(value);
   };
 
   const generateColors = (numColors) => {
     const baseColors = [
-      { r: 246, g: 114, b: 128 }, // rgb(246, 114, 128)
-      { r: 63, g: 114, b: 175 },  // rgb(63, 114, 175)
-      { r: 202, g: 247, b: 227 }, // rgb(202, 247, 227)
-      { r: 201, g: 182, b: 228 }, // rgb(201, 182, 228)
-      { r: 251, g: 168, b: 52 },  // rgb(251, 168, 52)
+      '#007AFF', // Primary
+      '#10b981', // Success
+      '#f59e0b', // Warning
+      '#ef4444', // Error
+      '#06b6d4', // Info
+      '#8b5cf6', // Violet
+      '#ec4899', // Pink
     ];
-
-    const shadesPerColor = Math.ceil(numColors / baseColors.length);
-    const colors = [];
-
-    for (let i = 0; i < numColors; i++) {
-      const baseColor = baseColors[Math.floor(i / shadesPerColor)];
-      const shadeFactor = (i % shadesPerColor) * 20; // Larger increment for more differentiable shades
-
-      // Calculate new color values, ensuring they are within valid range
-      const r = Math.max(0, Math.min(255, baseColor.r - shadeFactor));
-      const g = Math.max(0, Math.min(255, baseColor.g - shadeFactor));
-      const b = Math.max(0, Math.min(255, baseColor.b - shadeFactor));
-
-      // Calculate opacity based on shadeFactor for more differentiation
-      const opacity = 1 - (shadeFactor / 255);
-      const color = `rgba(${r}, ${g}, ${b}, ${opacity})`;
-      colors.push(color);
-    }
-
-    return colors;
+    // Cycle through base colors if we have more data points than colors
+    return Array.from({ length: numColors }, (_, i) => baseColors[i % baseColors.length]);
   };
 
-
-
-  // Extract data from the chartData state
   const labels = chartData.map((item) => item.marketplace_name);
   const data = chartData.map((item) => item.total_orders);
   const backgroundColor = generateColors(labels.length);
+
+  // Calculate total for percentages
+  const totalOrders = data.reduce((acc, curr) => acc + curr, 0);
+
+  const textCenter = {
+    id: 'textCenter',
+    beforeDatasetsDraw(chart, args, pluginOptions) {
+      const { ctx, data } = chart;
+      const meta = chart.getDatasetMeta(0);
+
+      if (meta.data.length > 0) {
+        ctx.save();
+        const xCoor = meta.data[0].x;
+        const yCoor = meta.data[0].y;
+
+        // Calculate total (or use pre-calculated)
+        const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+
+        ctx.font = 'bold 24px Inter';
+        ctx.fillStyle = token.colorTextHeading;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // Draw Total
+        ctx.fillText(total, xCoor, yCoor - 10);
+
+        ctx.font = '14px Inter';
+        ctx.fillStyle = token.colorTextDescription;
+        ctx.fillText('Total Orders', xCoor, yCoor + 15);
+
+        ctx.restore();
+      }
+    }
+  };
 
   const options = {
     responsive: true,
@@ -94,13 +109,24 @@ const MarketplaceOrdersChart = () => {
     plugins: {
       legend: {
         position: 'right',
+        labels: {
+          font: { family: 'Inter' },
+          color: token.colorTextDescription,
+          usePointStyle: true,
+        }
       },
-      title: {
-        display: false,
-        text: "Order's this Month",
-      },
+      title: { display: false },
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            const label = context.label || '';
+            const value = context.raw || 0;
+            const percentage = totalOrders > 0 ? Math.round((value / totalOrders) * 100) + '%' : '0%';
+            return `${label}: ${value} (${percentage})`;
+          }
+        }
+      }
     }
-
   };
 
   const barChartData = {
@@ -110,39 +136,35 @@ const MarketplaceOrdersChart = () => {
         label: "Order",
         data: data,
         hoverOffset: 4,
-        backgroundColor: backgroundColor
+        backgroundColor: backgroundColor,
+        borderWidth: 0,
+        cutout: '75%', // Thinner ring
       },
     ],
   };
+
   return (
-      <div className="bg-white rounded-lg shadow-md p-5">
-        <div className="flex flex-row justify-between">
-          <div>
-            <h5
-                className="mb-2 text-xl font-medium leading-tight text-neutral-800">
-              Marketplace Order's
-            </h5>
-          </div>
-          <div>
-            <Radio.Group
-                options={switchOptions}
-                onChange={onChangeSwitch}
-                value={switchValue}
-            />
-          </div>
-        </div>
-
-        <div style={{height: "400px"}}>
-          <div className="flex justify-between">
-
-
-          </div>
-
-          {!chartDataLoading ? <Doughnut options={options} data={barChartData}/> :  <div className="flex justify-center align-middle"><Spin/></div>}
-        </div>
+    <Card
+      bordered={false}
+      className="hover:shadow-lg transition-shadow duration-300 h-full"
+      title={<span style={{ color: token.colorTextHeading }}>Marketplace Orders</span>}
+      extra={
+        <Radio.Group
+          options={switchOptions}
+          onChange={onChangeSwitch}
+          value={switchValue}
+          size="small" // Compact Look
+          buttonStyle="solid"
+        />
+      }
+    >
+      <div style={{ height: "400px" }}>
+        <Skeleton loading={chartDataLoading} active paragraph={{ rows: 10 }}>
+          <Doughnut options={options} data={barChartData} plugins={[textCenter]} />
+        </Skeleton>
       </div>
-
-   );
+    </Card>
+  );
 }
 
 export default MarketplaceOrdersChart;

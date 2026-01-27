@@ -1,13 +1,12 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import {useNavigate} from "react-router-dom";
-import {toast} from "react-toastify";
-import {Avatar, Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, Tag} from "antd";
-import {DeleteOutlined, EditOutlined, InfoOutlined, PlusOutlined, UserOutlined} from "@ant-design/icons";
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { Avatar, Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, Tag, theme } from "antd";
+import { DeleteOutlined, EditOutlined, InfoOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
 import useAxiosClient from "../axios-client.js";
-import {useStateContext} from "../contexts/ContextProvider";
+import { useStateContext } from "../contexts/ContextProvider";
 import Permission from "../components/Util/Permission";
-import {UserStatusEnum} from "../utils/enums/UserStatusEnum";
-import {colors} from "../utils/Colors";
+import { UserStatusEnum } from "../utils/enums/UserStatusEnum";
 import dayjs from "dayjs";
 
 const Users = (callback, deps) => {
@@ -24,9 +23,10 @@ const Users = (callback, deps) => {
     const [selectedUser, setSelectedUser] = useState(null);
 
     const [statusForm] = Form.useForm();
+    const { token } = theme.useToken();
 
 
-    const {user, roles} = useStateContext();
+    const { user, roles } = useStateContext();
 
     const fetchUsers = useCallback(async (page = 1) => {
         setLoading(true);
@@ -35,7 +35,7 @@ const Users = (callback, deps) => {
             const users = await axiosClient.get(link);
             setLoading(false);
             const userData = users.data.data.map((data) => {
-                return {...data, key: data.id}
+                return { ...data, key: data.id }
             })
             setUsers(userData);
             setTotal(users.data.total)
@@ -61,27 +61,27 @@ const Users = (callback, deps) => {
             return (
                 <Avatar
                     src={imagePath}
-                    size={{xs: 24, sm: 32, md: 32}}
+                    size={{ xs: 24, sm: 32, md: 32 }}
                 />
 
             )
         }
-        return <Avatar size={{xs: 24, sm: 32, md: 32}} icon={<UserOutlined/>}/>
+        return <Avatar size={{ xs: 24, sm: 32, md: 32 }} icon={<UserOutlined />} />
 
     }
     const handleUserDetails = (record) => {
-        navigate(`/users/${record.firstname}_${record.lastname}`, {state: {id: record.id}})
+        navigate(`/users/${record.firstname}_${record.lastname}`, { state: { id: record.id } })
     }
 
     const renderActionButtons = (record) => {
         return (
             <Space size="middle">
-                <Button type="primary" icon={<InfoOutlined/>} size={"small"} onClick={() => handleUserDetails(record)}/>
-                <Button type="primary" disabled className='edit-btn' icon={<EditOutlined/>} size={"small"}
-                        onClick={() => handleEditUser(record)}/>
+                <Button type="primary" icon={<InfoOutlined />} size={"small"} onClick={() => handleUserDetails(record)} />
+                <Button type="primary" disabled className='edit-btn' icon={<EditOutlined />} size={"small"}
+                    onClick={() => handleEditUser(record)} />
                 <Permission required={"DELETE_USER"}>
-                    <Button type="primary" danger disabled={record.id === user.id} icon={<DeleteOutlined/>}
-                            size={"small"} onClick={() => handleDeleteUser(record)}/>
+                    <Button type="primary" danger disabled={record.id === user.id} icon={<DeleteOutlined />}
+                        size={"small"} onClick={() => handleDeleteUser(record)} />
                 </Permission>
             </Space>
         );
@@ -92,7 +92,7 @@ const Users = (callback, deps) => {
     };
 
     const showStatusModal = (data, record) => {
-        if (user.id === record.id){
+        if (user.id === record.id) {
             return
         }
         setIsModalOpen(true);
@@ -133,12 +133,13 @@ const Users = (callback, deps) => {
     }
 
     const renderUserName = (record, user) => {
-        return `${user.firstname} ${user.lastname}`;
+        return <span style={{ fontWeight: 600, color: token.colorTextHeading }}>{user.firstname} {user.lastname}</span>; // Use colorTextHeading
     }
 
     const renderStatus = (data, record, index) => {
-        return <Tag color={!data? colors.red : colors.green} style={{cursor: "pointer", fontWeight: 700}}
-                    onClick={() => showStatusModal(data, record)}>{UserStatusEnum[data]}</Tag>
+        const statusColor = !data ? 'error' : 'success';
+        return <Tag color={statusColor} style={{ cursor: "pointer", fontWeight: 700 }}
+            onClick={() => showStatusModal(data, record)}>{UserStatusEnum[data]}</Tag>
     }
     const userStatusOptions = [
         {
@@ -173,7 +174,7 @@ const Users = (callback, deps) => {
             title: 'Last Login',
             dataIndex: 'last_login',
             key: 'last_login',
-            render: (data) => data ? dayjs(data).format('MMMM Do YYYY, h:mm a') : "Never"
+            render: (data) => data ? <span style={{ color: token.colorTextSecondary }}>{dayjs(data).format('MMM D, YYYY h:mm A')}</span> : <span style={{ color: token.colorTextDescription }}>Never</span>
         },
         {
             title: 'Status',
@@ -213,25 +214,28 @@ const Users = (callback, deps) => {
                 display: 'flex',
             }}
         >
-            <Card className='shadow'>
-                <Row justify='space-between'>
-                    <Col xs={{span: 24}} lg={{span: 20}}></Col>
-                    <Col xs={{span: 24}} lg={{span: 4}} flex={"inherit"}>
-                        <Button type="primary" onClick={addNewUser} icon={<PlusOutlined/>}>Add User</Button>
+            <Card bordered={false} className='shadow-sm hover:shadow-md transition-shadow duration-300'>
+                <Row justify='space-between' align="middle">
+                    <Col>
+                        <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: token.colorTextHeading, margin: 0 }}>Users</h1>
+                    </Col>
+                    <Col>
+                        <Button type="primary" onClick={addNewUser} icon={<PlusOutlined />}>Add User</Button>
                     </Col>
                 </Row>
             </Card>
-            <Card className='shadow'>
+            <Card bordered={false} className='shadow-sm'>
                 <Table
                     dataSource={users}
                     columns={columns}
                     loading={loading}
-                    scroll={{x: 400}}
-                    size={'small'}
+                    scroll={{ x: 600 }}
+                    size={'middle'}
                     pagination={{
                         current: page,
                         pageSize: pageSize,
                         total: total,
+                        showSizeChanger: true,
                         onChange: (page, pageSize) => {
                             setPage(page)
                             setPageSize(pageSize)
@@ -269,7 +273,7 @@ const Users = (callback, deps) => {
                     >
                         <Select
                             value={userStatus}
-                            style={{width: "100%"}}
+                            style={{ width: "100%" }}
                             onChange={handleStatusChange}
                             options={userStatusOptions}
                         />

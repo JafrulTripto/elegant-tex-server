@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -8,9 +8,9 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import {Bar} from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import useAxiosClient from "../../axios-client";
-import {Radio, Spin} from "antd";
+import { Radio, Card, Skeleton, theme } from "antd";
 
 ChartJS.register(
   CategoryScale,
@@ -21,15 +21,16 @@ ChartJS.register(
   Legend
 );
 
-
 const OrderBarChart = () => {
   const [chartData, setChartData] = useState({});
   const [chartDataLoading, setChartDataLoading] = useState(false);
   const [switchValue, setSwitchValue] = useState('order');
   const axiosClient = useAxiosClient();
+  const { token } = theme.useToken();
+
   const switchOptions = [
-    {label: 'Order', value: 'order'},
-    {label: 'Amount', value: 'amount'},
+    { label: 'Order', value: 'order' },
+    { label: 'Amount', value: 'amount' },
   ];
 
   useEffect(() => {
@@ -44,7 +45,7 @@ const OrderBarChart = () => {
       });
   }, []);
 
-  const onChangeSwitch = ({target: {value}}) => {
+  const onChangeSwitch = ({ target: { value } }) => {
     setSwitchValue(value);
   };
 
@@ -59,61 +60,105 @@ const OrderBarChart = () => {
     }
   }
 
+  const formatValue = (value) => {
+    if (switchValue === 'order') return value;
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
+  };
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top'
+        position: 'top',
+        labels: {
+          font: { family: 'Inter' },
+          color: token.colorTextDescription,
+          usePointStyle: true,
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += formatValue(context.parsed.y);
+            }
+            return label;
+          }
+        }
       },
       title: {
         display: false,
-        text: "Order's this Month",
       },
     },
     scales: {
       y: {
         ticks: {
-          stepSize: switchValue === 'order' ? 10 : 20000, // Set the step size to 1 to display integers only
+          // Auto-scale by removing hardcoded stepSize
+          callback: function (value) {
+            if (switchValue === 'amount' && value >= 1000) {
+              return '$' + (value / 1000).toFixed(0) + 'k';
+            }
+            return formatValue(value);
+          },
+          font: { family: 'Inter' },
+          color: token.colorTextDescription
         },
+        grid: {
+          color: token.colorBorderSecondary,
+          borderDash: [2, 2]
+        },
+        border: { display: false }
       },
+      x: {
+        ticks: {
+          font: { family: 'Inter' },
+          color: token.colorTextDescription
+        },
+        grid: { display: false }
+      }
     },
-
   };
 
   const data = {
     labels,
     datasets: [
       {
-        label: switchValue,
+        label: switchValue === 'order' ? 'Total Orders' : 'Total Amount',
         data: getValues(chartData),
-        backgroundColor: 'rgb(65, 179, 162, 0.3)',
-        borderColor: '#41B3A2',
-        borderWidth:1
+        // Use Green for Amount to distinguish visual context, Blue for Orders
+        backgroundColor: switchValue === 'order' ? token.colorPrimary : '#10b981',
+        borderRadius: 4,
+        barPercentage: 0.6,
       },
     ],
   };
+
   return (
-    <div className="bg-white rounded-lg shadow-md p-5">
-      <div className="flex flex-row justify-between">
-        <div>
-          <h5 className="mb-2 text-xl font-medium leading-tight text-neutral-800">
-            Orders This Month
-          </h5>
-        </div>
-        <div>
-          <Radio.Group
-            options={switchOptions}
-            onChange={onChangeSwitch}
-            value={switchValue}
-          />
-        </div>
+    <Card
+      bordered={false}
+      className="hover:shadow-lg transition-shadow duration-300 h-full"
+      title={<span style={{ color: token.colorTextHeading }}>Orders This Month</span>}
+      extra={
+        <Radio.Group
+          options={switchOptions}
+          onChange={onChangeSwitch}
+          value={switchValue}
+          size="small"
+          buttonStyle="solid"
+        />
+      }
+    >
+      <div style={{ height: "400px" }}>
+        <Skeleton loading={chartDataLoading} active paragraph={{ rows: 10 }}>
+          <Bar options={options} data={data} />
+        </Skeleton>
       </div>
-      <div className="" style={{height: "400px"}}>
-        {!chartDataLoading ? <Bar options={options} data={data}/> :
-          <div className="flex justify-center align-middle"><Spin/></div>}
-      </div>
-    </div>
+    </Card>
   );
 }
 
