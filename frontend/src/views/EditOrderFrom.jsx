@@ -45,7 +45,7 @@ const EditOrderFrom = () => {
 
 
   const { productTypes } = useProductTypes();
-  const { fabrics } = useFabrics();
+  const { fabrics, loadMore, hasMore, fabricsLoading, fetchFabrics, setFabrics } = useFabrics();
 
 
   const [selectedDivision, setSelectedDivision] = useState(null);
@@ -120,7 +120,6 @@ const EditOrderFrom = () => {
   useEffect(() => {
     async function fetchOrder() {
       if (!orderId) {
-        // Handle missing ID?
         return;
       }
       try {
@@ -130,6 +129,24 @@ const EditOrderFrom = () => {
         const o = result.data.data;
 
         const newValues = setNewValues(o);
+
+        // Pre-fill fabrics list with existing order fabrics to display names correctly
+        const existingFabrics = o.products.map(p => ({
+          id: p.fabrics.value,
+          name: p.fabrics.name,
+          image: { id: p.fabrics.image } // Structure expected by OrderProductForm
+        }));
+
+        setFabrics(prev => {
+          const combined = [...prev];
+          existingFabrics.forEach(ef => {
+            if (!combined.find(f => f.id === ef.id)) {
+              combined.push(ef);
+            }
+          });
+          return combined;
+        });
+
         const imageWithUrl = o.images.map((image) => {
           return {
             ...image,
@@ -141,14 +158,13 @@ const EditOrderFrom = () => {
         setOrderLoading(false)
       } catch (error) {
         const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-        // navigate('/notFound'); // Optional: redirect if fetch fails
         toast.error(message);
         setOrderLoading(false);
       }
     }
 
     fetchOrder();
-  }, [axiosClient, navigate, orderId, updateOrderForm]) // Dependency changed to orderId
+  }, [axiosClient, navigate, orderId, updateOrderForm, setFabrics]) // Added setFabrics dependency
 
   if (orderLoading) { // Simplistic loading check
     return <Loading layout={'default'} />
@@ -255,6 +271,10 @@ const EditOrderFrom = () => {
         <OrderProductForm
           productTypes={productTypes}
           fabrics={fabrics}
+          loadMore={loadMore}
+          hasMore={hasMore}
+          fabricsLoading={fabricsLoading}
+          fetchFabrics={fetchFabrics}
           orderForm={updateOrderForm}
           setUploading={setUploading}
           setFiles={setFiles}
