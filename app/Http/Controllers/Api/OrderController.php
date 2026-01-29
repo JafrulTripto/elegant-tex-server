@@ -299,6 +299,15 @@ class OrderController extends Controller
         });
     }
 
+    // Apply CreatedBy Search (User Name)
+    $searchCreatedBy = $request->input('createdBy', '');
+    if (!empty($searchCreatedBy)) {
+        $query->whereHas('createdBy', function ($q) use ($searchCreatedBy) {
+            $q->where('firstname', 'like', "%{$searchCreatedBy}%")
+              ->orWhere('lastname', 'like', "%{$searchCreatedBy}%");
+        });
+    }
+
     // Apply status filter
     if (!empty($status)) {
       $query->whereIn('status', $status);

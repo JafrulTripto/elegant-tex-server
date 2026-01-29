@@ -375,6 +375,13 @@ function Orders() {
       )
     },
     {
+      title: 'Submitted By',
+      dataIndex: 'createdBy',
+      key: 'createdBy',
+      ...getColumnSearchProps('createdBy'),
+      render: (text) => <span className="text-slate-500">{text}</span>
+    },
+    {
       title: 'Date',
       dataIndex: 'createdAt',
       key: 'createdAt',
@@ -421,9 +428,9 @@ function Orders() {
     {
       title: 'Action',
       key: 'action',
-      width: 100,
+      width: 80,
       render: (_, record) => (
-        <Space>
+        <Space size="small">
           <Tooltip title="View Details">
             <Button type="text" shape="circle" icon={<EyeOutlined className="text-blue-500" />} onClick={() => handleViewDetails(record)} />
           </Tooltip>
