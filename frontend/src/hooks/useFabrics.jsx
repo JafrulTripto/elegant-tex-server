@@ -57,5 +57,5 @@ export const useFabrics = () => {
         fetchFabrics(1);
     }, [fetchFabrics]);
 
-    return { fabrics, fabricsLoading, fetchFabrics, loadMore, hasMore };
+    return { fabrics, fabricsLoading, fetchFabrics, loadMore, hasMore, setFabrics };
 }
