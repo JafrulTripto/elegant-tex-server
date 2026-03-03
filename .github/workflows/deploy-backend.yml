@@ -21,7 +21,7 @@ jobs:
           key: ${{ secrets.DROPLET_SSH_KEY }}
           script: |
             set -e
-            cd /var/www/html
+            cd /var/www/elegant-tex-server
 
             echo "→ Pulling latest code..."
             git pull origin main
