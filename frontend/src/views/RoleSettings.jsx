@@ -5,7 +5,6 @@ import { PlusOutlined } from "@ant-design/icons";
 import useAxiosClient from "../axios-client.js";
 import RolePermissions from "../components/Settings/RoleSettings/RolePermissions.jsx";
 import AssignUserRoles from "../components/Settings/RoleSettings/AssignUserRoles.jsx";
-import { colors } from "../utils/Colors.js";
 
 
 const RoleSettings = () => {
@@ -66,8 +65,7 @@ const RoleSettings = () => {
     }
   }
 
-  const editRole = (item) => {
-  }
+
   const handleDeleteRole = (role) => {
     const roleId = role.id;
     modal.confirm({
@@ -82,9 +80,6 @@ const RoleSettings = () => {
       toast.success(response.data);
       getRoles();
     })
-  }
-  const assignUserRole = (item) => {
-    setRole(item);
   }
 
 

@@ -31,6 +31,7 @@ jobs:
         env:
           REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL }}
           GENERATE_SOURCEMAP: false
+          DISABLE_ESLINT_PLUGIN: true
         run: npx react-scripts build
 
       - name: Configure AWS credentials

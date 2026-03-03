@@ -1,14 +1,14 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import useAxiosClient from "../axios-client";
-import {toast} from "react-toastify";
-import {useStateContext} from "../contexts/ContextProvider";
+import { toast } from "react-toastify";
+import { useStateContext } from "../contexts/ContextProvider";
 
 export const useUserDashboardData = () => {
 
   const axiosClient = useAxiosClient();
   const [userDashboardData, setDashboardData] = useState(null);
   const [userDashboardDataLoading, setDashboardDataLoading] = useState(false);
-  const {user} = useStateContext();
+  const { user } = useStateContext();
 
   useEffect(() => {
     const fetchOrderCounts = () => {
@@ -25,5 +25,5 @@ export const useUserDashboardData = () => {
     fetchOrderCounts();
   }, [axiosClient])
 
-  return {userDashboardData, userDashboardDataLoading}
+  return { userDashboardData, userDashboardDataLoading }
 }
