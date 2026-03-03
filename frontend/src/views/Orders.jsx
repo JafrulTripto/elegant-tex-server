@@ -311,8 +311,10 @@ function Orders() {
     return status ? { label: status.label, color: status.color } : { label: 'Unknown', color: 'default' };
   }
 
+  const canChangeStatus = permissions.includes('CHANGE_STATUS');
+
   const showStatusModal = (statusVal, id) => {
-    // Permission check can be added here if needed
+    if (!canChangeStatus) return;
     statusForm.setFieldValue('status', statusVal);
     setCurrentOrderStatus(statusVal);
     setChangedOrderStatus(statusVal);
@@ -418,7 +420,7 @@ function Orders() {
           <Tag
             color={config.color}
             className="cursor-pointer rounded-full px-3 py-0.5 border-0 font-medium select-none transform hover:scale-105 transition-transform"
-            onClick={() => showStatusModal(status, record.id)}
+            onClick={canChangeStatus ? () => showStatusModal(status, record.id) : undefined}
           >
             {config.label}
           </Tag>

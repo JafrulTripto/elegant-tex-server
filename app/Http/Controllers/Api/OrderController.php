@@ -193,6 +193,10 @@ class OrderController extends Controller
       $newStatusId = $request->newStatus;
       $statusComment = $request->statusComment;
 
+      if (!auth()->user()->hasPermissionTo('CHANGE_STATUS')) {
+        return response()->json(['message' => 'You do not have permission to change order status.'], 403);
+      }
+
       return $this->orderService->updateOrderStatus($orderId, $newStatusId, $statusComment);
     } catch (OrderAlreadyInStatusException $e) {
       return response()->json(['message' => $e->getMessage()], 422);

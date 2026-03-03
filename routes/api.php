@@ -152,6 +152,8 @@ Route::group([
     Route::get('/getMonthlyOrdersPerUser', [DashboardController::class, 'getMonthlyOrderPerUser']);
     Route::get('/getUserOrderStats', [DashboardController::class, 'getUserOrderStats']);
     Route::get('/getTopMarketplacesMonthlyStats', [DashboardController::class, 'getTopMarketplacesMonthlyStats']);
+    Route::get('/getMonthlyFulfillmentStats', [DashboardController::class, 'getMonthlyFulfillmentStats']);
+    Route::get('/getUserFulfillmentStats', [DashboardController::class, 'getUserFulfillmentStats']);
 });
 
 Route::group([

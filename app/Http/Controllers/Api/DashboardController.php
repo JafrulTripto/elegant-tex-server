@@ -34,6 +34,12 @@ class DashboardController extends Controller
     $userId =  $request->input('id');
     return $this->userDashboardService->getUserOrdersStats($userId);
   }
+
+  public function getUserFulfillmentStats(Request $request): JsonResponse
+  {
+    $userId = $request->input('id');
+    return $this->userDashboardService->getUserFulfillmentStats($userId);
+  }
   public function getTopMarketplacesMonthlyStats(Request $request): JsonResponse
   {
     $data = $this->adminDashboardService->getTopMarketplacesMonthlyStats();
@@ -62,6 +68,12 @@ class DashboardController extends Controller
   public function getMonthlyOrderPerUser(): JsonResponse
   {
     $data = $this->adminDashboardService->getMonthlyOrderPerUser();
+    return response()->json($data);
+  }
+
+  public function getMonthlyFulfillmentStats(): JsonResponse
+  {
+    $data = $this->adminDashboardService->getMonthlyFulfillmentStats();
     return response()->json($data);
   }
 }

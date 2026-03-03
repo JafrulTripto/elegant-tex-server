@@ -36,6 +36,45 @@ class UserDashboardService
     ]);
   }
 
+  public function getUserFulfillmentStats($userId): JsonResponse
+  {
+    $userId = intval($userId);
+    $month  = Carbon::now()->month;
+    $year   = Carbon::now()->year;
+
+    // Promised: active orders by this user with delivery_date in this month (not cancelled/returned)
+    $promised = Order::where('created_by', $userId)
+      ->whereMonth('delivery_date', $month)
+      ->whereYear('delivery_date', $year)
+      ->whereNotIn('status', [
+        \App\Enums\OrderStatus::CANCELLED->value,
+        \App\Enums\OrderStatus::RETURNED->value,
+      ])
+      ->count();
+
+    // Delivered/Cancelled/Returned: status transitions this month on orders created by this user
+    $statusCounts = \App\Models\OrderStatusChange::whereHas('order', function ($q) use ($userId) {
+        $q->where('created_by', $userId);
+      })
+      ->whereIn('status', [
+        \App\Enums\OrderStatus::DELIVERED->value,
+        \App\Enums\OrderStatus::CANCELLED->value,
+        \App\Enums\OrderStatus::RETURNED->value,
+      ])
+      ->whereMonth('order_status_changes.created_at', $month)
+      ->whereYear('order_status_changes.created_at', $year)
+      ->selectRaw('status, COUNT(DISTINCT order_id) as cnt')
+      ->groupBy('status')
+      ->pluck('cnt', 'status');
+
+    return response()->json([
+      'promised'  => $promised,
+      'delivered' => $statusCounts[\App\Enums\OrderStatus::DELIVERED->value] ?? 0,
+      'cancelled' => $statusCounts[\App\Enums\OrderStatus::CANCELLED->value] ?? 0,
+      'returned'  => $statusCounts[\App\Enums\OrderStatus::RETURNED->value] ?? 0,
+    ]);
+  }
+
   /*==========Unused function - For future implementation=============
   public function getTotalMarketplaceOrderStatsByUser($userId): JsonResponse
   {

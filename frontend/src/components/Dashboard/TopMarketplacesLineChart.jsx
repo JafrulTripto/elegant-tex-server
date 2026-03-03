@@ -51,24 +51,14 @@ const TopMarketplacesLineChart = (props) => {
       });
   }, []);
 
-  // Standardize labels to Jan-Dec
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   function generateChartData(apiData) {
     const colorArray = ['#007AFF', '#10b981', '#f59e0b', '#06b6d4', '#ef4444'];
 
     return apiData.map((marketplace, index) => {
-      // Create a map of existing data for quick lookup: { monthIndex: value }
-      const dataMap = {};
-      marketplace.monthly_stats.forEach(stat => {
-        dataMap[stat.month] = switchValue === 'count' ? stat.order_count : stat.total_amount;
-      });
-
-      // Generate standardized data array for months 1-12
-      const data = [];
-      for (let m = 1; m <= 12; m++) {
-        data.push(dataMap[m] || 0); // Use existing value or 0
-      }
+      const data = marketplace.monthly_stats.map(stat =>
+        switchValue === 'count' ? stat.order_count : stat.total_amount
+      );
 
       const backgroundColor = colorArray[index % colorArray.length];
 
@@ -78,7 +68,7 @@ const TopMarketplacesLineChart = (props) => {
         backgroundColor: backgroundColor,
         borderColor: backgroundColor,
         borderWidth: 2,
-        tension: 0.4, // Smooth lines
+        tension: 0.4,
         pointRadius: 3,
         pointHoverRadius: 5,
       };
@@ -149,9 +139,13 @@ const TopMarketplacesLineChart = (props) => {
     },
   };
 
+  const monthLabels = chartData.length > 0
+    ? chartData[0].monthly_stats.map(s => s.label)
+    : [];
+
   const data = {
     type: 'line',
-    labels: monthNames, // Fix labels to standard 12 months
+    labels: monthLabels,
     datasets: generateChartData(chartData),
   };
 

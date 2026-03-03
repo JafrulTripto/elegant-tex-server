@@ -22,7 +22,7 @@ const TopExecutives = (props) => {
     });
   }, []);
 
-  // Find maximum amount for progress bar calculation
+  // Progress bar is always relative to monthly top performer
   const maxAmount = Math.max(...executiveStats.map(item => parseInt(item.total_amount) || 0), 1);
 
   const getRankIcon = (index) => {
@@ -48,33 +48,46 @@ const TopExecutives = (props) => {
             dataSource={executiveStats}
             split={false}
             renderItem={(item, index) => {
-              const amount = parseInt(item.total_amount) || 0;
-              const percent = (amount / maxAmount) * 100;
+              const monthlyAmount = parseInt(item.total_amount) || 0;
+              const yearlyAmount = parseInt(item.yearly_amount) || 0;
+              const percent = (monthlyAmount / maxAmount) * 100;
 
               return (
                 <List.Item
                   className="mb-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-default"
                   style={{ borderBottom: `1px solid ${token.colorBorderSecondary}` }}
                   actions={[
-                    <div className="flex flex-col items-end min-w-[120px] gap-1">
-                      <Text strong style={{ color: token.colorTextHeading, fontSize: '15px' }}>
-                        {amount.toLocaleString()} ৳
-                      </Text>
-
-                      {/* Visual Progress Bar relative to Top Performer */}
-                      <div className="w-full bg-gray-100 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{
-                            width: `${percent}%`,
-                            backgroundColor: index === 0 ? '#fbbf24' : token.colorPrimary
-                          }}
-                        />
+                    <div className="flex items-center gap-3">
+                      {/* Monthly */}
+                      <div className="flex flex-col items-end gap-1">
+                        <Text type="secondary" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Monthly</Text>
+                        <Text strong style={{ color: token.colorTextHeading, fontSize: '14px' }}>
+                          {monthlyAmount.toLocaleString()} ৳
+                        </Text>
+                        <div className="w-full bg-gray-100 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden" style={{ minWidth: '70px' }}>
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${percent}%`,
+                              backgroundColor: index === 0 ? '#fbbf24' : token.colorPrimary
+                            }}
+                          />
+                        </div>
+                        <Text type="secondary" style={{ fontSize: 10 }}>{item.total_orders} orders</Text>
                       </div>
 
-                      <Text type="secondary" style={{ fontSize: 11 }}>
-                        {item.total_orders} Orders
-                      </Text>
+                      {/* Divider */}
+                      <div style={{ width: 1, height: 48, backgroundColor: token.colorBorderSecondary }} />
+
+                      {/* Yearly */}
+                      <div className="flex flex-col items-end gap-1">
+                        <Text type="secondary" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Yearly</Text>
+                        <Text strong style={{ color: token.colorTextHeading, fontSize: '14px' }}>
+                          {yearlyAmount.toLocaleString()} ৳
+                        </Text>
+                        <div style={{ height: '6px' }} />
+                        <Text type="secondary" style={{ fontSize: 10 }}>{item.yearly_orders} orders</Text>
+                      </div>
                     </div>
                   ]}
                 >
