@@ -1,10 +1,14 @@
 import React from 'react';
-import {Col, Row} from "antd";
+import { Col, Row } from "antd";
 import ReportBox from "./ReportBox";
-import {useUserDashboardData} from "../../hooks/useUserDashboardData";
+import { useUserDashboardData } from "../../hooks/useUserDashboardData";
+import { useStateContext } from "../../contexts/ContextProvider";
+import FulfillmentSummary from "./FulfillmentSummary";
 
 const UserDashboard = () => {
   const { userDashboardData, userDashboardDataLoading } = useUserDashboardData();
+  const { user } = useStateContext();
+
   const extractDataByOrderType = (data, orderType) => {
     return {
       firstValue: {
@@ -26,6 +30,9 @@ const UserDashboard = () => {
             loading={userDashboardDataLoading}
             text="My Orders"
           />
+        </Col>
+        <Col xs={24}>
+          <FulfillmentSummary userId={user?.id} />
         </Col>
       </Row>
     </>

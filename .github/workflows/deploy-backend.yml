@@ -1,0 +1,46 @@
+name: Deploy Backend to DigitalOcean
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'frontend/**'
+      - '**.md'
+
+jobs:
+  deploy:
+    name: SSH Deploy Laravel
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          script: |
+            set -e
+            cd /var/www/html
+
+            echo "→ Pulling latest code..."
+            git pull origin main
+
+            echo "→ Installing Composer dependencies..."
+            docker compose exec -T app composer install \
+              --no-dev \
+              --optimize-autoloader \
+              --no-interaction
+
+            echo "→ Running migrations..."
+            docker compose exec -T app php artisan migrate --force
+
+            echo "→ Clearing and caching config..."
+            docker compose exec -T app php artisan config:cache
+            docker compose exec -T app php artisan route:cache
+            docker compose exec -T app php artisan view:cache
+
+            echo "→ Restarting app container..."
+            docker compose restart app
+
+            echo "✓ Backend deployment complete."

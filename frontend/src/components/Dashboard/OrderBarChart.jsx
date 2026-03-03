@@ -49,7 +49,10 @@ const OrderBarChart = () => {
     setSwitchValue(value);
   };
 
-  const labels = Object.keys(chartData);
+  const labels = Object.keys(chartData).map(dateStr => {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  });
   const getValues = (chartData) => {
     if (switchValue === 'order') {
       return Object.values(chartData).map(item => item.total_count);
@@ -142,7 +145,7 @@ const OrderBarChart = () => {
     <Card
       bordered={false}
       className="hover:shadow-lg transition-shadow duration-300 h-full"
-      title={<span style={{ color: token.colorTextHeading }}>Orders This Month</span>}
+      title={<span style={{ color: token.colorTextHeading }}>Orders Last 30 Days</span>}
       extra={
         <Radio.Group
           options={switchOptions}
