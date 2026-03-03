@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Table, Tag, Tabs, Space, Button, Typography, Avatar, Tooltip, Modal, Form, Select, Input, Row, Col, DatePicker } from 'antd';
 import { NavLink, useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
@@ -16,8 +16,6 @@ import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 
 import ExportOrderExcel from "../components/Order/ExportOrderExcel";
-
-const { Text } = Typography;
 
 function Orders() {
 
