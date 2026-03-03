@@ -5,7 +5,7 @@ import {
   ShopOutlined,
   CheckCircleOutlined
 } from '@ant-design/icons';
-import { Card, Skeleton, Segmented, Statistic, theme, Switch } from 'antd';
+import { Card, Skeleton, Statistic, theme, Switch } from 'antd';
 
 const ReportBox = (props) => {
   const { data, loading, text } = props;
@@ -32,13 +32,6 @@ const ReportBox = (props) => {
     }
   };
 
-  const showToggleValues = () => {
-    return text === 'Completion' ? ['Delivered', 'Returned'] : ['Day', 'Month'];
-  };
-
-  const handleToggleReport = (value) => {
-    setReportType(value.toLowerCase());
-  };
 
   const showReportText = () => {
     return reportType === 'day' && text !== 'Completion' ? 'Today' : 'Last 30 days';
