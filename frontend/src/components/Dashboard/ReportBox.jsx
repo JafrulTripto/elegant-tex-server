@@ -34,7 +34,7 @@ const ReportBox = (props) => {
 
 
   const showReportText = () => {
-    return reportType === 'day' && text !== 'Completion' ? 'Today' : 'Last 30 days';
+    return reportType === 'day' && text !== 'Completion' ? 'Today' : 'This Month';
   };
 
   const reportData = data
