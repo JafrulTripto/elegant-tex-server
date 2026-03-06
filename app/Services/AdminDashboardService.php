@@ -14,15 +14,15 @@ class AdminDashboardService
   public function getDashboardData(): array
   {
     $today = Carbon::today();
-    $startOfLast30Days = Carbon::now()->subDays(29)->startOfDay();
+    $startOfThisMonth = Carbon::now()->startOfMonth();
 
     // Total Orders and Amount Today
     $todayOrders = Order::whereDate('created_at', $today)->count();
     $totalAmountSoldToday = Order::whereDate('created_at', $today)->sum('total_amount');
 
-    // Total Orders and Amount Last 30 Days
-    $totalOrdersThisMonth = Order::whereBetween('created_at', [$startOfLast30Days, Carbon::now()])->count();
-    $totalAmountSoldThisMonth = Order::whereBetween('created_at', [$startOfLast30Days, Carbon::now()])->sum('total_amount');
+    // Total Orders and Amount This Month
+    $totalOrdersThisMonth = Order::whereBetween('created_at', [$startOfThisMonth, Carbon::now()])->count();
+    $totalAmountSoldThisMonth = Order::whereBetween('created_at', [$startOfThisMonth, Carbon::now()])->sum('total_amount');
 
     // Merchant Orders and Amount Today
     $todayMerchantOrders = Order::where('orderable_type', 'App\Models\Merchant')
@@ -32,12 +32,12 @@ class AdminDashboardService
       ->whereDate('created_at', $today)
       ->sum('total_amount');
 
-    // Merchant Orders and Amount Last 30 Days
+    // Merchant Orders and Amount This Month
     $totalMerchantOrdersThisMonth = Order::where('orderable_type', 'App\Models\Merchant')
-      ->whereBetween('created_at', [$startOfLast30Days, Carbon::now()])
+      ->whereBetween('created_at', [$startOfThisMonth, Carbon::now()])
       ->count();
     $totalAmountSoldMerchantThisMonth = Order::where('orderable_type', 'App\Models\Merchant')
-      ->whereBetween('created_at', [$startOfLast30Days, Carbon::now()])
+      ->whereBetween('created_at', [$startOfThisMonth, Carbon::now()])
       ->sum('total_amount');
 
     // Marketplace Orders and Amount Today
@@ -48,30 +48,30 @@ class AdminDashboardService
       ->whereDate('created_at', $today)
       ->sum('total_amount');
 
-    // Marketplace Orders and Amount Last 30 Days
+    // Marketplace Orders and Amount This Month
     $totalMarketplaceOrdersThisMonth = Order::where('orderable_type', 'App\Models\Marketplace')
-      ->whereBetween('created_at', [$startOfLast30Days, Carbon::now()])
+      ->whereBetween('created_at', [$startOfThisMonth, Carbon::now()])
       ->count();
     $totalAmountSoldMarketplaceThisMonth = Order::where('orderable_type', 'App\Models\Marketplace')
-      ->whereBetween('created_at', [$startOfLast30Days, Carbon::now()])
+      ->whereBetween('created_at', [$startOfThisMonth, Carbon::now()])
       ->sum('total_amount');
 
-    // Delivered and Returned Orders Last 30 Days
+    // Delivered and Returned Orders This Month
     $deliveredStatus = OrderStatus::DELIVERED->value;
     $returnedStatus = OrderStatus::RETURNED->value;
 
     $totalDeliveredOrdersThisMonth = Order::where('status', $deliveredStatus)
-      ->whereBetween('created_at', [$startOfLast30Days, Carbon::now()])
+      ->whereBetween('created_at', [$startOfThisMonth, Carbon::now()])
       ->count();
     $totalAmountDeliveredThisMonth = Order::where('status', $deliveredStatus)
-      ->whereBetween('created_at', [$startOfLast30Days, Carbon::now()])
+      ->whereBetween('created_at', [$startOfThisMonth, Carbon::now()])
       ->sum('total_amount');
 
     $totalReturnedOrdersThisMonth = Order::where('status', $returnedStatus)
-      ->whereBetween('created_at', [$startOfLast30Days, Carbon::now()])
+      ->whereBetween('created_at', [$startOfThisMonth, Carbon::now()])
       ->count();
     $totalAmountReturnedThisMonth = Order::where('status', $returnedStatus)
-      ->whereBetween('created_at', [$startOfLast30Days, Carbon::now()])
+      ->whereBetween('created_at', [$startOfThisMonth, Carbon::now()])
       ->sum('total_amount');
 
     return [
