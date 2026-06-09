@@ -22,7 +22,7 @@ const WhatsNewModal = () => {
     acknowledgedThisSession.current = true;
     setOpen(false);
     setUnseenReleases([]);
-    axiosClient.post("/releases/acknowledge").catch(() => {
+    axiosClient.post("releases/acknowledge").catch(() => {
       // Non-fatal — worst case the modal shows again next login
     });
   };
