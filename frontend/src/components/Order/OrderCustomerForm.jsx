@@ -97,15 +97,32 @@ const OrderCustomerForm = (props) => {
 
   const handleSelect = useCallback(
     (value, option) => {
+      const c = option.customer;
+      if (!c) return;
+
       setCustomerFound(true);
       setFieldsDisabled(true);
-      if (onCustomerFound && option.customer) {
-        onCustomerFound(option.customer);
-        // Immediately fix phone display — value is String(id), not the real phone
-        orderForm.setFieldValue("phone", option.customer.phone);
-      }
+
+      const divisionId = c.division?.value;
+      const districtId = c.district?.value;
+      const upazilaId = c.upazila?.value ?? null;
+
+      // Trigger cascade loading for district and upazila dropdowns
+      if (onDivisionSelect) onDivisionSelect(divisionId);
+      if (onDistrictSelect) onDistrictSelect(districtId);
+
+      orderForm.setFieldsValue({
+        phone: c.phone,
+        name: c.name,
+        facebookId: c.facebook,
+        altPhone: c.altPhone,
+        address: c.address,
+        division: divisionId,
+        district: districtId,
+        upazila: upazilaId,
+      });
     },
-    [onCustomerFound, orderForm],
+    [onDivisionSelect, onDistrictSelect, orderForm],
   );
 
   return (

@@ -80,7 +80,8 @@ class CustomerController extends Controller
         $phoneDigits = preg_replace("/\D/", "", $c->address->phone);
         return str_contains($phoneDigits, $digits);
       })
-      ->take(10);
+      ->take(10)
+      ->values();
 
     return response()->json(
       $customers->map(function ($customer) use ($divisions, $districts, $upazilas) {
