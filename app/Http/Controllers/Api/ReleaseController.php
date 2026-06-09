@@ -56,7 +56,9 @@ class ReleaseController extends Controller
         $latest = Release::orderByDesc('released_at')->value('version');
 
         if ($latest) {
-            auth()->user()->update(['last_seen_release' => $latest]);
+            $user = auth()->user();
+            $user->last_seen_release = $latest;
+            $user->save();
         }
 
         return response()->json(['ok' => true]);
