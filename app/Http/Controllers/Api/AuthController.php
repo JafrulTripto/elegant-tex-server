@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\ResetPasswordRequest;
+use App\Models\Release;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -63,11 +64,20 @@ class AuthController extends Controller
                 $userPermissions = array_values(array_unique(array_merge($permissions, $userPermissions), SORT_REGULAR));
             }
             $image = $user->image;
+
+            // Releases the user hasn't seen yet — drives the What's New modal
+            $unseenReleases = Release::when($user->last_seen_release, function ($q) use ($user) {
+                    $q->where('released_at', '>', $user->last_seen_release);
+                })
+                ->orderByDesc('released_at')
+                ->get(['version', 'title', 'features', 'released_at']);
+
             $res = [
-                "user" => $user,
-                "roles" => $roles,
-                "image" => $image,
-                "permissions" => $userPermissions
+                "user"            => $user,
+                "roles"           => $roles,
+                "image"           => $image,
+                "permissions"     => $userPermissions,
+                "unseen_releases" => $unseenReleases,
             ];
 
             return response()->json($res);
