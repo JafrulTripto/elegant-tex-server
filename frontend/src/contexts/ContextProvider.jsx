@@ -5,11 +5,13 @@ const StateContext = createContext({
   token: null,
   roles: [],
   permissions: [],
+  unseenReleases: [],
   setUser: () => { },
   setToken: () => { },
   setRoles: () => { },
   setPermissions: () => { },
-  setMessage: () => { }
+  setMessage: () => { },
+  setUnseenReleases: () => { },
 })
 
 export const ContextProvider = ({ children }) => {
@@ -17,6 +19,7 @@ export const ContextProvider = ({ children }) => {
   const [user, setUser] = useState({});
   const [roles, setRoles] = useState([]);
   const [permissions, setPermissions] = useState([]);
+  const [unseenReleases, setUnseenReleases] = useState([]);
   const [token, _setToken] = useState(localStorage.getItem("ACCESS_TOKEN"));
   const [message, setMessage] = useState("");
   // Default to Dark Mode if no preference is stored
@@ -44,12 +47,14 @@ export const ContextProvider = ({ children }) => {
       token,
       roles,
       permissions,
+      unseenReleases,
       message,
       setUser,
       setToken,
       setRoles,
       setPermissions,
       setMessage,
+      setUnseenReleases,
       darkMode,
       setDarkMode
     }}>

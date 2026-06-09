@@ -48,7 +48,22 @@ code {
 /* Global Utility Overrides */
 /* .ant-layout controlled by theme */
 
-/* Helper for Glassmorphism */
+/* Chat user bubble colours — light lavender in light mode, muted purple in dark */
+:root {
+  --user-bubble-bg: #EDE9FE;
+  --user-bubble-border: #DDD6FE;
+}
+.dark {
+  --user-bubble-bg: rgba(109, 40, 217, 0.25);
+  --user-bubble-border: rgba(139, 92, 246, 0.3);
+}
+
+/* Chat message fade-in */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* Helper for Glassmorphism */
 .glass-header {
   backdrop-filter: blur(12px);

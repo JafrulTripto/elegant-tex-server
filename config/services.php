@@ -1,8 +1,7 @@
 <?php
 
 return [
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Third Party Services
     |--------------------------------------------------------------------------
@@ -14,23 +13,31 @@ return [
     |
     */
 
-    'mailgun' => [
-        'domain' => env('MAILGUN_DOMAIN'),
-        'secret' => env('MAILGUN_SECRET'),
-        'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
-        'scheme' => 'https',
-    ],
+  "mailgun" => [
+    "domain" => env("MAILGUN_DOMAIN"),
+    "secret" => env("MAILGUN_SECRET"),
+    "endpoint" => env("MAILGUN_ENDPOINT", "api.mailgun.net"),
+    "scheme" => "https",
+  ],
 
-    'postmark' => [
-        'token' => env('POSTMARK_TOKEN'),
-    ],
+  "postmark" => [
+    "token" => env("POSTMARK_TOKEN"),
+  ],
 
-    'ses' => [
-        'key' => env('AWS_ACCESS_KEY_ID'),
-        'secret' => env('AWS_SECRET_ACCESS_KEY'),
-        'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
-    ],
-    'discord' => [
-        'token' => env('DISCORD_BOT_TOKEN'),
-    ],
+  "ses" => [
+    "key" => env("AWS_ACCESS_KEY_ID"),
+    "secret" => env("AWS_SECRET_ACCESS_KEY"),
+    "region" => env("AWS_DEFAULT_REGION", "us-east-1"),
+  ],
+  "discord" => [
+    "token" => env("DISCORD_BOT_TOKEN"),
+  ],
+  "deepseek" => [
+    "api_key" => env("DEEPSEEK_API_KEY"),
+    "base_url" => env("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+    "model" => env("DEEPSEEK_MODEL", "deepseek-chat"),
+  ],
+  "release" => [
+    "token" => env("RELEASE_TOKEN"),
+  ],
 ];

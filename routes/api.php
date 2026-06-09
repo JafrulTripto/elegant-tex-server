@@ -16,6 +16,8 @@ use App\Http\Controllers\Api\StatusController;
 use App\Http\Controllers\Api\StorageController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\BangladeshGeocodeController;
+use App\Http\Controllers\Api\ChatController;
+use App\Http\Controllers\Api\ReleaseController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
@@ -196,6 +198,21 @@ Route::prefix('settings/deliveryChannels')->group(function () {
     Route::put('/update/{id}', [DeliveryChannelController::class, 'update']);
     Route::delete('/delete/{id}', [DeliveryChannelController::class, 'destroy']);
 });
+
+Route::group([
+    // auth:api is enforced in ChatController constructor (consistent with other controllers)
+    // throttle:20,1 → max 20 requests per minute per user to control AI API costs
+    'middleware' => ['api', 'throttle:20,1'],
+    'prefix' => 'chat',
+], function () {
+    Route::get('/history', [ChatController::class, 'history']);
+    Route::post('/send', [ChatController::class, 'send']);
+});
+
+// Called by the GitHub Action after deploy — token-authenticated, no JWT needed
+Route::post('/releases', [ReleaseController::class, 'store']);
+// Called by the frontend when the user dismisses the What's New modal
+Route::post('/releases/acknowledge', [ReleaseController::class, 'acknowledge']);
 
 Route::get('/getDivisions', [BangladeshGeocodeController::class, 'getDivision']);
 Route::get('/getDistrictsByDivision', [BangladeshGeocodeController::class, 'getDistrictByDivision']);

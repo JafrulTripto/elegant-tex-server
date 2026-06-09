@@ -1,0 +1,60 @@
+name: Publish Release Notes
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'releases/next.json'
+
+jobs:
+  publish:
+    name: Push release notes to the app
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Publish to app API
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          APP_URL: ${{ secrets.APP_URL }}
+        run: |
+          PAYLOAD=$(cat releases/next.json)
+          HTTP_STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -X POST "$APP_URL/api/releases" \
+            -H "Content-Type: application/json" \
+            -H "X-Release-Token: $RELEASE_TOKEN" \
+            -d "$PAYLOAD")
+
+          cat /tmp/response.json
+
+          if [ "$HTTP_STATUS" != "201" ]; then
+            echo "Failed to publish release notes (HTTP $HTTP_STATUS)"
+            exit 1
+          fi
+
+          echo "Release notes published successfully."
+
+      - name: Archive next.json → releases/YYYY-MM-DD.json
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          cp releases/next.json "releases/$DATE.json"
+          # Reset next.json to an empty template for the next release
+          cat > releases/next.json << 'EOF'
+          {
+            "title": "",
+            "features": [
+              {
+                "icon": "",
+                "title": "",
+                "description": ""
+              }
+            ]
+          }
+          EOF
+          git add "releases/$DATE.json" releases/next.json
+          git commit -m "chore: archive release notes for $DATE [skip ci]"
+          git push
