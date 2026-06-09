@@ -1,20 +1,10 @@
 {
-  "title": "Jarvis AI Assistant & Chat History",
+  "title": "",
   "features": [
     {
-      "icon": "🤖",
-      "title": "Meet Jarvis",
-      "description": "AI!!! Ask anything about orders, customers, and stats in plain language. No filters needed."
-    },
-    {
-      "icon": "💬",
-      "title": "Chat history saved",
-      "description": "Your conversations are now persisted across sessions and devices."
-    },
-    {
-      "icon": "🎉",
-      "title": "What's New notifications",
-      "description": "You'll now see a summary of new features the first time you log in after an update."
+      "icon": "",
+      "title": "",
+      "description": ""
     }
   ]
 }
