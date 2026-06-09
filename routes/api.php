@@ -216,11 +216,17 @@ Route::post('/releases', [ReleaseController::class, 'store']);
 Route::post('/releases/acknowledge', [ReleaseController::class, 'acknowledge']);
 
 Route::group([
-    'middleware' => 'api',
+    'middleware' => ['api', 'permission:VIEW_CUSTOMERS'],
     'prefix' => 'customers',
 ], function () {
     Route::get('/index', [CustomerController::class, 'index']);
     Route::get('/export', [CustomerController::class, 'export']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'customers',
+], function () {
     Route::get('/searchByPhone', [CustomerController::class, 'searchByPhone']);
 });
 Route::get('/getDivisions', [BangladeshGeocodeController::class, 'getDivision']);

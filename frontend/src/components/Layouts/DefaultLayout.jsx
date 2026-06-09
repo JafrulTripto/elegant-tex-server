@@ -147,7 +147,7 @@ const DefaultLayout = () => {
       key: "customers",
       icon: <SolutionOutlined />,
       label: "Customers",
-      permission: "",
+      permission: "VIEW_CUSTOMERS",
     },
     {
       key: "users",
