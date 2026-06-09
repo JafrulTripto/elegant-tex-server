@@ -21,6 +21,7 @@ import EditOrderFrom from "./views/EditOrderFrom";
 import UserProfile from "./views/UserProfile";
 import ResetPassword from "./views/ResetPassword";
 import FabricsSettings from "./components/Settings/ProductSettings/FabricsSettings";
+import Customers from "./views/Customers";
 
 const router = createBrowserRouter([
   {
@@ -106,6 +107,10 @@ const router = createBrowserRouter([
       {
         path: '/resetPassword',
         element: <ResetPassword />
+      },
+      {
+        path: '/customers',
+        element: <Customers />
       }
     ]
   },

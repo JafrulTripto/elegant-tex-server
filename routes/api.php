@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\BangladeshGeocodeController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\ReleaseController;
+use App\Http\Controllers\Api\CustomerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
@@ -214,6 +215,20 @@ Route::post('/releases', [ReleaseController::class, 'store']);
 // Called by the frontend when the user dismisses the What's New modal
 Route::post('/releases/acknowledge', [ReleaseController::class, 'acknowledge']);
 
+Route::group([
+    'middleware' => ['api', 'permission:VIEW_CUSTOMERS'],
+    'prefix' => 'customers',
+], function () {
+    Route::get('/index', [CustomerController::class, 'index']);
+    Route::get('/export', [CustomerController::class, 'export']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'customers',
+], function () {
+    Route::get('/searchByPhone', [CustomerController::class, 'searchByPhone']);
+});
 Route::get('/getDivisions', [BangladeshGeocodeController::class, 'getDivision']);
 Route::get('/getDistrictsByDivision', [BangladeshGeocodeController::class, 'getDistrictByDivision']);
 Route::get('/getUpazilasByDistrict', [BangladeshGeocodeController::class, 'getUpazilasByDistrict']);

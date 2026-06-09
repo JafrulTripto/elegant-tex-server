@@ -1,10 +1,20 @@
 {
-  "title": "",
+  "title": "Customer Management",
   "features": [
     {
-      "icon": "",
-      "title": "",
-      "description": ""
+      "icon": "🔍",
+      "title": "Phone search on order form",
+      "description": "Type a phone number while creating an order — matching customers appear instantly and auto-fill all fields."
+    },
+    {
+      "icon": "👥",
+      "title": "Customer list",
+      "description": "Users with the VIEW_CUSTOMERS permission can now browse and search all customers from the sidebar."
+    },
+    {
+      "icon": "📊",
+      "title": "Export customers to Excel",
+      "description": "Authorised users can download the full customer list as a multi-sheet Excel file, organised by year."
     }
   ]
 }

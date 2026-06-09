@@ -22,6 +22,7 @@ import {
   UserOutlined,
   SettingOutlined,
   ShopOutlined,
+  SolutionOutlined,
   LogoutOutlined,
   BulbOutlined,
   BulbFilled,
@@ -141,6 +142,12 @@ const DefaultLayout = () => {
       icon: <ContainerOutlined />,
       label: "Orders",
       permission: "VIEW_ORDERS",
+    },
+    {
+      key: "customers",
+      icon: <SolutionOutlined />,
+      label: "Customers",
+      permission: "VIEW_CUSTOMERS",
     },
     {
       key: "users",
