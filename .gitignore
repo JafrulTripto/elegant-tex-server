@@ -19,3 +19,6 @@ yarn-error.log
 /.db-dumps
 .DS_Store
 frontend/.env.production
+
+# SSL certificates — managed by Certbot, never commit
+certbot/
