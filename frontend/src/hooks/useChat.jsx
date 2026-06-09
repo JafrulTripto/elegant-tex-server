@@ -12,7 +12,7 @@ const useChat = () => {
   useEffect(() => {
     let cancelled = false;
     axiosClient
-      .get("/chat/history")
+      .get("chat/history")
       .then((res) => {
         if (!cancelled) {
           setMessages(
@@ -50,7 +50,7 @@ const useChat = () => {
       setError(null);
 
       try {
-        const res = await axiosClient.post("/chat/send", { message: text, history });
+        const res = await axiosClient.post("chat/send", { message: text, history });
         setMessages((prev) => [
           ...prev,
           {
