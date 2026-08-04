@@ -36,6 +36,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'VIEW_MERCHANTS' => 'Permission to access merchant settings. It includes also creating and deleting merchants.',
             'VIEW_ORDERS' => 'Permission to access the orders module.',
             'DELETE_ORDER' => 'Permission to delete an order.',
+            'EDIT_ORDER' => 'Permission to edit an existing order.',
             'CHANGE_STATUS' => 'With this permission an user can change an order status to any of the status form the list.',
             'CANCEL_ORDER' => 'Permission to cancel an order.',
             'VIEW_SETTINGS' => 'Permission to access settings module',
