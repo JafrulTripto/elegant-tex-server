@@ -20,6 +20,11 @@ class Product extends Model
         return $this->belongsTo(Fabrics::class,'fabrics_id');
     }
 
+    public function fabricType(): BelongsTo
+    {
+        return $this->belongsTo(FabricType::class, 'fabric_type_id');
+    }
+
     protected function typeId(): Attribute
     {
         return Attribute::make(
@@ -28,6 +33,19 @@ class Product extends Model
                 return [
                     'value' => $value,
                     'name' => $productType->name,
+                ];
+            },
+        );
+    }
+
+    protected function fabricTypeId(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value) {
+                $fabricType = FabricType::find($value);
+                return [
+                    'value' => $value,
+                    'name' => $fabricType?->name,
                 ];
             },
         );

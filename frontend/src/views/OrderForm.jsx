@@ -13,6 +13,7 @@ import { OrderTypeEnum } from "../utils/enums/OrderTypeEnum";
 import { useMarketplaces } from "../hooks/useMarketplaces";
 import { useMerchants } from "../hooks/useMerchants";
 import { useProductTypes } from "../hooks/useProductTypes";
+import { useFabricTypes } from "../hooks/useFabricTypes";
 import { useDivisions } from "../hooks/useDivisions";
 import { useDistricts } from "../hooks/useDistricts";
 import { useUpazilas } from "../hooks/useUpazilas";
@@ -31,6 +32,7 @@ const OrderForm = () => {
   const { merchants } = useMerchants();
 
   const { productTypes } = useProductTypes();
+  const { fabricTypes } = useFabricTypes();
   const { fabrics, loadMore, hasMore, fabricsLoading, fetchFabrics } = useFabrics();
 
 
@@ -127,6 +129,7 @@ const OrderForm = () => {
         <Divider>Product Info</Divider>
         <OrderProductForm
           productTypes={productTypes}
+          fabricTypes={fabricTypes}
           fabrics={fabrics}
           loadMore={loadMore}
           hasMore={hasMore}

@@ -65,6 +65,7 @@ const OrderProductForm = (props) => {
                 <Form.List name="products" initialValue={[{
                     productType: null,
                     fabrics: null,
+                    fabricType: null,
                     productDescription: null
                 }]}>
                     {(fields, { add, remove }) => (
@@ -93,11 +94,11 @@ const OrderProductForm = (props) => {
                                     <Col xs={24} md={12} lg={8}>
                                         <Form.Item
                                             name={[name, 'fabrics']}
-                                            label="Fabric"
+                                            label="Fabric Color"
                                             rules={[
                                                 {
                                                     required: true,
-                                                    message: 'Please select fabric!',
+                                                    message: 'Please select fabric color!',
                                                 },
 
                                             ]}>
@@ -131,7 +132,25 @@ const OrderProductForm = (props) => {
                                             </Select>
                                         </Form.Item>
                                     </Col>
-                                    <Col xs={24} md={12} lg={4}>
+                                    <Col xs={24} md={12} lg={8}>
+                                        <Form.Item
+                                            name={[name, 'fabricType']}
+                                            label="Fabric Type"
+                                            rules={[
+                                                {
+                                                    required: true,
+                                                    message: 'Please select fabric type!',
+                                                },
+
+                                            ]}>
+                                            <Select size="large">
+                                                {props.fabricTypes.map(data => {
+                                                    return <Option value={data.id} key={data.id}>{data.name}</Option>
+                                                })}
+                                            </Select>
+                                        </Form.Item>
+                                    </Col>
+                                    <Col xs={24} md={12} lg={6}>
                                         <Form.Item
                                             name={[name, "quantity"]}
                                             label="Quantity"
@@ -149,7 +168,7 @@ const OrderProductForm = (props) => {
                                             />
                                         </Form.Item>
                                     </Col>
-                                    <Col xs={24} md={12} lg={4}>
+                                    <Col xs={24} md={12} lg={6}>
                                         <Form.Item
                                             name={[name, "price"]}
                                             label="Price"

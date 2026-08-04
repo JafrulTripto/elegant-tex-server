@@ -68,6 +68,7 @@ const Order = () => {
                                     <h3 className="font-semibold text-lg mb-1">{item.productType?.name}</h3>
                                     <div className="flex items-center gap-2 mb-1">
                                         <Tag color="blue">{item.fabrics?.name}</Tag>
+                                        {item.fabricType?.name && <Tag color="purple">{item.fabricType.name}</Tag>}
                                     </div>
                                     <p className="text-gray-500 text-sm">{item.description || 'No description provided.'}</p>
                                 </div>

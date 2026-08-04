@@ -33,6 +33,7 @@ class StoreOrderRequest extends FormRequest
             'deliveryDate' => ['required', 'date'],
             'products' => ['required', 'array'],
             'products.*.fabrics' => ['required', 'integer'],
+            'products.*.fabricType' => ['required', 'integer', 'exists:fabric_types,id'],
             'products.*.productType' => ['required', 'integer'],
             'products.*.quantity' => ['required', 'integer'],
             'products.*.productDescription' => ['required', 'string'],

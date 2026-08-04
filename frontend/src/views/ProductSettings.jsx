@@ -2,15 +2,17 @@ import React from 'react';
 import { Tabs, Typography } from "antd";
 import ProductSettingsItem from "../components/Settings/ProductSettings/ProductSettingsItem.jsx";
 import { useProductTypes } from "../hooks/useProductTypes.jsx";
+import { useFabricTypes } from "../hooks/useFabricTypes.jsx";
 import { useDeliveryChannels } from "../hooks/useDeliveryChannels.jsx";
 import FabricsSettings from "../components/Settings/ProductSettings/FabricsSettings";
-import { AppstoreOutlined, BuildOutlined, RocketOutlined } from "@ant-design/icons";
+import { AppstoreOutlined, BgColorsOutlined, BuildOutlined, RocketOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
 const ProductSettings = () => {
 
     const { productTypes, productTypesLoading, fetchProductTypes } = useProductTypes();
+    const { fabricTypes, fabricTypesLoading, fetchFabricTypes } = useFabricTypes();
     const { deliveryChannels, deliveryChannelsLoading, fetchDeliveryChannels } = useDeliveryChannels();
 
     const items = [
@@ -19,13 +21,30 @@ const ProductSettings = () => {
             label: (
                 <span className="flex items-center gap-2 px-2">
                     <AppstoreOutlined />
-                    Fabric Library
+                    Fabric Colors
                 </span>
             ),
             children: <FabricsSettings />,
         },
         {
             key: '2',
+            label: (
+                <span className="flex items-center gap-2 px-2">
+                    <BgColorsOutlined />
+                    Fabric Types
+                </span>
+            ),
+            children: (
+                <ProductSettingsItem
+                    settingsType={{ title: "Fabric Types", key: "fabricTypes", description: "Define fabric materials (cotton, silk, ...)" }}
+                    data={fabricTypes}
+                    loading={fabricTypesLoading}
+                    fetch={fetchFabricTypes}
+                />
+            ),
+        },
+        {
+            key: '3',
             label: (
                 <span className="flex items-center gap-2 px-2">
                     <BuildOutlined />
@@ -42,7 +61,7 @@ const ProductSettings = () => {
             ),
         },
         {
-            key: '3',
+            key: '4',
             label: (
                 <span className="flex items-center gap-2 px-2">
                     <RocketOutlined />

@@ -14,6 +14,7 @@ import { useMarketplaces } from "../hooks/useMarketplaces";
 import { OrderTypeEnum } from "../utils/enums/OrderTypeEnum";
 import * as dayjs from 'dayjs'
 import { useProductTypes } from "../hooks/useProductTypes";
+import { useFabricTypes } from "../hooks/useFabricTypes";
 import { useDistricts } from "../hooks/useDistricts";
 import { useUpazilas } from "../hooks/useUpazilas";
 import { useDivisions } from "../hooks/useDivisions";
@@ -45,6 +46,7 @@ const EditOrderFrom = () => {
 
 
   const { productTypes } = useProductTypes();
+  const { fabricTypes } = useFabricTypes();
   const { fabrics, loadMore, hasMore, fabricsLoading, fetchFabrics, setFabrics } = useFabrics();
 
 
@@ -92,7 +94,8 @@ const EditOrderFrom = () => {
             quantity: product.unit,
             price: product.price,
             productType: product.productType.value,
-            fabrics: product.fabrics.value
+            fabrics: product.fabrics.value,
+            fabricType: product.fabricType.value
           }
         }),
 
@@ -110,7 +113,8 @@ const EditOrderFrom = () => {
           quantity: product.unit,
           price: product.price,
           productType: product.productType.value,
-          fabrics: product.fabrics.value
+          fabrics: product.fabrics.value,
+          fabricType: product.fabricType.value
         }
       }),
 
@@ -270,6 +274,7 @@ const EditOrderFrom = () => {
         <Divider>Product Info</Divider>
         <OrderProductForm
           productTypes={productTypes}
+          fabricTypes={fabricTypes}
           fabrics={fabrics}
           loadMore={loadMore}
           hasMore={hasMore}

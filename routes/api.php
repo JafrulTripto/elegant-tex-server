@@ -8,8 +8,7 @@ use App\Http\Controllers\Api\FabricsController;
 use App\Http\Controllers\Api\MerchantController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PermissionController;
-use App\Http\Controllers\Api\ProductColorController;
-use App\Http\Controllers\Api\ProductFabricController;
+use App\Http\Controllers\Api\FabricTypeController;
 use App\Http\Controllers\Api\ProductTypeController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\StatusController;
@@ -168,25 +167,19 @@ Route::group([
     Route::delete('/delete/{id}', [PermissionController::class, 'destroy']);
 });
 
-Route::prefix('settings/colors')->group(function () {
-    Route::get('/index', [ProductColorController::class, 'index']);
-    Route::post('/store', [ProductColorController::class, 'store']);
-    Route::put('/update/{id}', [ProductColorController::class, 'update']);
-    Route::delete('/delete/{id}', [ProductColorController::class, 'destroy']);
-});
-
 Route::prefix('settings/fabrics')->group(function () {
     Route::post('/store', [FabricsController::class, 'store']);
     Route::get('/index', [FabricsController::class, 'index']);
     Route::delete('/delete/{id}', [FabricsController::class, 'destroy']);
 });
 
-//Route::prefix('settings/fabrics')->group(function () {
-//    Route::get('/index', [ProductFabricController::class, 'index']);
-//    Route::post('/store', [ProductFabricController::class, 'store']);
-//    Route::put('/update/{id}', [ProductFabricController::class, 'update']);
-//    Route::delete('/delete/{id}', [ProductFabricController::class, 'destroy']);
-//});
+Route::prefix('settings/fabricTypes')->group(function () {
+    Route::get('/index', [FabricTypeController::class, 'index']);
+    Route::post('/store', [FabricTypeController::class, 'store']);
+    Route::put('/update/{id}', [FabricTypeController::class, 'update']);
+    Route::delete('/delete/{id}', [FabricTypeController::class, 'destroy']);
+});
+
 Route::prefix('settings/productTypes')->group(function () {
     Route::get('/index', [ProductTypeController::class, 'index']);
     Route::post('/store', [ProductTypeController::class, 'store']);

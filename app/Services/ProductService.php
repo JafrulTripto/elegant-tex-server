@@ -13,6 +13,7 @@ class ProductService
         $product->count = $productData['quantity'];
         $product->price = $productData['price'];
         $product->fabrics_id = $productData['fabrics'];
+        $product->fabric_type_id = $productData['fabricType'];
         $product->type_id = $productData['productType'];
 
 
