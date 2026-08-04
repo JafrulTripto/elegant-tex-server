@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Button, Drawer, Form, Input, InputNumber, Modal, Space, Table, Tag, Typography } from "antd";
+import { Button, Drawer, Form, Input, InputNumber, Modal, Space, Switch, Table, Tag, Typography } from "antd";
 import { DatabaseOutlined, HistoryOutlined, PlusOutlined, SlidersOutlined } from "@ant-design/icons";
 import useAxiosClient from "../axios-client";
 import { toast } from "react-toastify";
@@ -15,6 +15,7 @@ const ReadyStock = () => {
   const [kinds, setKinds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
+  const [inStockOnly, setInStockOnly] = useState(true);
 
   // Add / adjust modal
   const [entryOpen, setEntryOpen] = useState(false);
@@ -27,10 +28,10 @@ const ReadyStock = () => {
   const [historyKind, setHistoryKind] = useState(null);
   const [movements, setMovements] = useState([]);
 
-  const fetchStock = useCallback(async (searchTerm = '') => {
+  const fetchStock = useCallback(async (searchTerm = '', inStock = true) => {
     setLoading(true);
     try {
-      const response = await axiosClient.get(`/stock/index`, { params: { search: searchTerm } });
+      const response = await axiosClient.get(`/stock/index`, { params: { search: searchTerm, inStockOnly: inStock } });
       setKinds(response.data.data || []);
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
@@ -39,7 +40,9 @@ const ReadyStock = () => {
     }
   }, [axiosClient]);
 
-  useEffect(() => { fetchStock(); }, [fetchStock]);
+  // Refetch on mount and whenever the in-stock-only toggle changes (keeps current search).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchStock(search, inStockOnly); }, [fetchStock, inStockOnly]);
 
   const openEntry = (kind, type) => {
     setEntryKind(kind);
@@ -60,7 +63,7 @@ const ReadyStock = () => {
       });
       toast.success('Stock updated');
       setEntryOpen(false);
-      fetchStock(search);
+      fetchStock(search, inStockOnly);
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
     } finally {
@@ -109,14 +112,27 @@ const ReadyStock = () => {
         <Text type="secondary">Finished units on hand, per product kind. Company-wide across teams.</Text>
       </div>
 
-      <Input.Search
-        placeholder="Search by product type, fabric type, or color"
-        allowClear
-        style={{ maxWidth: 420, marginBottom: 16 }}
-        onSearch={(v) => { setSearch(v); fetchStock(v); }}
-      />
+      <div className="flex flex-wrap items-center gap-4 mb-4">
+        <Input.Search
+          placeholder="Search by product type, fabric type, or color"
+          allowClear
+          style={{ maxWidth: 420 }}
+          onSearch={(v) => { setSearch(v); fetchStock(v, inStockOnly); }}
+        />
+        <Space>
+          <Switch checked={inStockOnly} onChange={setInStockOnly} />
+          <Text>In stock only</Text>
+        </Space>
+      </div>
 
-      <Table rowKey="id" columns={columns} dataSource={kinds} loading={loading} pagination={{ pageSize: 15 }} />
+      <Table
+        rowKey="id"
+        columns={columns}
+        dataSource={kinds}
+        loading={loading}
+        pagination={{ pageSize: 15 }}
+        locale={{ emptyText: inStockOnly ? 'No stock on hand yet — turn off "In stock only" to add stock to a product kind.' : 'No product kinds found.' }}
+      />
 
       <Modal
         title={`${entryType === 'ADJUSTMENT' ? 'Adjust' : 'Add'} stock`}
