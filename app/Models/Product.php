@@ -25,6 +25,11 @@ class Product extends Model
         return $this->belongsTo(FabricType::class, 'fabric_type_id');
     }
 
+    public function productKind(): BelongsTo
+    {
+        return $this->belongsTo(ProductKind::class);
+    }
+
     protected function typeId(): Attribute
     {
         return Attribute::make(

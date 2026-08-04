@@ -118,7 +118,7 @@ class OrderService
     public function getOrder($orderID)
     {
         try {
-            $order = Order::with(['customer.address', 'image', 'product', 'orderStatusChanges' => function ($query) {
+            $order = Order::with(['customer.address', 'image', 'product.productKind', 'orderStatusChanges' => function ($query) {
                 $query->with('user');
             }]) ->findOrFail($orderID);
 

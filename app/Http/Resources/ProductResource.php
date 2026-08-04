@@ -21,7 +21,11 @@ class ProductResource extends JsonResource
             'productType' => $this->type_id,
             'description' => $this->description,
             'unit' => $this->count,
-            'price' => $this->price
+            'price' => $this->price,
+            'isReturned' => (bool) $this->is_returned,
+            'returnCondition' => $this->return_condition,
+            'fulfilledFromStock' => (bool) $this->fulfilled_from_stock,
+            'availableInStock' => optional($this->productKind)->on_hand ?? 0,
         ];
     }
 }

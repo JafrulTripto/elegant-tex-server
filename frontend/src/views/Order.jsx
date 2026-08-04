@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Card, Skeleton, Image, Col, Row, Empty, Steps, Tag, Divider, Typography } from 'antd';
+import { Button, Card, Skeleton, Image, Col, Row, Empty, Modal, Select, Steps, Tag, Divider, Typography } from 'antd';
 import { ClockCircleOutlined, ShopOutlined, UserOutlined, CreditCardOutlined, InboxOutlined } from '@ant-design/icons';
 import useAxiosClient from "../axios-client.js";
+import { useStateContext } from "../contexts/ContextProvider";
 
 import PaymentSummary from "../components/Order/PaymentSummary";
 import CustomerInfo from "../components/Order/CustomerInfo";
@@ -18,8 +19,15 @@ const { Title, Text } = Typography;
 const Order = () => {
 
     const axiosClient = useAxiosClient();
+    const { permissions } = useStateContext();
+    const canPull = permissions?.includes('PULL_FROM_STOCK');
+    const canReturn = permissions?.includes('RETURN_ORDER');
+    const ELIGIBLE_STATUSES = [1, 2, 9]; // DRAFT, APPROVED, BOOKING
+
     const [loading, setLoading] = useState(false);
     const [order, setOrder] = useState({});
+    const [returnOpen, setReturnOpen] = useState(false);
+    const [returnSelections, setReturnSelections] = useState({});
     const navigate = useNavigate()
 
     const { id } = useParams()
@@ -44,6 +52,32 @@ const Order = () => {
         fetchOrders();
     }, [fetchOrders])
 
+    const handlePull = async (item) => {
+        try {
+            const response = await axiosClient.post(`/orders/pullFromStock/${order.id}/${item.id}`);
+            toast.success(response.data.message);
+            fetchOrders();
+        } catch (error) {
+            toast.error(error.response?.data?.message || error.message);
+        }
+    }
+
+    const submitReturns = async () => {
+        const lines = Object.entries(returnSelections)
+            .filter(([, condition]) => condition)
+            .map(([productId, condition]) => ({ productId: Number(productId), condition }));
+        if (lines.length === 0) { setReturnOpen(false); return; }
+        try {
+            const response = await axiosClient.post(`/orders/markReturned/${order.id}`, { lines });
+            toast.success(response.data.message);
+            setReturnOpen(false);
+            setReturnSelections({});
+            fetchOrders();
+        } catch (error) {
+            toast.error(error.response?.data?.message || error.message);
+        }
+    }
+
     // --- Render Helpers ---
 
     const renderProductList = () => {
@@ -51,6 +85,11 @@ const Order = () => {
 
         return (
             <div className="flex flex-col gap-4">
+                {canReturn && order.status === 6 && (
+                    <div className="flex justify-end">
+                        <Button danger onClick={() => setReturnOpen(true)}>Mark returned</Button>
+                    </div>
+                )}
                 {order.products.map((item) => (
                     <div key={item.id} className="flex p-4 rounded-xl border border-gray-200 dark:border-gray-700 items-start gap-4 hover:shadow-md transition-shadow duration-200">
                         <div className="flex-shrink-0">
@@ -71,6 +110,24 @@ const Order = () => {
                                         {item.fabricType?.name && <Tag color="purple">{item.fabricType.name}</Tag>}
                                     </div>
                                     <p className="text-gray-500 text-sm">{item.description || 'No description provided.'}</p>
+                                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                        {item.fulfilledFromStock && <Tag color="green">Fulfilled from stock</Tag>}
+                                        {item.isReturned && (
+                                            <Tag color={item.returnCondition === 'SELLABLE' ? 'gold' : 'red'}>
+                                                Returned ({item.returnCondition})
+                                            </Tag>
+                                        )}
+                                        {!item.fulfilledFromStock && ELIGIBLE_STATUSES.includes(order.status) && item.availableInStock > 0 && (
+                                            <>
+                                                <Tag color="green">{item.availableInStock} in ready stock</Tag>
+                                                {canPull && (
+                                                    <Button size="small" type="link" className="!px-0" onClick={() => handlePull(item)}>
+                                                        Pull from stock
+                                                    </Button>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="text-right">
                                     <div className="font-bold text-lg">
@@ -222,6 +279,35 @@ const Order = () => {
                     </div>
                 </Col>
             </Row>
+
+            <Modal
+                title="Mark lines as returned"
+                open={returnOpen}
+                onOk={submitReturns}
+                onCancel={() => setReturnOpen(false)}
+                okText="Record return"
+                okButtonProps={{ danger: true }}
+            >
+                <Text type="secondary">Choose which lines came back and their condition. Sellable lines are added to ready stock.</Text>
+                <div className="flex flex-col gap-3 mt-3">
+                    {(order.products || []).filter(p => !p.isReturned).map(p => (
+                        <div key={p.id} className="flex items-center justify-between gap-3">
+                            <span className="text-sm">{p.productType?.name} · {p.fabrics?.name} · Qty {p.unit}</span>
+                            <Select
+                                allowClear
+                                style={{ width: 150 }}
+                                placeholder="Not returned"
+                                value={returnSelections[p.id]}
+                                onChange={(val) => setReturnSelections(prev => ({ ...prev, [p.id]: val }))}
+                                options={[
+                                    { value: 'SELLABLE', label: 'Sellable' },
+                                    { value: 'DAMAGED', label: 'Damaged' },
+                                ]}
+                            />
+                        </div>
+                    ))}
+                </div>
+            </Modal>
         </div>
     );
 }

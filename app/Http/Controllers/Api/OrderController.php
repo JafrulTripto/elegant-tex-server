@@ -13,9 +13,12 @@ use App\Http\Resources\OrdersResource;
 use App\Models\Marketplace;
 use App\Models\Merchant;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\Status;
 use App\Models\User;
 use App\Services\OrderService;
+use App\Services\StockService;
+use Illuminate\Validation\Rule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
@@ -112,6 +115,36 @@ class OrderController extends Controller
     }
 
     return OrdersResource::collection($orders);
+  }
+
+  /** Mark order lines as returned, with condition; sellable lines feed Ready Stock. */
+  public function markReturned(Request $request, StockService $stockService, $orderId): JsonResponse
+  {
+    $request->validate([
+      'lines' => ['required', 'array', 'min:1'],
+      'lines.*.productId' => ['required', 'integer'],
+      'lines.*.condition' => ['required', Rule::in(['SELLABLE', 'DAMAGED'])],
+    ]);
+
+    $order = Order::findOrFail($orderId);
+    try {
+      $stockService->recordReturn($order, $request->input('lines'), optional(auth()->user())->id);
+    } catch (\Throwable $e) {
+      return response()->json(['message' => $e->getMessage()], 400);
+    }
+    return response()->json(['message' => 'Return recorded.']);
+  }
+
+  /** Fulfil one order line from Ready Stock. */
+  public function pullFromStock(StockService $stockService, $orderId, $productId): JsonResponse
+  {
+    $line = Product::where('id', $productId)->where('order_id', $orderId)->firstOrFail();
+    try {
+      $stockService->pull($line, optional(auth()->user())->id);
+    } catch (\Throwable $e) {
+      return response()->json(['message' => $e->getMessage()], 400);
+    }
+    return response()->json(['message' => 'Fulfilled from ready stock.']);
   }
 
   /** Admin reassignment of an order to a different team (ADR 0001). */

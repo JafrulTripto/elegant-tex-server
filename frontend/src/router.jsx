@@ -12,6 +12,7 @@ import UserForm from "./views/UserForm.jsx";
 import PermissionSettings from "./views/PermissionSettings.jsx";
 import ProductSettings from "./views/ProductSettings.jsx";
 import TeamSettings from "./views/TeamSettings.jsx";
+import ReadyStock from "./views/ReadyStock.jsx";
 import MarketplaceSettings from "./views/MarketplaceSettings.jsx";
 import Order from "./views/Order.jsx";
 import Merchants from "./views/Merchants";
@@ -116,6 +117,10 @@ const router = createBrowserRouter([
       {
         path: '/customers',
         element: <Customers />
+      },
+      {
+        path: '/stock',
+        element: <ReadyStock />
       }
     ]
   },

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Product;
+use App\Models\ProductKind;
 
 class ProductService
 {
@@ -16,13 +17,13 @@ class ProductService
         $product->fabric_type_id = $productData['fabricType'];
         $product->type_id = $productData['productType'];
 
+        // Resolve the Product Kind (the identity used for stock matching).
+        $product->product_kind_id = ProductKind::resolve(
+            (int) $productData['productType'],
+            (int) $productData['fabricType'],
+            (int) $productData['fabrics'],
+        )->id;
 
-//        $productType = ProductType::findOrFail($productData['productType']);
-//        $productColor = ProductColor::findOrFail($productData['productColor']);
-//        $productFabric = ProductFabric::findOrFail($productData['productFabric']);
-//        $product->productType()->associate($productType);
-//        $product->productColor()->associate($productColor);
-//        $product->productFabric()->associate($productFabric);
         $model->product()->save($product);
     }
 }

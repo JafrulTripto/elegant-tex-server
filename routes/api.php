@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\FabricTypeController;
 use App\Http\Controllers\Api\ProductTypeController;
 use App\Http\Controllers\Api\TeamController;
+use App\Http\Controllers\Api\StockController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\StatusController;
 use App\Http\Controllers\Api\StorageController;
@@ -91,6 +92,8 @@ Route::group([
     Route::post('/updateOrderStatus', [OrderController::class, 'updateOrderStatus']);
     Route::put('/update/{orderId}',  [OrderController::class, 'update']);
     Route::put('/updateTeam/{orderId}', [OrderController::class, 'updateTeam'])->middleware('permission:VIEW_ALL_ORDERS');
+    Route::post('/markReturned/{orderId}', [OrderController::class, 'markReturned'])->middleware('permission:RETURN_ORDER');
+    Route::post('/pullFromStock/{orderId}/{productId}', [OrderController::class, 'pullFromStock'])->middleware('permission:PULL_FROM_STOCK');
 });
 
 Route::group([
@@ -190,6 +193,12 @@ Route::prefix('settings/productTypes')->group(function () {
 });
 // Lightweight, ungated team list for populating selects (e.g. the user form).
 Route::get('settings/teams/options', [TeamController::class, 'options']);
+
+Route::prefix('stock')->group(function () {
+    Route::get('/index', [StockController::class, 'index'])->middleware('permission:VIEW_STOCK');
+    Route::get('/movements/{productKindId}', [StockController::class, 'movements'])->middleware('permission:VIEW_STOCK');
+    Route::post('/movements', [StockController::class, 'storeMovement'])->middleware('permission:MANAGE_STOCK');
+});
 
 Route::prefix('settings/teams')->middleware('permission:TEAM_SETTINGS')->group(function () {
     Route::get('/index', [TeamController::class, 'index']);

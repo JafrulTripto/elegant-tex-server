@@ -18,6 +18,7 @@ import {
   MenuUnfoldOutlined,
   AppstoreOutlined,
   ContainerOutlined,
+  DatabaseOutlined,
   TeamOutlined,
   UserOutlined,
   SettingOutlined,
@@ -148,6 +149,12 @@ const DefaultLayout = () => {
       icon: <SolutionOutlined />,
       label: "Customers",
       permission: "VIEW_CUSTOMERS",
+    },
+    {
+      key: "stock",
+      icon: <DatabaseOutlined />,
+      label: "Ready Stock",
+      permission: "VIEW_STOCK",
     },
     {
       key: "users",

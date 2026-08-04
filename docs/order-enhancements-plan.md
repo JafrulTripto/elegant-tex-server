@@ -31,10 +31,17 @@ Branch `feature/order-enhancements`:
   `marketplace_user` visibility rule); `TeamController` (CRUD + member assignment +
   ungated `options`) and admin order-team reassign; frontend Team Settings page, user-form
   Team select, settings card + route.
-- ⬜ **Phase 3 (Ready Stock)** — pending.
+- ✅ **Phase 3 (Ready Stock)** — `product_kinds` (+ `products.product_kind_id`, backfilled),
+  per-line return fields + `fulfilled_from_stock`, `stock_movements` ledger, and stock
+  permissions. `StockService` (return-in, manual in/adjust, pull with row-lock + auto-advance
+  to READY when fully stocked), `StockController`, and order returns/pull endpoints.
+  Frontend: Ready Stock page (levels, add/adjust, history), order-detail stock badge +
+  pull-from-stock + mark-returned. Product lines resolve to a Kind on save; order detail
+  exposes `availableInStock`/`fulfilledFromStock`.
 
-Migrations to run in the Docker/MySQL env: `php artisan migrate` (the four `2026_08_04_*`
-plus four `2026_08_05_*` team migrations; the fabric rename uses doctrine/dbal, installed).
+Migrations to run in the Docker/MySQL env: `php artisan migrate` — four `2026_08_04_*`
+(fabric), four `2026_08_05_000001-4` (teams), five `2026_08_05_000005-9` (stock). The
+fabric rename uses doctrine/dbal (installed).
 
 ## Data-model changes at a glance
 

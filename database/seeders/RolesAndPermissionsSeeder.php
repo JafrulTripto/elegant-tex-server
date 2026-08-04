@@ -50,6 +50,10 @@ class RolesAndPermissionsSeeder extends Seeder
     Permission::create(['guard_name' => 'api', 'name' => 'ORDER_RETURNED', 'description'=> 'Permission to Set the order status to RETURNED.']);
     Permission::create(['guard_name' => 'api', 'name' => 'ORDER_CANCELLED', 'description'=> 'Permission to Set the order status to CANCELLED.']);
     Permission::create(['guard_name' => 'api', 'name' => 'TEAM_SETTINGS', 'description'=> 'Permission to manage teams and their members.']);
+    Permission::create(['guard_name' => 'api', 'name' => 'VIEW_STOCK', 'description'=> 'Permission to view Ready Stock levels and history.']);
+    Permission::create(['guard_name' => 'api', 'name' => 'MANAGE_STOCK', 'description'=> 'Permission to add or adjust Ready Stock manually.']);
+    Permission::create(['guard_name' => 'api', 'name' => 'RETURN_ORDER', 'description'=> 'Permission to mark order lines as returned.']);
+    Permission::create(['guard_name' => 'api', 'name' => 'PULL_FROM_STOCK', 'description'=> 'Permission to fulfil an order line from Ready Stock.']);
 
 
     // create roles and assign created permissions
