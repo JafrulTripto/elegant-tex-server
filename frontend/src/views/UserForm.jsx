@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import useAxiosClient from "../axios-client.js";
 import { InboxOutlined } from "@ant-design/icons";
 import { colors } from "../utils/Colors.js";
+import { useTeams } from "../hooks/useTeams.jsx";
 
 const UserForm = () => {
 
@@ -12,6 +13,7 @@ const UserForm = () => {
   const { Dragger } = Upload;
   const { Option } = Select;
   const { state } = useLocation();
+  const { teams } = useTeams();
 
   const [divisions, setDivisions] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -46,6 +48,7 @@ const UserForm = () => {
         lastName: user.lastname,
         email: user.email,
         nid: user.nid,
+        teamId: user.team_id,
         // Address might be null
         address: user.address?.address,
         phone: user.address?.phone,
@@ -327,6 +330,24 @@ const UserForm = () => {
                   ]}
                 >
                   <Input placeholder="NID Number" />
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12} lg={isEdit ? 12 : 8}>
+                <Form.Item
+                  name="teamId"
+                  label="Team"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Please select a team!',
+                    },
+                  ]}
+                >
+                  <Select placeholder="Select team">
+                    {teams.map(team => (
+                      <Option value={team.id} key={team.id}>{team.name}</Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </Col>
               <Col xs={24} md={12} lg={isEdit ? 12 : 8}>

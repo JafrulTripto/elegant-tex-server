@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\FabricTypeController;
 use App\Http\Controllers\Api\ProductTypeController;
+use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\StatusController;
 use App\Http\Controllers\Api\StorageController;
@@ -89,6 +90,7 @@ Route::group([
     Route::delete('/delete/{id}', [OrderController::class, 'destroy']);
     Route::post('/updateOrderStatus', [OrderController::class, 'updateOrderStatus']);
     Route::put('/update/{orderId}',  [OrderController::class, 'update']);
+    Route::put('/updateTeam/{orderId}', [OrderController::class, 'updateTeam'])->middleware('permission:VIEW_ALL_ORDERS');
 });
 
 Route::group([
@@ -185,6 +187,18 @@ Route::prefix('settings/productTypes')->group(function () {
     Route::post('/store', [ProductTypeController::class, 'store']);
     Route::put('/update/{id}', [ProductTypeController::class, 'update']);
     Route::delete('/delete/{id}', [ProductTypeController::class, 'destroy']);
+});
+// Lightweight, ungated team list for populating selects (e.g. the user form).
+Route::get('settings/teams/options', [TeamController::class, 'options']);
+
+Route::prefix('settings/teams')->middleware('permission:TEAM_SETTINGS')->group(function () {
+    Route::get('/index', [TeamController::class, 'index']);
+    Route::post('/store', [TeamController::class, 'store']);
+    Route::put('/update/{id}', [TeamController::class, 'update']);
+    Route::delete('/delete/{id}', [TeamController::class, 'destroy']);
+    Route::get('/assignableUsers', [TeamController::class, 'assignableUsers']);
+    Route::get('/{id}/members', [TeamController::class, 'members']);
+    Route::post('/{id}/assignUsers', [TeamController::class, 'assignUsers']);
 });
 Route::prefix('settings/deliveryChannels')->group(function () {
     Route::get('/index', [DeliveryChannelController::class, 'index']);

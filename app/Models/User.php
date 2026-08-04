@@ -91,6 +91,10 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsToMany(Marketplace::class);
     }
+    public function team(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
     public function orderStatusChanges()
     {
         return $this->hasMany(OrderStatusChange::class);

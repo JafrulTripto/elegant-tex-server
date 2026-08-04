@@ -49,6 +49,7 @@ class RolesAndPermissionsSeeder extends Seeder
     Permission::create(['guard_name' => 'api', 'name' => 'ORDER_DELIVERED', 'description'=> 'Permission to Set the order status to DELIVERED.']);
     Permission::create(['guard_name' => 'api', 'name' => 'ORDER_RETURNED', 'description'=> 'Permission to Set the order status to RETURNED.']);
     Permission::create(['guard_name' => 'api', 'name' => 'ORDER_CANCELLED', 'description'=> 'Permission to Set the order status to CANCELLED.']);
+    Permission::create(['guard_name' => 'api', 'name' => 'TEAM_SETTINGS', 'description'=> 'Permission to manage teams and their members.']);
 
 
     // create roles and assign created permissions

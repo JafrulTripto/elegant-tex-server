@@ -25,10 +25,16 @@ Branch `feature/order-enhancements`:
   external contract (JSON key `fabrics`, `settings/fabrics` routes, `uploadFabricsImage`)
   was **kept stable**, so the frontend is untouched. Optional follow-up: rename the API
   field/routes to `fabricColor` too (needs a coordinated frontend change).
-- ⬜ **Phase 2 (Teams)**, **Phase 3 (Ready Stock)** — pending.
+- ✅ **Phase 2 (Teams)** — `teams` table (+ "Unassigned" seed), `team_id` on users &
+  orders (snapshot at creation, backfilled), `TEAM_SETTINGS` permission; order
+  visibility + `getStats` + user dashboards rewritten to scope by team (retiring the
+  `marketplace_user` visibility rule); `TeamController` (CRUD + member assignment +
+  ungated `options`) and admin order-team reassign; frontend Team Settings page, user-form
+  Team select, settings card + route.
+- ⬜ **Phase 3 (Ready Stock)** — pending.
 
-Migrations to run in the Docker/MySQL env: `php artisan migrate` (adds the four
-`2026_08_04_*` migrations; the rename uses doctrine/dbal, which is installed).
+Migrations to run in the Docker/MySQL env: `php artisan migrate` (the four `2026_08_04_*`
+plus four `2026_08_05_*` team migrations; the fabric rename uses doctrine/dbal, installed).
 
 ## Data-model changes at a glance
 

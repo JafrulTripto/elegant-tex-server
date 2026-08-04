@@ -4,22 +4,29 @@ namespace App\Services;
 
 use App\Models\Marketplace;
 use App\Models\Order;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 
 class UserDashboardService
 {
+  /** A member's dashboard is scoped to their whole team (ADR 0001). */
+  private function teamIdFor($userId): ?int
+  {
+    return User::whereKey(intval($userId))->value('team_id');
+  }
+
   public function getUserOrdersStats($userId): JsonResponse
   {
-    $userId = intval($userId);
+    $teamId = $this->teamIdFor($userId);
     $today = Carbon::now()->startOfDay();
     $startOfMonth = Carbon::now()->startOfMonth();
-    $todayOrders = Order::where('created_by', $userId)
+    $todayOrders = Order::where('team_id', $teamId)
       ->whereDate('created_at', $today)
       ->selectRaw('COUNT(*) as count, SUM(total_amount) as total_amount')
       ->first();
 
-    $monthlyOrders = Order::where('created_by', $userId)
+    $monthlyOrders = Order::where('team_id', $teamId)
       ->whereDate('created_at', '>=', $startOfMonth)
       ->selectRaw('COUNT(*) as count, SUM(total_amount) as total_amount')
       ->first();
@@ -38,12 +45,12 @@ class UserDashboardService
 
   public function getUserFulfillmentStats($userId): JsonResponse
   {
-    $userId = intval($userId);
+    $teamId = $this->teamIdFor($userId);
     $month  = Carbon::now()->month;
     $year   = Carbon::now()->year;
 
-    // Promised: active orders by this user with delivery_date in this month (not cancelled/returned)
-    $promised = Order::where('created_by', $userId)
+    // Promised: active team orders with delivery_date in this month (not cancelled/returned)
+    $promised = Order::where('team_id', $teamId)
       ->whereMonth('delivery_date', $month)
       ->whereYear('delivery_date', $year)
       ->whereNotIn('status', [
@@ -52,9 +59,9 @@ class UserDashboardService
       ])
       ->count();
 
-    // Delivered/Cancelled/Returned: status transitions this month on orders created by this user
-    $statusCounts = \App\Models\OrderStatusChange::whereHas('order', function ($q) use ($userId) {
-        $q->where('created_by', $userId);
+    // Delivered/Cancelled/Returned: status transitions this month on the team's orders
+    $statusCounts = \App\Models\OrderStatusChange::whereHas('order', function ($q) use ($teamId) {
+        $q->where('team_id', $teamId);
       })
       ->whereIn('status', [
         \App\Enums\OrderStatus::DELIVERED->value,

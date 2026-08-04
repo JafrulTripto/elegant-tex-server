@@ -11,6 +11,7 @@ import Users from "./views/Users.jsx";
 import UserForm from "./views/UserForm.jsx";
 import PermissionSettings from "./views/PermissionSettings.jsx";
 import ProductSettings from "./views/ProductSettings.jsx";
+import TeamSettings from "./views/TeamSettings.jsx";
 import MarketplaceSettings from "./views/MarketplaceSettings.jsx";
 import Order from "./views/Order.jsx";
 import Merchants from "./views/Merchants";
@@ -95,6 +96,10 @@ const router = createBrowserRouter([
       {
         path: '/settings/productSettings',
         element: <ProductSettings />
+      },
+      {
+        path: '/settings/teamSettings',
+        element: <TeamSettings />
       },
       {
         path: '/settings/marketplaceSettings',

@@ -30,6 +30,9 @@ class UserService
         $user->email = $userData['email'];
         $user->nid = $userData['nid'];
         $user->password = Hash::make($userData['password']);
+        if (!empty($userData['teamId'])) {
+            $user->team_id = $userData['teamId'];
+        }
         $user->save();
         $this->addressService->store($user, $userData);
         if (array_key_exists('image', $userData) && !empty($userData['image'])) {
@@ -47,9 +50,13 @@ class UserService
         if (isset($userData['password']) && !empty($userData['password'])) {
             $user->password = Hash::make($userData['password']);
         }
-        
+
+        if (!empty($userData['teamId'])) {
+            $user->team_id = $userData['teamId'];
+        }
+
         $user->save();
-        
+
         $this->addressService->update($user, $userData);
         
         if (array_key_exists('image', $userData) && !empty($userData['image'])) {

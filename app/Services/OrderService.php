@@ -12,6 +12,7 @@ use App\Models\Merchant;
 use App\Models\Order;
 use App\Models\OrderStatusChange;
 use App\Models\Status;
+use App\Models\User;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
@@ -46,6 +47,8 @@ class OrderService
         $order = new Order();
         $order->status = OrderStatus::DRAFT;
         $this->extracted($order, $orderData);
+        // Snapshot the team from the creating user at creation time (ADR 0001).
+        $order->team_id = User::whereKey($orderData['createdBy'])->value('team_id');
 
         if ($orderData['orderType'] == OrderType::MARKETPLACE->value) {
             $customer = $this->extractCustomerData($orderData);
