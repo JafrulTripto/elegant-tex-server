@@ -1,24 +1,24 @@
 import React from 'react';
 import { Avatar, Button, Col, Form, Input, InputNumber, Row, Select, Upload } from "antd";
 import { InboxOutlined, MinusOutlined, PlusOutlined } from "@ant-design/icons";
-import { colors } from "../../utils/Colors";
 import { toast } from "react-toastify";
+
+const fmtBDT = (n) => `৳${(Math.round(Number(n) || 0)).toLocaleString('en-US')}`;
 
 const OrderProductForm = (props) => {
 
     const { Option } = Select;
     const { Dragger } = Upload;
-    const { files, loadMore, hasMore, fabricsLoading } = props;
+    const { files, loadMore, hasMore, fabricsLoading, orderForm } = props;
 
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
 
+    // Live per-card subtotals.
+    const productsWatch = Form.useWatch('products', orderForm);
+
     const handlePopupScroll = (e) => {
         const { target } = e;
-        if (
-            !fabricsLoading &&
-            hasMore &&
-            target.scrollTop + target.offsetHeight >= target.scrollHeight - 10
-        ) {
+        if (!fabricsLoading && hasMore && target.scrollTop + target.offsetHeight >= target.scrollHeight - 10) {
             loadMore();
         }
     };
@@ -56,202 +56,125 @@ const OrderProductForm = (props) => {
         }
         return e?.fileList.filter(file => file.size <= MAX_FILE_SIZE);
     };
-    const filterOptionFunction = (input, option) => {
-        return (option?.title ?? '').toLowerCase().includes(input.toLowerCase())
-    };
+
     return (
-        <Row>
-            <Col xs={24} md={12} lg={16} className="pr-4">
-                <Form.List name="products" initialValue={[{
-                    productType: null,
-                    fabrics: null,
-                    fabricType: null,
-                    productDescription: null
-                }]}>
-                    {(fields, { add, remove }) => (
-                        <>
-                            {fields.map(({ key, name, ...restField }) => (
+        <>
+            <Form.List name="products" initialValue={[{
+                productType: null,
+                fabrics: null,
+                fabricType: null,
+                productDescription: null
+            }]}>
+                {(fields, { add, remove }) => (
+                    <div className="flex flex-col gap-3">
+                        {fields.map(({ key, name }) => {
+                            const p = productsWatch?.[name] || {};
+                            const subtotal = (Number(p.quantity) || 0) * (Number(p.price) || 0);
+                            return (
+                                <div key={key} className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col gap-2">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[12.5px] font-bold text-slate-500 dark:text-slate-400">Product {name + 1}</span>
+                                        <span className="text-[13px] font-bold text-slate-800 dark:text-white">Subtotal: {fmtBDT(subtotal)}</span>
+                                    </div>
+                                    <Row gutter={16}>
+                                        <Col xs={24} md={12} lg={8}>
+                                            <Form.Item name={[name, 'productType']} label="Product Type"
+                                                rules={[{ required: true, message: 'Please select product type!' }]}>
+                                                <Select>
+                                                    {props.productTypes.map(data => (
+                                                        <Option value={data.id} key={data.id}>{data.name}</Option>
+                                                    ))}
+                                                </Select>
+                                            </Form.Item>
+                                        </Col>
+                                        <Col xs={24} md={12} lg={8}>
+                                            <Form.Item name={[name, 'fabrics']} label="Fabric Color"
+                                                rules={[{ required: true, message: 'Please select fabric color!' }]}>
+                                                <Select
+                                                    showSearch
+                                                    defaultActiveFirstOption={false}
+                                                    filterOption={false}
+                                                    onSearch={(value) => {
+                                                        if (window.searchTimeout) clearTimeout(window.searchTimeout);
+                                                        window.searchTimeout = setTimeout(() => props.fetchFabrics(1, value), 800);
+                                                    }}
+                                                    onPopupScroll={handlePopupScroll}
+                                                >
+                                                    {props.fabrics.map(data => (
+                                                        <Option title={data.name} value={data.id} key={data.id}>
+                                                            <span>
+                                                                <Avatar shape="square" src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${data.image.id}`} />
+                                                                <span style={{ marginLeft: '10px' }}>{data.name}</span>
+                                                            </span>
+                                                        </Option>
+                                                    ))}
+                                                    {fabricsLoading && (
+                                                        <Option value="loading" disabled>
+                                                            <div style={{ textAlign: 'center', padding: '10px' }}>Loading...</div>
+                                                        </Option>
+                                                    )}
+                                                </Select>
+                                            </Form.Item>
+                                        </Col>
+                                        <Col xs={24} md={12} lg={8}>
+                                            <Form.Item name={[name, 'fabricType']} label="Fabric Type"
+                                                rules={[{ required: true, message: 'Please select fabric type!' }]}>
+                                                <Select>
+                                                    {props.fabricTypes.map(data => (
+                                                        <Option value={data.id} key={data.id}>{data.name}</Option>
+                                                    ))}
+                                                </Select>
+                                            </Form.Item>
+                                        </Col>
+                                        <Col xs={12} lg={6}>
+                                            <Form.Item name={[name, "quantity"]} label="Quantity"
+                                                rules={[{ required: true, message: 'Please enter quantity!' }]}>
+                                                <InputNumber min={1} style={{ width: "100%" }} />
+                                            </Form.Item>
+                                        </Col>
+                                        <Col xs={12} lg={6}>
+                                            <Form.Item name={[name, "price"]} label="Unit price"
+                                                rules={[{ required: true, message: 'Please enter price!' }]}>
+                                                <InputNumber min={0} placeholder="0" style={{ width: "100%" }} />
+                                            </Form.Item>
+                                        </Col>
+                                        <Col xs={24} lg={12}>
+                                            <Form.Item name={[name, 'productDescription']} label="Description"
+                                                rules={[{ required: true, message: 'Please input product description!' }]}>
+                                                <Input.TextArea rows={1} placeholder="Additional product details..." />
+                                            </Form.Item>
+                                        </Col>
+                                    </Row>
+                                    <div className="flex justify-end">
+                                        <Button size="small" danger type="text" icon={<MinusOutlined />}
+                                            disabled={fields.length <= 1}
+                                            onClick={() => fields.length > 1 && remove(name)}>
+                                            Remove
+                                        </Button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        <Button type="dashed" block icon={<PlusOutlined />} onClick={() => add()}
+                            style={{ height: 42, fontWeight: 600 }}>
+                            Add another product
+                        </Button>
+                    </div>
+                )}
+            </Form.List>
 
-                                <Row gutter={24} key={key}>
-                                    <Col xs={24} md={12} lg={8}>
-                                        <Form.Item
-                                            name={[name, 'productType']}
-                                            label="Product Type"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                    message: 'Please select product type!',
-                                                },
-
-                                            ]}>
-                                            <Select size="large">
-                                                {props.productTypes.map(data => {
-                                                    return <Option value={data.id} key={data.id}>{data.name}</Option>
-                                                })}
-                                            </Select>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col xs={24} md={12} lg={8}>
-                                        <Form.Item
-                                            name={[name, 'fabrics']}
-                                            label="Fabric Color"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                    message: 'Please select fabric color!',
-                                                },
-
-                                            ]}>
-                                            <Select
-                                                size="large"
-                                                showSearch
-                                                defaultActiveFirstOption={false}
-                                                filterOption={false}
-                                                onSearch={(value) => {
-                                                    // Simple debounce
-                                                    if (window.searchTimeout) clearTimeout(window.searchTimeout);
-                                                    window.searchTimeout = setTimeout(() => {
-                                                        props.fetchFabrics(1, value);
-                                                    }, 800);
-                                                }}
-                                                onPopupScroll={handlePopupScroll}
-                                            >
-                                                {props.fabrics.map(data => {
-                                                    return <Option title={data.name} value={data.id} key={data.id}>
-                                                        <span>
-                                                            <Avatar shape="square" src={`${process.env.REACT_APP_API_BASE_URL}/files/upload/${data.image.id}`} />
-                                                            <span style={{ marginLeft: '10px' }}>{data.name}</span>
-                                                        </span>
-                                                    </Option>
-                                                })}
-                                                {fabricsLoading && (
-                                                    <Option value="loading" disabled>
-                                                        <div style={{ textAlign: 'center', padding: '10px' }}>Loading...</div>
-                                                    </Option>
-                                                )}
-                                            </Select>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col xs={24} md={12} lg={8}>
-                                        <Form.Item
-                                            name={[name, 'fabricType']}
-                                            label="Fabric Type"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                    message: 'Please select fabric type!',
-                                                },
-
-                                            ]}>
-                                            <Select size="large">
-                                                {props.fabricTypes.map(data => {
-                                                    return <Option value={data.id} key={data.id}>{data.name}</Option>
-                                                })}
-                                            </Select>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col xs={24} md={12} lg={6}>
-                                        <Form.Item
-                                            name={[name, "quantity"]}
-                                            label="Quantity"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                    message: 'Please enter product count!',
-                                                },
-
-                                            ]}>
-                                            <InputNumber
-                                                size="large"
-                                                min={0}
-                                                style={{ width: "100%" }}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-                                    <Col xs={24} md={12} lg={6}>
-                                        <Form.Item
-                                            name={[name, "price"]}
-                                            label="Price"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                    message: 'Please enter product price!',
-                                                },
-
-                                            ]}>
-                                            <InputNumber
-                                                size="large"
-                                                min={0}
-                                                style={{ width: "100%" }}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-                                    <Col xs={24} md={24} lg={24}>
-                                        <Form.Item
-                                            name={[name, 'productDescription']}
-                                            label="Product description"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                    message: 'Please input product description!',
-                                                },
-                                            ]}
-                                        >
-                                            <Input.TextArea rows={2} placeholder="Additional product information ..." />
-                                        </Form.Item>
-                                    </Col>
-
-                                    <Col xs={24} md={24} lg={24}>
-                                        <Row gutter={[16, 16]}>
-                                            <Col xs={24} md={12} lg={12}>
-                                                <Form.Item>
-                                                    <Button type="dashed" onClick={() => add()} block
-                                                        icon={<PlusOutlined />}>
-                                                        Add Product
-                                                    </Button>
-
-                                                </Form.Item>
-                                            </Col>
-                                            <Col xs={24} md={12} lg={12}>
-                                                <Form.Item>
-                                                    <Button type="dashed" danger
-                                                        onClick={() => fields.length > 1 ? remove(key) : null}
-                                                        disabled={fields.length <= 1} block icon={<MinusOutlined />}>
-                                                        Remove Product
-                                                    </Button>
-                                                </Form.Item>
-                                            </Col>
-                                        </Row>
-                                    </Col>
-                                </Row>))}
-
-
-                        </>)}
-                </Form.List>
-            </Col>
-            <Col xs={24} md={12} lg={8} className="pt-8">
-                <Form.Item
-                    name="images"
-                    initialValue={files}
-                    valuePropName="fileList"
-                    getValueFromEvent={normFile}
-                >
-                    <Dragger {...draggerProps} fileList={files}>
-                        <p className="ant-upload-drag-icon">
-                            <InboxOutlined className="text-blue-700 dark:text-blue-400" />
-                        </p>
-                        <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                        <p className="ant-upload-hint mb-1">
-                            Support for a single or bulk upload. Strictly prohibit from uploading company data or other
-                            band files
-                        </p>
-                        <p className="ant-upload-hint font-bold" style={{ color: "#E74646" }}>
-                            Maximum file size must be less then 5 mb.
-                        </p>
-                    </Dragger>
-                </Form.Item>
-            </Col>
-        </Row>
+            <div className="h-px bg-slate-200 dark:bg-slate-700 my-3" />
+            <div className="text-sm font-bold text-slate-800 dark:text-white mb-2">Order images</div>
+            <Form.Item name="images" initialValue={files} valuePropName="fileList" getValueFromEvent={normFile} noStyle>
+                <Dragger {...draggerProps} fileList={files}>
+                    <p className="ant-upload-drag-icon">
+                        <InboxOutlined className="text-blue-700 dark:text-blue-400" />
+                    </p>
+                    <p className="ant-upload-text">Click or drag images here to upload</p>
+                    <p className="ant-upload-hint mb-1">Single or bulk upload — JPG or PNG, up to 5MB each.</p>
+                </Dragger>
+            </Form.Item>
+        </>
     );
 };
 
