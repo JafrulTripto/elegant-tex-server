@@ -37,7 +37,7 @@ class Product extends Model
                 $productType = ProductType::find($value);
                 return [
                     'value' => $value,
-                    'name' => $productType->name,
+                    'name' => $productType?->name,
                 ];
             },
         );
@@ -61,6 +61,9 @@ class Product extends Model
         return Attribute::make(
             get: function ($value) {
                 $fabricColor = FabricColor::find($value);
+                if (!$fabricColor) {
+                    return ['value' => $value, 'name' => null, 'image' => ''];
+                }
                 $images = $fabricColor->image()->get(); // Retrieve the images using the morphTo relationship
                 $imagePath = $images->pluck('id')->toArray();
                 $pathString = implode(', ', $imagePath);
