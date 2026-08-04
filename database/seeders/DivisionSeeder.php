@@ -12,6 +12,9 @@ class DivisionSeeder extends Seeder
      */
     public function run()
     {
+        if (\Illuminate\Support\Facades\DB::table('divisions')->count() > 0) {
+            return;
+        }
         $divisions = array(
             array('id' => '1','name' => 'Chattagram','bn_name' => 'চট্টগ্রাম','url' => 'www.chittagongdiv.gov.bd'),
             array('id' => '2','name' => 'Rajshahi','bn_name' => 'রাজশাহী','url' => 'www.rajshahidiv.gov.bd'),

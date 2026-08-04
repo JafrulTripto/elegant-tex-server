@@ -13,6 +13,9 @@ class UnionSeeder extends Seeder
      */
     public function run()
     {
+        if (\Illuminate\Support\Facades\DB::table('unions')->count() > 0) {
+            return;
+        }
         $unions = array(
             array('id' => '1', 'upazila_id' => '1', 'name' => 'Subil', 'bn_name' => 'সুবিল', 'url' => 'subilup.comilla.gov.bd'),
             array('id' => '2', 'upazila_id' => '1', 'name' => 'North Gunaighor', 'bn_name' => 'উত্তর গুনাইঘর', 'url' => 'gunaighornorthup.comilla.gov.bd'),

@@ -12,6 +12,9 @@ class DistrictSeeder extends Seeder
      */
     public function run()
     {
+        if (\Illuminate\Support\Facades\DB::table('districts')->count() > 0) {
+            return;
+        }
         $districts = array(
             array('id' => '1','division_id' => '1','name' => 'Comilla','bn_name' => 'কুমিল্লা','lat' => '23.4682747','lon' => '91.1788135','url' => 'www.comilla.gov.bd'),
             array('id' => '2','division_id' => '1','name' => 'Feni','bn_name' => 'ফেনী','lat' => '23.023231','lon' => '91.3840844','url' => 'www.feni.gov.bd'),
