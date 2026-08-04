@@ -16,7 +16,7 @@ class ProductResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'fabrics' => $this->fabrics_id,
+            'fabrics' => $this->fabric_color_id,
             'fabricType' => $this->fabric_type_id,
             'productType' => $this->type_id,
             'description' => $this->description,

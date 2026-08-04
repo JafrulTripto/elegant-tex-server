@@ -4,7 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DeliveryChannelController;
 use App\Http\Controllers\Api\MarketplaceController;
-use App\Http\Controllers\Api\FabricsController;
+use App\Http\Controllers\Api\FabricColorController;
 use App\Http\Controllers\Api\MerchantController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PermissionController;
@@ -168,9 +168,9 @@ Route::group([
 });
 
 Route::prefix('settings/fabrics')->group(function () {
-    Route::post('/store', [FabricsController::class, 'store']);
-    Route::get('/index', [FabricsController::class, 'index']);
-    Route::delete('/delete/{id}', [FabricsController::class, 'destroy']);
+    Route::post('/store', [FabricColorController::class, 'store']);
+    Route::get('/index', [FabricColorController::class, 'index']);
+    Route::delete('/delete/{id}', [FabricColorController::class, 'destroy']);
 });
 
 Route::prefix('settings/fabricTypes')->group(function () {

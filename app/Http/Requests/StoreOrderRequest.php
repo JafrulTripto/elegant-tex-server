@@ -32,7 +32,7 @@ class StoreOrderRequest extends FormRequest
             'images' => ['nullable', 'array'],
             'deliveryDate' => ['required', 'date'],
             'products' => ['required', 'array'],
-            'products.*.fabrics' => ['required', 'integer'],
+            'products.*.fabrics' => ['required', 'integer', 'exists:fabric_colors,id'],
             'products.*.fabricType' => ['required', 'integer', 'exists:fabric_types,id'],
             'products.*.productType' => ['required', 'integer'],
             'products.*.quantity' => ['required', 'integer'],

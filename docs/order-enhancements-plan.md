@@ -19,11 +19,16 @@ Branch `feature/order-enhancements`:
   `products.fabric_type_id`, model/resource/controller, `settings/fabricTypes` routes,
   validation, `ProductService`, and frontend (Product Settings tab, order-form dropdown,
   edit-order prefill, order-detail tag).
-- ⬜ **Phase 1 (Fabric rename)** — `fabrics → fabric_colors` still pending (its own commit).
+- ✅ **Phase 1 (Fabric rename)** — table `fabrics → fabric_colors`, `products.fabrics_id
+  → fabric_color_id`, model `Fabrics → FabricColor`, `FabricColorController` /
+  `FabricColorService`, and the polymorphic `images.imageable_type` migrated. The
+  external contract (JSON key `fabrics`, `settings/fabrics` routes, `uploadFabricsImage`)
+  was **kept stable**, so the frontend is untouched. Optional follow-up: rename the API
+  field/routes to `fabricColor` too (needs a coordinated frontend change).
 - ⬜ **Phase 2 (Teams)**, **Phase 3 (Ready Stock)** — pending.
 
-Migrations to run in the Docker/MySQL env: `php artisan migrate` (adds the three
-`2026_08_04_*` migrations).
+Migrations to run in the Docker/MySQL env: `php artisan migrate` (adds the four
+`2026_08_04_*` migrations; the rename uses doctrine/dbal, which is installed).
 
 ## Data-model changes at a glance
 

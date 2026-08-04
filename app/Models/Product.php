@@ -15,9 +15,9 @@ class Product extends Model
     {
         return $this->belongsTo(Order::class);
     }
-    public function fabircs(): BelongsTo
+    public function fabricColor(): BelongsTo
     {
-        return $this->belongsTo(Fabrics::class,'fabrics_id');
+        return $this->belongsTo(FabricColor::class, 'fabric_color_id');
     }
 
     public function fabricType(): BelongsTo
@@ -51,17 +51,17 @@ class Product extends Model
         );
     }
 
-    protected function fabricsId(): Attribute
+    protected function fabricColorId(): Attribute
     {
         return Attribute::make(
             get: function ($value) {
-                $fabrics = Fabrics::find($value);
-                $images = $fabrics->image()->get(); // Retrieve the images using the morphTo relationship
+                $fabricColor = FabricColor::find($value);
+                $images = $fabricColor->image()->get(); // Retrieve the images using the morphTo relationship
                 $imagePath = $images->pluck('id')->toArray();
                 $pathString = implode(', ', $imagePath);
                 return [
                     'value' => $value,
-                    'name' => $fabrics->name,
+                    'name' => $fabricColor->name,
                     'image' => $pathString
                 ];
             },
