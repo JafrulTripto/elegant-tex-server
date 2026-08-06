@@ -2,7 +2,6 @@ import React from 'react';
 import {StyleSheet, View, Text, Image} from "@react-pdf/renderer";
 import ETLogo from "../../assets/images/elegant_tex_logo.jpg"
 import dayjs from "dayjs";
-import {formatOrderNumber} from "../Util/OrderNumberFormatter";
 import {OrderStatusEnum} from "../../utils/enums/OrderStatusEnum";
 
 const InvoiceHeader = ({order}) => {
@@ -50,7 +49,7 @@ const InvoiceHeader = ({order}) => {
                         <Text>Status</Text>
                     </View>
                     <View>
-                        <Text>{formatOrderNumber(order.id)}</Text>
+                        <Text>#{order.id}</Text>
                         <Text>{order.orderable.name}</Text>
                         <Text>{dayjs(order.createdAt).format('DD MMMM YYYY')}</Text>
                         <Text style={{fontWeight: 500}}>{label}</Text>

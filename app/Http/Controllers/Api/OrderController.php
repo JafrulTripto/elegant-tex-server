@@ -135,6 +135,29 @@ class OrderController extends Controller
     return response()->json(['message' => 'Return recorded.']);
   }
 
+  /** Cancel an order; sellable lines of a produced order are added to Ready Stock. */
+  public function cancelOrder(Request $request, StockService $stockService, $orderId): JsonResponse
+  {
+    $request->validate([
+      'comment' => ['nullable', 'string'],
+      'lines' => ['array'],
+      'lines.*.productId' => ['required', 'integer'],
+      'lines.*.condition' => ['required', Rule::in(['SELLABLE', 'DAMAGED'])],
+    ]);
+
+    $order = Order::findOrFail($orderId);
+    if (in_array($order->status, [OrderStatus::CANCELLED->value, OrderStatus::DELIVERED->value], true)) {
+      return response()->json(['message' => 'This order can no longer be cancelled.'], 400);
+    }
+
+    try {
+      $restocked = $stockService->cancelOrder($order, $request->input('comment'), $request->input('lines', []), optional(auth()->user())->id);
+    } catch (\Throwable $e) {
+      return response()->json(['message' => $e->getMessage()], 400);
+    }
+    return response()->json(['message' => $restocked ? "Order cancelled — {$restocked} item(s) added to ready stock." : 'Order cancelled.']);
+  }
+
   /** Fulfil one order line from Ready Stock. */
   public function pullFromStock(StockService $stockService, $orderId, $productId): JsonResponse
   {

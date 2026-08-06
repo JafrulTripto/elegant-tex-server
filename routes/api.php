@@ -93,6 +93,7 @@ Route::group([
     Route::put('/update/{orderId}',  [OrderController::class, 'update']);
     Route::put('/updateTeam/{orderId}', [OrderController::class, 'updateTeam'])->middleware('permission:VIEW_ALL_ORDERS');
     Route::post('/markReturned/{orderId}', [OrderController::class, 'markReturned'])->middleware('permission:RETURN_ORDER');
+    Route::post('/cancelOrder/{orderId}', [OrderController::class, 'cancelOrder'])->middleware('permission:CHANGE_STATUS');
     Route::post('/pullFromStock/{orderId}/{productId}', [OrderController::class, 'pullFromStock'])->middleware('permission:PULL_FROM_STOCK');
 });
 

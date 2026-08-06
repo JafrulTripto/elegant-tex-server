@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, Button, Form, Segmented } from "antd";
+import { Alert, Button, Col, Form, Input, Row, Select } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
-import OrderTypeFrom from "../components/Order/OrderTypeFrom";
 import OrderProductForm from "../components/Order/OrderProductForm";
 import OrderCustomerForm from "../components/Order/OrderCustomerForm";
 import DeliveryFrom from "../components/Order/DeliveryFrom";
@@ -184,17 +183,38 @@ const OrderForm = () => {
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           <div className="flex-1 min-w-0 flex flex-col gap-4 w-full">
             <SectionCard title="Order type">
-              <Segmented
-                block
-                value={orderType}
-                onChange={setOrderType}
-                className="max-w-sm"
-                options={[
-                  { label: 'Marketplace', value: OrderTypeEnum.MARKETPLACE },
-                  { label: 'Merchant', value: OrderTypeEnum.MERCHANT },
-                ]}
-              />
-              <OrderTypeFrom orderForm={orderForm} orderType={orderType} data={isMarketplace ? marketplaces : merchants} />
+              <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+                <Form.Item label={<span className="opacity-0 select-none">.</span>} colon={false} className="!mb-0">
+                <div className="flex gap-1 p-1 rounded-[10px] bg-slate-100 dark:bg-slate-900 w-full sm:w-auto sm:min-w-[300px]">
+                  {[
+                    { title: 'Marketplace', value: OrderTypeEnum.MARKETPLACE },
+                    { title: 'Merchant', value: OrderTypeEnum.MERCHANT },
+                  ].map((opt) => (
+                    <div
+                      key={opt.value}
+                      onClick={() => setOrderType(opt.value)}
+                      className={`flex-1 text-center py-2 px-6 rounded-lg text-[13px] font-semibold cursor-pointer transition-colors ${
+                        orderType === opt.value ? 'bg-primary text-white' : 'text-slate-500 dark:text-slate-400'
+                      }`}
+                    >
+                      {opt.title}
+                    </div>
+                  ))}
+                </div>
+                </Form.Item>
+                {isMarketplace && (
+                  <Form.Item
+                    name="marketplace"
+                    label="Marketplace"
+                    className="!mb-0 w-full sm:max-w-xs"
+                    rules={[{ required: true, message: 'Please select a marketplace!' }]}
+                  >
+                    <Select placeholder="Select marketplace">
+                      {marketplaces.map((m) => <Select.Option value={m.id} key={m.id}>{m.name}</Select.Option>)}
+                    </Select>
+                  </Form.Item>
+                )}
+              </div>
             </SectionCard>
 
             <SectionCard title="Product info">
@@ -213,7 +233,7 @@ const OrderForm = () => {
               />
             </SectionCard>
 
-            {isMarketplace && (
+            {isMarketplace ? (
               <SectionCard title="Customer info">
                 <OrderCustomerForm
                   divisions={divisions}
@@ -226,6 +246,25 @@ const OrderForm = () => {
                   onDistrictSelect={onDistrictSelect}
                   orderForm={orderForm}
                 />
+              </SectionCard>
+            ) : (
+              <SectionCard title="Merchant info">
+                <Row gutter={16} style={{ maxWidth: 560 }}>
+                  <Col xs={24} md={12}>
+                    <Form.Item name="merchant" label="Merchant"
+                      rules={[{ required: true, message: 'Please select a merchant!' }]}>
+                      <Select placeholder="Select merchant">
+                        {merchants.map((m) => <Select.Option value={m.id} key={m.id}>{m.name}</Select.Option>)}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} md={12}>
+                    <Form.Item name="merchantRef" label="Reference number"
+                      rules={[{ required: true, message: 'Please enter a reference number!' }]}>
+                      <Input placeholder="e.g. REF-2026-0142" />
+                    </Form.Item>
+                  </Col>
+                </Row>
               </SectionCard>
             )}
 

@@ -22,7 +22,7 @@ const baseToken = {
     wireframe: false,
     borderRadius: 8, // Softer curves
     borderRadiusLG: 12,
-    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+    fontFamily: "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
     fontSizeHeading1: 32,
     fontSizeHeading2: 24,
     fontSizeHeading3: 20,

@@ -10,3 +10,11 @@ export function formatOrderNumber(num) {
 export function extractOrderNumber(orderNumber) {
   return +orderNumber.split("-").pop();
 }
+
+// Short, human-friendly number derived from the real stored order_id
+// (ET-ORD-<datetime><seq>) by dropping the datetime and keeping the trailing
+// sequence — e.g. "ET-ORD-202608051015431042" -> "ET-ORD-1042".
+export function shortOrderNumber(orderId) {
+  if (!orderId) return '';
+  return `ET-ORD-${String(orderId).slice(-4)}`;
+}
