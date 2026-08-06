@@ -17,7 +17,6 @@ class TeamController extends Controller
         return response()->json(['data' => TeamResource::collection($teams)]);
     }
 
-    /** Lightweight id+name list for populating selects (e.g. the user form). */
     public function options(): JsonResponse
     {
         return response()->json(['data' => Team::orderBy('name')->get(['id', 'name'])]);
@@ -42,7 +41,6 @@ class TeamController extends Controller
         }
 
         $request->validate(['name' => ['required', 'string', 'max:255', "unique:teams,name,{$id}"]]);
-
         $team->name = $request->input('name');
         $team->save();
 
