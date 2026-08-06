@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 export const useFabrics = () => {
 
     const axiosClient = useAxiosClient();
-
     const [fabrics, setFabrics] = useState([]);
     const [fabricsLoading, setFabricsLoading] = useState(false);
     const [page, setPage] = useState(1);
