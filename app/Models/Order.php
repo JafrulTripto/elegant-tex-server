@@ -60,6 +60,10 @@ class Order extends Model
     {
         return $this->belongsTo(Customer::class);
     }
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
     public function orderable()
     {
         return $this->morphTo();

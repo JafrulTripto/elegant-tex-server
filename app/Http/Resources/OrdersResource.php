@@ -19,6 +19,7 @@ class OrdersResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'orderId' => $this->order_id,
             'orderedBy' => $this->orderable->name,
             'createdBy' => $this->createdBy->firstname ." ". $this->createdBy->lastname,
             'status' => $this->status,

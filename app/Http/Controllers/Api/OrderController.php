@@ -13,9 +13,12 @@ use App\Http\Resources\OrdersResource;
 use App\Models\Marketplace;
 use App\Models\Merchant;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\Status;
 use App\Models\User;
 use App\Services\OrderService;
+use App\Services\StockService;
+use Illuminate\Validation\Rule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
@@ -60,29 +63,17 @@ class OrderController extends Controller
     $pageSize = OrderController::PAGESIZE;
     $paginate = $request->get('paginate', true);
     $paginateBoolean = filter_var($paginate, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-    if ($user->hasPermissionTo("VIEW_ALL_ORDERS")) {
-      $query = Order::whereHasMorph('orderable', Marketplace::class)
-        ->withCount('product')
-        ->with(['orderable' => function ($query) {
-          $query->select('id', 'name');
-        },
-          'createdBy' => function ($query) {
-            $query->select('id', 'firstname', 'lastname');
-          }]);
-    } else {
-      $query = Order::whereHasMorph('orderable', [Marketplace::class], function (Builder $query) use ($userID) {
-        $query->whereHas('users', function ($q) use ($userID) {
-          $q->where("marketplace_user.user_id", $userID);
-        });
-      })
-        ->withCount('product')
-        ->with(['orderable' => function ($query) {
-          $query->select('id', 'name');
-        },
-          'createdBy' => function ($query) {
-            $query->select('id', 'firstname', 'lastname');
-          }]);
-    }
+    $query = Order::whereHasMorph('orderable', [Marketplace::class])
+      ->withCount('product')
+      ->with(['orderable' => function ($query) {
+        $query->select('id', 'name');
+      },
+        'createdBy' => function ($query) {
+          $query->select('id', 'firstname', 'lastname');
+        }]);
+
+    // Team is the visibility axis (ADR 0001): non-admins see only their team.
+    $this->applyTeamScope($query, $user);
 
     // Apply common filters
     $query = $this->applyFiltersToQuery($query, $request);
@@ -111,6 +102,9 @@ class OrderController extends Controller
           $query->select('id', 'firstname', 'lastname');
         }]);
 
+    // Team is the visibility axis (ADR 0001): merchant orders are now scoped too.
+    $this->applyTeamScope($query, auth()->user());
+
     // Apply common filters
     $query = $this->applyFiltersToQuery($query, $request);
 
@@ -123,21 +117,77 @@ class OrderController extends Controller
     return OrdersResource::collection($orders);
   }
 
+  /** Mark order lines as returned, with condition; sellable lines feed Ready Stock. */
+  public function markReturned(Request $request, StockService $stockService, $orderId): JsonResponse
+  {
+    $request->validate([
+      'lines' => ['required', 'array', 'min:1'],
+      'lines.*.productId' => ['required', 'integer'],
+      'lines.*.condition' => ['required', Rule::in(['SELLABLE', 'DAMAGED'])],
+    ]);
+
+    $order = Order::findOrFail($orderId);
+    try {
+      $stockService->recordReturn($order, $request->input('lines'), optional(auth()->user())->id);
+    } catch (\Throwable $e) {
+      return response()->json(['message' => $e->getMessage()], 400);
+    }
+    return response()->json(['message' => 'Return recorded.']);
+  }
+
+  /** Cancel an order; sellable lines of a produced order are added to Ready Stock. */
+  public function cancelOrder(Request $request, StockService $stockService, $orderId): JsonResponse
+  {
+    $request->validate([
+      'comment' => ['nullable', 'string'],
+      'lines' => ['array'],
+      'lines.*.productId' => ['required', 'integer'],
+      'lines.*.condition' => ['required', Rule::in(['SELLABLE', 'DAMAGED'])],
+    ]);
+
+    $order = Order::findOrFail($orderId);
+    if (in_array($order->status, [OrderStatus::CANCELLED->value, OrderStatus::DELIVERED->value], true)) {
+      return response()->json(['message' => 'This order can no longer be cancelled.'], 400);
+    }
+
+    try {
+      $restocked = $stockService->cancelOrder($order, $request->input('comment'), $request->input('lines', []), optional(auth()->user())->id);
+    } catch (\Throwable $e) {
+      return response()->json(['message' => $e->getMessage()], 400);
+    }
+    return response()->json(['message' => $restocked ? "Order cancelled — {$restocked} item(s) added to ready stock." : 'Order cancelled.']);
+  }
+
+  /** Fulfil one order line from Ready Stock. */
+  public function pullFromStock(StockService $stockService, $orderId, $productId): JsonResponse
+  {
+    $line = Product::where('id', $productId)->where('order_id', $orderId)->firstOrFail();
+    try {
+      $stockService->pull($line, optional(auth()->user())->id);
+    } catch (\Throwable $e) {
+      return response()->json(['message' => $e->getMessage()], 400);
+    }
+    return response()->json(['message' => 'Fulfilled from ready stock.']);
+  }
+
+  /** Admin reassignment of an order to a different team (ADR 0001). */
+  public function updateTeam(Request $request, $orderId): JsonResponse
+  {
+    $request->validate(['teamId' => ['required', 'integer', 'exists:teams,id']]);
+    $order = Order::findOrFail($orderId);
+    $order->team_id = $request->input('teamId');
+    $order->save();
+    return response()->json(['message' => 'Order team updated successfully.']);
+  }
+
   public function getStats($userId)
   {
       $user = User::findOrFail($userId);
       $query = Order::query();
 
-      // Filter by role/permissions similar to getMarketplaceOrders
-      // If user is Admin/SuperAdmin (VIEW_ALL_ORDERS), they see everything.
-      // Otherwise, they see orders related to their marketplaces.
-      if (!$user->hasPermissionTo("VIEW_ALL_ORDERS")) {
-          $query->whereHasMorph('orderable', [Marketplace::class], function (Builder $query) use ($user) {
-              $query->whereHas('users', function ($q) use ($user) {
-                  $q->where("marketplace_user.user_id", $user->id);
-              });
-          });
-      }
+      // Team is the visibility axis (ADR 0001): admins (VIEW_ALL_ORDERS) see all,
+      // everyone else is scoped to their own team.
+      $this->applyTeamScope($query, $user);
 
       $stats = [
           'total' => (clone $query)->count(),
@@ -268,6 +318,18 @@ class OrderController extends Controller
       Log::error($e->getMessage());
       return response()->json(['message' => 'An error occurred while deleting the order'], ResponseAlias::HTTP_INTERNAL_SERVER_ERROR);
     }
+  }
+
+  /**
+   * Restrict an order query to the user's team unless they may view all teams.
+   * Team is the single order-visibility axis (ADR 0001).
+   */
+  private function applyTeamScope($query, ?User $user)
+  {
+    if ($user && !$user->hasPermissionTo('VIEW_ALL_ORDERS')) {
+      $query->where('team_id', $user->team_id);
+    }
+    return $query;
   }
 
   private function applyFiltersToQuery($query, $request)

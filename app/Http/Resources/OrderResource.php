@@ -22,6 +22,7 @@ class OrderResource extends JsonResource
             'orderType' => class_basename($this->orderable_type) === "Marketplace" ? OrderType::MARKETPLACE->value : OrderType::MERCHANT->value,
             'orderable' => $this->orderable,
             'id' => $this->id,
+            'orderId' => $this->order_id,
             'status' => $this->status,
             'orderStatusChanges' => $this->orderStatusChanges,
             'customer' => CustomerResource::make($this->customer),

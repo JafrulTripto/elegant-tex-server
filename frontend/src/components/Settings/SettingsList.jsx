@@ -3,7 +3,7 @@ import { Col, Row, theme, Typography } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 import Permission from "../Util/Permission";
-import { faLockOpen, faMoneyBillTrendUp, faSliders, faUserTag } from "@fortawesome/free-solid-svg-icons";
+import { faLockOpen, faMoneyBillTrendUp, faSliders, faUsers, faUserTag } from "@fortawesome/free-solid-svg-icons";
 
 const { Title, Text } = Typography;
 
@@ -47,6 +47,15 @@ const SettingsList = () => {
       permission: "PRODUCT_SETTINGS",
       color: '#f59e0b', // Amber
       bgColor: '#fffbeb', // Light Amber
+    },
+    {
+      title: 'Team Settings',
+      icon: faUsers,
+      link: "/settings/teamSettings",
+      description: "Group staff into teams; orders and dashboards are separated by team.",
+      permission: "TEAM_SETTINGS",
+      color: '#ec4899', // Pink
+      bgColor: '#fdf2f8', // Light Pink
     }
   ];
 

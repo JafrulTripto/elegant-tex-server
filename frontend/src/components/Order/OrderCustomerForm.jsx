@@ -226,7 +226,7 @@ const OrderCustomerForm = (props) => {
       </Row>
 
       <Row gutter={24}>
-        <Col xs={24} md={12}>
+        <Col xs={24}>
           <Form.Item
             name="address"
             label="Address"
@@ -235,7 +235,7 @@ const OrderCustomerForm = (props) => {
             <Input.TextArea placeholder="House, road, area...." rows={1} disabled={fieldsDisabled} />
           </Form.Item>
         </Col>
-        <Col xs={24} md={4}>
+        <Col xs={24} md={8}>
           <Form.Item
             name="division"
             label="Division"
@@ -250,7 +250,7 @@ const OrderCustomerForm = (props) => {
             </Select>
           </Form.Item>
         </Col>
-        <Col xs={24} md={4}>
+        <Col xs={24} md={8}>
           <Form.Item
             name="district"
             label="District"
@@ -265,7 +265,7 @@ const OrderCustomerForm = (props) => {
             </Select>
           </Form.Item>
         </Col>
-        <Col xs={24} md={4}>
+        <Col xs={24} md={8}>
           <Form.Item
             name="upazila"
             label="Upazila / Thana"

@@ -18,43 +18,34 @@ class UsersTableSeeder extends Seeder
    */
   public function run()
   {
-    if (User::count() == 0) {
+    $this->seedUser('jafrultripto@gmail.com', 'Jafrul', 'Hossain', 'Ewu2013368037', '19943323021000036', 'SUDO');
+    $this->seedUser('dadarakib@gmail.com', 'Meer', 'Rakibuzzaman', 'Rakib1234', '123456789', 'Admin');
+  }
 
-      $user = User::create([
-        'firstname' => 'Jafrul',
-        'lastname' => 'Hossain',
-        'email' => 'jafrultripto@gmail.com',
-        'password' => Hash::make('Ewu2013368037'),
-        'nid' => '19943323021000036',
-      ]);
+  /** Idempotent: only creates the user (and its address/role) if the email is new. */
+  private function seedUser(string $email, string $firstname, string $lastname, string $password, string $nid, string $role): void
+  {
+    $user = User::firstOrCreate(
+      ['email' => $email],
+      [
+        'firstname' => $firstname,
+        'lastname' => $lastname,
+        'password' => Hash::make($password),
+        'nid' => $nid,
+      ]
+    );
 
-      $address = new Address([
-        'address' => 'house-30, Dattapara, Tongi',
-        'phone' => '01832958858',
-        'district' => '41',
-        'division' => '6',
-        'upazila' => '320',
-      ]);
-      $user->address()->save($address);
-      $user->assignRole(['SUDO']);
+    if (!$user->wasRecentlyCreated) {
+      return;
     }
-    // Seed additional user with role "admin"
-    $adminUser = User::create([
-      'firstname' => 'Meer',
-      'lastname' => 'Rakibuzzaman',
-      'email' => 'dadarakib@gmail.com',
-      'password' => Hash::make('Rakib1234'),
-      'nid' => '123456789',
-    ]);
 
-    $adminAddress = new Address([
+    $user->address()->save(new Address([
       'address' => 'house-30, Dattapara, Tongi',
       'phone' => '01832958858',
       'district' => '41',
       'division' => '6',
       'upazila' => '320',
-    ]);
-    $adminUser->address()->save($adminAddress);
-    $adminUser->assignRole(['Admin']);
+    ]));
+    $user->assignRole([$role]);
   }
 }

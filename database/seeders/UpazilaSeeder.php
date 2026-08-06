@@ -14,6 +14,9 @@ class UpazilaSeeder extends Seeder
    */
   public function run()
   {
+    if (\Illuminate\Support\Facades\DB::table('upazilas')->count() > 0) {
+      return;
+    }
     $upazilas = array(
       array('id' => '1', 'district_id' => '1', 'name' => 'Debidwar', 'bn_name' => 'দেবিদ্বার', 'url' => 'debidwar.comilla.gov.bd'),
       array('id' => '2', 'district_id' => '1', 'name' => 'Barura', 'bn_name' => 'বরুড়া', 'url' => 'barura.comilla.gov.bd'),

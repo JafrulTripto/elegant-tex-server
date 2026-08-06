@@ -62,7 +62,8 @@ class UserController extends Controller
             'upazila' => $request->upazila,
             'district' => $request->district,
             'division' => $request->division,
-            'image' => $request->image
+            'image' => $request->image,
+            'teamId' => $request->teamId
         ];
 
         $this->userService->store($userData);
@@ -113,7 +114,8 @@ class UserController extends Controller
             'upazila' => $request->upazila,
             'district' => $request->district,
             'division' => $request->division,
-            'image' => $request->image
+            'image' => $request->image,
+            'teamId' => $request->teamId
         ];
 
         $this->userService->update($user, $userData);
