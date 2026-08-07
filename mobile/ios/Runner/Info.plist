@@ -14,6 +14,8 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Scan order QR codes to update their status.</string>
 	<key>CFBundleName</key>
 	<string>elegant_tex_mobile</string>
 	<key>CFBundlePackageType</key>

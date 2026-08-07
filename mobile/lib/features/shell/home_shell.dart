@@ -10,11 +10,12 @@ import '../orders/presentation/pages/orders_page.dart';
 import '../scan/presentation/pages/scan_page.dart';
 
 class _Tab {
-  const _Tab(this.label, this.icon, this.selectedIcon, this.page);
+  const _Tab(this.label, this.icon, this.selectedIcon, this.page, {this.isCamera = false});
   final String label;
   final IconData icon;
   final IconData selectedIcon;
   final Widget page;
+  final bool isCamera;
 }
 
 /// Bottom-nav shell. Tabs are gated by the session's permissions (Q6): Scan shows
@@ -43,7 +44,8 @@ class _HomeShellState extends State<HomeShell> {
   List<_Tab> get _tabs => [
         const _Tab('Orders', Icons.receipt_long_outlined, Icons.receipt_long, OrdersPage()),
         if (_canScan)
-          const _Tab('Scan', Icons.qr_code_scanner, Icons.qr_code_scanner, ScanPage()),
+          const _Tab('Scan', Icons.qr_code_scanner, Icons.qr_code_scanner, ScanPage(),
+              isCamera: true),
         if (_canCreate)
           const _Tab('New', Icons.add_box_outlined, Icons.add_box, NewOrderPage()),
       ];
@@ -87,7 +89,15 @@ class _HomeShellState extends State<HomeShell> {
           ),
         ],
       ),
-      body: IndexedStack(index: index, children: tabs.map((t) => t.page).toList()),
+      body: IndexedStack(
+        index: index,
+        children: [
+          // The camera tab is only built while it's the active tab, so the scanner
+          // isn't running (or asking for permission) under the other tabs.
+          for (var i = 0; i < tabs.length; i++)
+            (tabs[i].isCamera && i != index) ? const SizedBox.shrink() : tabs[i].page,
+        ],
+      ),
       bottomNavigationBar: tabs.length > 1
           ? NavigationBar(
               selectedIndex: index,

@@ -8,6 +8,7 @@ import '../../../../core/utils/status_access.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../domain/entities/order_detail.dart';
 import '../cubit/order_detail_cubit.dart';
+import '../widgets/status_change_sheet.dart';
 
 class OrderDetailPage extends StatelessWidget {
   const OrderDetailPage({super.key, required this.orderId});
@@ -510,108 +511,10 @@ class _ErrorView extends StatelessWidget {
 
 void _openStatusSheet(BuildContext context, OrderDetail order, List<String> permissions) {
   final cubit = context.read<OrderDetailCubit>();
-  final options = settableStatuses(permissions);
-  showModalBottomSheet<void>(
+  showStatusChangeSheet(
     context: context,
-    isScrollControlled: true,
-    showDragHandle: true,
-    builder: (sheetContext) => Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
-      child: _StatusSheet(
-        current: order.status,
-        options: options,
-        onSubmit: (newStatus, comment) => cubit.changeStatus(newStatus, comment),
-      ),
-    ),
+    current: order.status,
+    options: settableStatuses(permissions),
+    onSubmit: (newStatus, comment) => cubit.changeStatus(newStatus, comment),
   );
-}
-
-class _StatusSheet extends StatefulWidget {
-  const _StatusSheet({
-    required this.current,
-    required this.options,
-    required this.onSubmit,
-  });
-  final int current;
-  final List<OrderStatus> options;
-  final Future<String?> Function(int newStatus, String? comment) onSubmit;
-
-  @override
-  State<_StatusSheet> createState() => _StatusSheetState();
-}
-
-class _StatusSheetState extends State<_StatusSheet> {
-  late int _selected;
-  final _commentCtrl = TextEditingController();
-  bool _submitting = false;
-
-  @override
-  void initState() {
-    super.initState();
-    final hasCurrent = widget.options.any((s) => s.value == widget.current);
-    _selected = hasCurrent ? widget.current : widget.options.first.value;
-  }
-
-  @override
-  void dispose() {
-    _commentCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
-    setState(() => _submitting = true);
-    final error = await widget.onSubmit(
-      _selected,
-      _commentCtrl.text.trim().isEmpty ? null : _commentCtrl.text.trim(),
-    );
-    if (!mounted) return;
-    if (error == null) {
-      Navigator.pop(context);
-    } else {
-      setState(() => _submitting = false);
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(error)));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text('Update status', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 14),
-          DropdownButtonFormField<int>(
-            initialValue: _selected,
-            isExpanded: true,
-            items: widget.options
-                .map((s) => DropdownMenuItem(value: s.value, child: Text(s.label)))
-                .toList(),
-            onChanged: _submitting ? null : (v) => setState(() => _selected = v ?? _selected),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _commentCtrl,
-            enabled: !_submitting,
-            minLines: 2,
-            maxLines: 4,
-            decoration: const InputDecoration(hintText: 'Comment (optional)'),
-          ),
-          const SizedBox(height: 16),
-          FilledButton(
-            onPressed: _submitting ? null : _submit,
-            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-            child: _submitting
-                ? const SizedBox(
-                    height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text('Update'),
-          ),
-        ],
-      ),
-    );
-  }
 }

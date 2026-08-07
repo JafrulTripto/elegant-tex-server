@@ -13,6 +13,7 @@ import '../../features/orders/domain/repositories/order_detail_repository.dart';
 import '../../features/orders/domain/repositories/orders_repository.dart';
 import '../../features/orders/presentation/cubit/order_detail_cubit.dart';
 import '../../features/orders/presentation/cubit/orders_cubit.dart';
+import '../../features/scan/presentation/cubit/scan_cubit.dart';
 import '../network/dio_client.dart';
 import '../storage/token_storage.dart';
 
@@ -45,6 +46,9 @@ Future<void> setupInjector() async {
   sl.registerFactoryParam<OrderDetailCubit, int, void>(
     (orderId, _) => OrderDetailCubit(sl(), orderId),
   );
+
+  // Scan — reuses the order detail repository for lookup + status advance.
+  sl.registerFactory<ScanCubit>(() => ScanCubit(sl<OrderDetailRepository>()));
 
   // A failed token refresh bounces the user to login.
   sl<DioClient>().onSessionExpired = () => sl<AuthCubit>().sessionExpired();
