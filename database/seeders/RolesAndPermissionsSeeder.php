@@ -49,6 +49,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'ORDER_DELIVERED' => 'Permission to Set the order status to DELIVERED.',
             'ORDER_RETURNED' => 'Permission to Set the order status to RETURNED.',
             'ORDER_CANCELLED' => 'Permission to Set the order status to CANCELLED.',
+            'ORDER_BOOKING' => 'Permission to Set the order status to BOOKING.',
             'TEAM_SETTINGS' => 'Permission to manage teams and their members.',
             'VIEW_STOCK' => 'Permission to view Ready Stock levels and history.',
             'MANAGE_STOCK' => 'Permission to add or adjust Ready Stock manually.',
