@@ -63,3 +63,16 @@ Fulfilling one open order line from Ready Stock instead of producing it: it flag
 that line as fulfilled-from-stock and records a pull-out Stock Movement. When
 *every* line of an order is pulled, the order jumps straight to READY.
 _Avoid_: consume, allocate, reserve
+
+## Scanning
+
+**Order QR**:
+A code printed on each order — on its invoice and a label — that identifies the
+order so floor staff can act on it by scanning. One order, one code.
+_Avoid_: barcode, tag, sticker
+
+**Scan advance**:
+Moving an order one step forward through its production lifecycle by scanning its
+Order QR and confirming — the fast path instead of editing the status by hand.
+Only orders that are APPROVED or later advance, and never past DELIVERED.
+_Avoid_: scan-to-update, auto-advance, quick status
