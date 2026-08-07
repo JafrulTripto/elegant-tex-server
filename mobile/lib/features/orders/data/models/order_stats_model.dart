@@ -1,3 +1,4 @@
+import '../../../../core/utils/json_parse.dart';
 import '../../domain/entities/order_stats.dart';
 
 class OrderStatsModel extends OrderStats {
@@ -9,9 +10,9 @@ class OrderStatsModel extends OrderStats {
   });
 
   factory OrderStatsModel.fromJson(Map<String, dynamic> j) => OrderStatsModel(
-        total: (j['total'] as num?)?.toInt() ?? 0,
-        pending: (j['pending'] as num?)?.toInt() ?? 0,
-        processing: (j['processing'] as num?)?.toInt() ?? 0,
-        delivered: (j['delivered'] as num?)?.toInt() ?? 0,
+        total: asInt(j['total']),
+        pending: asInt(j['pending']),
+        processing: asInt(j['processing']),
+        delivered: asInt(j['delivered']),
       );
 }

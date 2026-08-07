@@ -1,3 +1,4 @@
+import '../../../../core/utils/json_parse.dart';
 import '../../domain/entities/order_list_item.dart';
 
 class OrderListItemModel extends OrderListItem {
@@ -14,14 +15,14 @@ class OrderListItemModel extends OrderListItem {
   });
 
   factory OrderListItemModel.fromJson(Map<String, dynamic> j) => OrderListItemModel(
-        id: (j['id'] as num).toInt(),
-        orderId: j['orderId']?.toString() ?? '',
-        orderedBy: j['orderedBy']?.toString() ?? '',
-        createdBy: j['createdBy']?.toString() ?? '',
-        status: (j['status'] as num?)?.toInt() ?? 1,
-        totalAmount: (j['totalAmount'] as num?)?.toDouble() ?? 0,
-        createdAt: DateTime.tryParse(j['createdAt']?.toString() ?? ''),
-        deliveryDate: DateTime.tryParse(j['deliveryDate']?.toString() ?? ''),
-        itemsCount: (j['itemsCount'] as num?)?.toInt() ?? 0,
+        id: asInt(j['id']),
+        orderId: asStr(j['orderId']),
+        orderedBy: asStr(j['orderedBy']),
+        createdBy: asStr(j['createdBy']),
+        status: asInt(j['status'], 1),
+        totalAmount: asDouble(j['totalAmount']),
+        createdAt: asDate(j['createdAt']),
+        deliveryDate: asDate(j['deliveryDate']),
+        itemsCount: asInt(j['itemsCount']),
       );
 }

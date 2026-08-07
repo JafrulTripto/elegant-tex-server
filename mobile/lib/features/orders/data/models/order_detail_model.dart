@@ -1,26 +1,28 @@
+import '../../../../core/utils/json_parse.dart';
 import '../../domain/entities/order_detail.dart';
 
-/// Parses the backend OrderResource. Product type/fabric come through as ids today
-/// (ProductResource), so `_name` only yields a label when the field is an object —
-/// otherwise the UI falls back to the description. Address is nested under customer.
+/// Parses the backend OrderResource. Numeric fields go through the tolerant
+/// helpers because the API serializes decimals (and some ids) as strings. Product
+/// type/fabric come through as ids today, so `_name` only yields a label when the
+/// field is an object — otherwise the UI falls back to the description.
 class OrderDetailModel {
   static OrderDetail fromJson(Map<String, dynamic> j) {
     final customerJson = j['customer'] as Map<String, dynamic>?;
     final payment = (j['payment'] as Map<String, dynamic>?) ?? const {};
 
     return OrderDetail(
-      id: (j['id'] as num).toInt(),
-      orderId: j['orderId']?.toString() ?? '',
-      orderType: (j['orderType'] as num?)?.toInt() ?? 1,
-      status: (j['status'] as num?)?.toInt() ?? 1,
+      id: asInt(j['id']),
+      orderId: asStr(j['orderId']),
+      orderType: asInt(j['orderType'], 1),
+      status: asInt(j['status'], 1),
       orderableName: _name(j['orderable']) ?? '',
       merchantRef: j['merchantRef']?.toString(),
-      createdAt: _date(j['createdAt']),
-      deliveryDate: _date(j['deliveryDate']),
+      createdAt: asDate(j['createdAt']),
+      deliveryDate: asDate(j['deliveryDate']),
       deliveryChannel: _name(j['deliveryChannel']) ?? '—',
-      subtotal: _toDouble(payment['amount']),
-      deliveryCharge: _toDouble(payment['deliveryCharge']),
-      total: _toDouble(payment['totalAmount']),
+      subtotal: asDouble(payment['amount']),
+      deliveryCharge: asDouble(payment['deliveryCharge']),
+      total: asDouble(payment['totalAmount']),
       products: (j['products'] as List? ?? const [])
           .map((p) => _product(p as Map<String, dynamic>))
           .toList(),
@@ -36,9 +38,9 @@ class OrderDetailModel {
         fabric: _name(p['fabrics']),
         fabricType: _name(p['fabricType']),
         description: p['description']?.toString(),
-        price: _toDouble(p['price']),
-        unit: (p['unit'] as num?)?.toInt() ?? 1,
-        imageId: _name(p['fabrics']) == null ? null : (p['fabrics']?['image'] as num?)?.toInt(),
+        price: asDouble(p['price']),
+        unit: asInt(p['unit'], 1),
+        imageId: null, // product image not exposed by ProductResource
       );
 
   static OrderCustomer _customer(Map<String, dynamic> c) {
@@ -54,7 +56,7 @@ class OrderDetailModel {
         .where((s) => s.isNotEmpty)
         .join(', ');
     return OrderCustomer(
-      name: c['name']?.toString() ?? '',
+      name: asStr(c['name']),
       address: parts.join(', '),
       phone: phone,
     );
@@ -66,19 +68,12 @@ class OrderDetailModel {
         ? null
         : '${user['firstname'] ?? ''} ${user['lastname'] ?? ''}'.trim();
     return OrderStatusChange(
-      status: (c['status'] as num?)?.toInt() ?? 0,
+      status: asInt(c['status']),
       comment: c['comment']?.toString(),
-      createdAt: _date(c['created_at'] ?? c['createdAt']),
+      createdAt: asDate(c['created_at'] ?? c['createdAt']),
       userName: (userName?.isEmpty ?? true) ? null : userName,
     );
   }
 
-  static String? _name(dynamic v) =>
-      v is Map ? (v['name'] as String?) : null;
-
-  static double _toDouble(dynamic v) =>
-      v is num ? v.toDouble() : (double.tryParse(v?.toString() ?? '') ?? 0);
-
-  static DateTime? _date(dynamic v) =>
-      v == null ? null : DateTime.tryParse(v.toString());
+  static String? _name(dynamic v) => v is Map ? (v['name'] as String?) : null;
 }
