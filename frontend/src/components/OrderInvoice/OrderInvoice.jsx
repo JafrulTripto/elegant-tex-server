@@ -90,6 +90,10 @@ const OrderInvoice = ({ order }) => {
               <Text style={s.brandMuted}>+8801896224057 · bd.eleganttex@gmail.com</Text>
             </View>
           </View>
+          <View style={{ alignItems: 'center', paddingTop: 2 }}>
+            <InvoiceQR value={orderDeepLink(order.id)} size={64} />
+            <Text style={{ fontSize: 6.5, color: C.muted, marginTop: 2 }}>Scan to update status</Text>
+          </View>
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={s.invoiceTitle}>INVOICE</Text>
             {meta.map((m, i) => (
@@ -98,10 +102,6 @@ const OrderInvoice = ({ order }) => {
                 <Text style={[s.metaValue, m.bold && { fontWeight: 700 }]}>{m.value}</Text>
               </View>
             ))}
-            <View style={{ marginTop: 6, alignItems: 'center' }}>
-              <InvoiceQR value={orderDeepLink(order.id)} size={62} />
-              <Text style={{ fontSize: 6.5, color: C.muted, marginTop: 1 }}>Scan to update status</Text>
-            </View>
           </View>
         </View>
 
