@@ -7,6 +7,8 @@ import RobotoLight from "../../assets/fonts/Roboto/Roboto-Light.ttf";
 import ETLogo from "../../assets/images/elegant_tex_logo.jpg";
 import { OrderTypeEnum } from "../../utils/enums/OrderTypeEnum";
 import { OrderStatusEnum } from "../../utils/enums/OrderStatusEnum";
+import InvoiceQR from "./InvoiceQR";
+import { orderDeepLink } from "../../utils/orderQr";
 
 Font.register({
   family: 'Roboto', fonts: [
@@ -96,6 +98,10 @@ const OrderInvoice = ({ order }) => {
                 <Text style={[s.metaValue, m.bold && { fontWeight: 700 }]}>{m.value}</Text>
               </View>
             ))}
+            <View style={{ marginTop: 6, alignItems: 'center' }}>
+              <InvoiceQR value={orderDeepLink(order.id)} size={62} />
+              <Text style={{ fontSize: 6.5, color: C.muted, marginTop: 1 }}>Scan to update status</Text>
+            </View>
           </View>
         </View>
 

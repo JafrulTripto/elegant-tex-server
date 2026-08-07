@@ -2,12 +2,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Button, Image, Input, Modal, Select, Skeleton, Tag } from 'antd';
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, QrcodeOutlined } from '@ant-design/icons';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import dayjs from 'dayjs';
 import useAxiosClient from "../axios-client.js";
 import { useStateContext } from "../contexts/ContextProvider";
 import OrderInvoice from "../components/OrderInvoice/OrderInvoice";
+import OrderQrLabel from "../components/OrderInvoice/OrderQrLabel";
 import { extractOrderNumber } from "../components/Util/OrderNumberFormatter";
 import { OrderStatusEnum, settableStatuses, canChangeAnyStatus } from "../utils/enums/OrderStatusEnum";
 
@@ -139,14 +140,24 @@ const Order = () => {
                             {order.orderable?.name || '—'} · {dayjs(order.createdAt).format('MMM D, YYYY')}
                         </div>
                     </div>
-                    <PDFDownloadLink document={<OrderInvoice order={order} />} fileName={`order-${order.id}-${dayjs().unix()}.pdf`}>
-                        {({ loading }) => (
-                            <Button icon={<DownloadOutlined />} loading={loading}
-                                className="!h-[38px] !border-[1.5px] !border-dashed !border-[#007AFF] !text-[#007AFF] !bg-transparent !font-bold self-start">
-                                Download PDF
-                            </Button>
-                        )}
-                    </PDFDownloadLink>
+                    <div className="flex gap-2 self-start">
+                        <PDFDownloadLink document={<OrderInvoice order={order} />} fileName={`order-${order.id}-${dayjs().unix()}.pdf`}>
+                            {({ loading }) => (
+                                <Button icon={<DownloadOutlined />} loading={loading}
+                                    className="!h-[38px] !border-[1.5px] !border-dashed !border-[#007AFF] !text-[#007AFF] !bg-transparent !font-bold">
+                                    Download PDF
+                                </Button>
+                            )}
+                        </PDFDownloadLink>
+                        <PDFDownloadLink document={<OrderQrLabel order={order} />} fileName={`order-${order.id}-label.pdf`}>
+                            {({ loading }) => (
+                                <Button icon={<QrcodeOutlined />} loading={loading}
+                                    className="!h-[38px] !border-[1.5px] !border-dashed !border-slate-300 dark:!border-slate-600 !text-slate-600 dark:!text-slate-300 !bg-transparent !font-bold">
+                                    QR label
+                                </Button>
+                            )}
+                        </PDFDownloadLink>
+                    </div>
                 </div>
 
                 {/* Status stepper */}
