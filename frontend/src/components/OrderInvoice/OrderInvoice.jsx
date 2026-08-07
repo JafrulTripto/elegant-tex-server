@@ -90,7 +90,7 @@ const OrderInvoice = ({ order }) => {
               <Text style={s.brandMuted}>+8801896224057 · bd.eleganttex@gmail.com</Text>
             </View>
           </View>
-          <View style={{ alignItems: 'center', paddingTop: 2 }}>
+          <View style={{ alignItems: 'center', paddingTop: 2, marginHorizontal: 22 }}>
             <InvoiceQR value={orderDeepLink(order.id)} size={64} />
             <Text style={{ fontSize: 6.5, color: C.muted, marginTop: 2 }}>Scan to update status</Text>
           </View>
