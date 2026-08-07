@@ -9,7 +9,7 @@ import useAxiosClient from "../axios-client.js";
 import { useStateContext } from "../contexts/ContextProvider";
 import OrderInvoice from "../components/OrderInvoice/OrderInvoice";
 import { extractOrderNumber } from "../components/Util/OrderNumberFormatter";
-import { OrderStatusEnum } from "../utils/enums/OrderStatusEnum";
+import { OrderStatusEnum, settableStatuses, canChangeAnyStatus } from "../utils/enums/OrderStatusEnum";
 
 const fmtBDT = (n) => `৳${(Math.round(Number(n) || 0)).toLocaleString('en-US')}`;
 const MAIN_FLOW = [1, 2, 3, 4, 5, 6]; // DRAFT → DELIVERED
@@ -21,7 +21,7 @@ const Order = () => {
     const { permissions } = useStateContext();
     const canPull = permissions?.includes('PULL_FROM_STOCK');
     const canReturn = permissions?.includes('RETURN_ORDER');
-    const canChangeStatus = permissions?.includes('CHANGE_STATUS');
+    const canChangeStatus = canChangeAnyStatus(permissions);
     const ELIGIBLE_STATUSES = [1, 2, 9]; // DRAFT, APPROVED, BOOKING
 
     const [order, setOrder] = useState({});
@@ -97,6 +97,12 @@ const Order = () => {
     }
 
     const statusInfo = OrderStatusEnum.find(s => s.value === order.status) || OrderStatusEnum[0];
+    // Status modal offers only the statuses the user may set (ADR 0004), always
+    // including the current one so it displays.
+    const settableForModal = settableStatuses(permissions);
+    const statusModalOptions = (settableForModal.some(s => s.value === order.status)
+        ? settableForModal
+        : [statusInfo, ...settableForModal]).map(s => ({ value: s.value, label: s.label }));
     const isMerchant = !order.customer;
     const products = order.products || [];
     const timeline = [...(order.orderStatusChanges || [])].reverse();
@@ -289,7 +295,7 @@ const Order = () => {
             {/* Status modal */}
             <Modal title="Update order status" open={statusModalOpen} onOk={confirmStatusChange} onCancel={() => setStatusModalOpen(false)} okText="Update status">
                 <div className="flex flex-col gap-3 mt-2">
-                    <Select value={pendingStatus} onChange={setPendingStatus} options={OrderStatusEnum.map(s => ({ value: s.value, label: s.label }))} />
+                    <Select value={pendingStatus} onChange={setPendingStatus} options={statusModalOptions} />
                     <Input.TextArea rows={3} placeholder="Comment (optional)" value={statusComment} onChange={(e) => setStatusComment(e.target.value)} />
 
                     {pendingStatus === 8 && [3, 4, 5].includes(order.status) && (
