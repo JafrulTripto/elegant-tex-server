@@ -38,7 +38,7 @@ const s = StyleSheet.create({
   metaLabel: { width: 88, textAlign: 'right', paddingRight: 14, fontSize: 9, color: C.muted, fontWeight: 700 },
   metaValue: { width: 108, textAlign: 'right', fontSize: 9 },
 
-  rule: { height: 1.5, backgroundColor: C.text, marginTop: 13 },
+  rule: { height: 2, backgroundColor: C.text, marginTop: 16 },
 
   sectionHead: { fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4, paddingBottom: 4, borderBottomWidth: 1, borderBottomColor: C.lineStrong },
 
@@ -51,11 +51,11 @@ const s = StyleSheet.create({
 
   payRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 3.5 },
 
-  imgCell: { height: 84, marginBottom: 7, borderRadius: 5, overflow: 'hidden', borderWidth: 1, borderColor: C.line },
-  footer: { textAlign: 'center', fontSize: 9, fontStyle: 'italic', color: '#8a8a8a', borderTopWidth: 1, borderTopColor: C.line, paddingTop: 10, marginTop: 14 },
+  imgCell: { height: 110, marginBottom: 8, borderRadius: 8, overflow: 'hidden', borderWidth: 1, borderColor: C.line },
+  footer: { textAlign: 'right', fontSize: 9, fontStyle: 'italic', color: '#8a8a8a', borderTopWidth: 1, borderTopColor: C.line, paddingTop: 10, marginTop: 14 },
 });
 
-const COL = { product: '16%', color: '16%', type: '15%', desc: '27%', qty: '10%', price: '16%' };
+const COL = { product: '18%', fabric: '18%', desc: '40%', qty: '10%', price: '14%' };
 
 const SectionHead = ({ children, style }) => <Text style={[s.sectionHead, style]}>{children}</Text>;
 
@@ -91,8 +91,8 @@ const OrderInvoice = ({ order }) => {
             </View>
           </View>
           <View style={{ alignItems: 'center', paddingTop: 2, marginHorizontal: 22 }}>
-            <InvoiceQR value={orderDeepLink(order.id)} size={64} />
-            <Text style={{ fontSize: 6.5, color: C.muted, marginTop: 2 }}>Scan to update status</Text>
+            <InvoiceQR value={orderDeepLink(order.id)} size={60} />
+            <Text style={{ fontSize: 6.5, color: '#8a8a8a', marginTop: 3 }}>Scan to update status</Text>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={s.invoiceTitle}>INVOICE</Text>
@@ -145,8 +145,7 @@ const OrderInvoice = ({ order }) => {
           <SectionHead>Product Information</SectionHead>
           <View style={{ flexDirection: 'row', backgroundColor: C.headBg, marginTop: 8 }}>
             <Text style={[s.th, { width: COL.product }]}>Product</Text>
-            <Text style={[s.th, { width: COL.color }]}>Fabric Color</Text>
-            <Text style={[s.th, { width: COL.type }]}>Fabric Type</Text>
+            <Text style={[s.th, { width: COL.fabric }]}>Fabric</Text>
             <Text style={[s.th, { width: COL.desc }]}>Description</Text>
             <Text style={[s.th, { width: COL.qty, textAlign: 'center' }]}>Qty</Text>
             <Text style={[s.th, { width: COL.price, textAlign: 'right' }]}>Price</Text>
@@ -154,8 +153,7 @@ const OrderInvoice = ({ order }) => {
           {products.map((p, i) => (
             <View key={p.id || i} wrap={false} style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: C.line }}>
               <Text style={[s.td, { width: COL.product }]}>{p.productType?.name}</Text>
-              <Text style={[s.td, { width: COL.color }]}>{p.fabrics?.name || '—'}</Text>
-              <Text style={[s.td, { width: COL.type }]}>{p.fabricType?.name || '—'}</Text>
+              <Text style={[s.td, { width: COL.fabric }]}>{[p.fabrics?.name, p.fabricType?.name].filter(Boolean).join(' · ') || 'N/A'}</Text>
               <Text style={[s.td, { width: COL.desc }]}>{p.description}</Text>
               <Text style={[s.td, { width: COL.qty, textAlign: 'center' }]}>{p.unit} pc</Text>
               <Text style={[s.td, { width: COL.price, textAlign: 'right' }]}>{money(p.price)}</Text>
@@ -165,7 +163,7 @@ const OrderInvoice = ({ order }) => {
 
         {/* Delivery + Payment — kept together on one page */}
         <View wrap={false} style={{ flexDirection: 'row', marginTop: 16 }}>
-          <View style={{ flex: 1, marginRight: 30 }}>
+          <View style={{ flex: 1, marginRight: 36 }}>
             <SectionHead>Delivery Information</SectionHead>
             <View style={s.infoRow}>
               <Text style={[s.infoLabel, { width: 100 }]}>Delivery Date</Text>
@@ -176,7 +174,7 @@ const OrderInvoice = ({ order }) => {
               <Text style={s.infoValue}>{order.deliveryChannel?.name || '—'}</Text>
             </View>
           </View>
-          <View style={{ width: 210 }}>
+          <View style={{ width: 230 }}>
             <SectionHead>Payment Information</SectionHead>
             <View style={s.payRow}>
               <Text style={{ color: C.muted }}>Payment Subtotal</Text>
