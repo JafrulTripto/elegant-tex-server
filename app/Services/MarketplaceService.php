@@ -41,7 +41,9 @@ class MarketplaceService
             $marketplace->page_link = $data['pageLink'];
             $marketplace->save();
             $marketplace->users()->sync($data['users']);
+
             return true;
+            
         } catch (QueryException $exception) {
             throw new HttpResponseException(response()->json([
                 'message' => $exception->getMessage(),

@@ -39,7 +39,9 @@ const ProductSettingsForm = (props) => {
         }
     };
     const onFinish = async (data) => {
+
         let res;
+        
         if (!productSettingsId) {
             res = await saveProductSettings(data);
             setProductSettingsId(null)
