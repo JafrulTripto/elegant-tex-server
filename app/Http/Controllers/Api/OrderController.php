@@ -18,6 +18,7 @@ use App\Models\Status;
 use App\Models\User;
 use App\Services\OrderService;
 use App\Services\StockService;
+use App\Support\StatusChangeAuthorizer;
 use Illuminate\Validation\Rule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -145,6 +146,10 @@ class OrderController extends Controller
       'lines.*.condition' => ['required', Rule::in(['SELLABLE', 'DAMAGED'])],
     ]);
 
+    if (!StatusChangeAuthorizer::canSet(auth()->user(), OrderStatus::CANCELLED)) {
+      return response()->json(['message' => 'You do not have permission to cancel orders.'], 403);
+    }
+
     $order = Order::findOrFail($orderId);
     if (in_array($order->status, [OrderStatus::CANCELLED->value, OrderStatus::DELIVERED->value], true)) {
       return response()->json(['message' => 'This order can no longer be cancelled.'], 400);
@@ -243,8 +248,13 @@ class OrderController extends Controller
       $newStatusId = $request->newStatus;
       $statusComment = $request->statusComment;
 
-      if (!auth()->user()->hasPermissionTo('CHANGE_STATUS')) {
-        return response()->json(['message' => 'You do not have permission to change order status.'], 403);
+      $target = OrderStatus::tryFrom((int) $newStatusId);
+      if ($target === null) {
+        return response()->json(['message' => 'Invalid order status.'], 422);
+      }
+
+      if (!StatusChangeAuthorizer::canSet(auth()->user(), $target)) {
+        return response()->json(['message' => "You do not have permission to move orders into {$target->name}."], 403);
       }
 
       return $this->orderService->updateOrderStatus($orderId, $newStatusId, $statusComment);
