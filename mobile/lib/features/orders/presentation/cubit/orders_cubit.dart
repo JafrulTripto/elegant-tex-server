@@ -16,8 +16,11 @@ class OrdersState extends Equatable {
     this.stats = const OrderStats(),
     this.orderType = 'MARKETPLACE',
     this.search = '',
-    this.statusFilter,
-    this.dateFilter = 'all',
+    this.statuses = const [],
+    this.deliveryStart,
+    this.deliveryEnd,
+    this.createdBy = '',
+    this.activeBucket,
     this.page = 1,
     this.total = 0,
     this.loadingMore = false,
@@ -29,8 +32,11 @@ class OrdersState extends Equatable {
   final OrderStats stats;
   final String orderType;
   final String search;
-  final int? statusFilter;
-  final String dateFilter;
+  final List<int> statuses; // multi-select status filter (matches web)
+  final DateTime? deliveryStart; // delivery-date range (inclusive)
+  final DateTime? deliveryEnd;
+  final String createdBy; // "Submitted By" text filter
+  final String? activeBucket; // which KPI pill is applied, for highlight/toggle
   final int page;
   final int total;
   final bool loadingMore;
@@ -38,7 +44,11 @@ class OrdersState extends Equatable {
 
   bool get hasMore => orders.length < total;
   bool get hasActiveFilters =>
-      search.isNotEmpty || statusFilter != null || dateFilter != 'all';
+      search.isNotEmpty ||
+      statuses.isNotEmpty ||
+      deliveryStart != null ||
+      deliveryEnd != null ||
+      createdBy.isNotEmpty;
 
   OrdersState copyWith({
     OrdersStatus? status,
@@ -46,9 +56,13 @@ class OrdersState extends Equatable {
     OrderStats? stats,
     String? orderType,
     String? search,
-    int? statusFilter,
-    bool clearStatusFilter = false,
-    String? dateFilter,
+    List<int>? statuses,
+    DateTime? deliveryStart,
+    DateTime? deliveryEnd,
+    bool clearDelivery = false,
+    String? createdBy,
+    String? activeBucket,
+    bool clearActiveBucket = false,
     int? page,
     int? total,
     bool? loadingMore,
@@ -60,8 +74,11 @@ class OrdersState extends Equatable {
       stats: stats ?? this.stats,
       orderType: orderType ?? this.orderType,
       search: search ?? this.search,
-      statusFilter: clearStatusFilter ? null : (statusFilter ?? this.statusFilter),
-      dateFilter: dateFilter ?? this.dateFilter,
+      statuses: statuses ?? this.statuses,
+      deliveryStart: clearDelivery ? null : (deliveryStart ?? this.deliveryStart),
+      deliveryEnd: clearDelivery ? null : (deliveryEnd ?? this.deliveryEnd),
+      createdBy: createdBy ?? this.createdBy,
+      activeBucket: clearActiveBucket ? null : (activeBucket ?? this.activeBucket),
       page: page ?? this.page,
       total: total ?? this.total,
       loadingMore: loadingMore ?? this.loadingMore,
@@ -76,8 +93,11 @@ class OrdersState extends Equatable {
         stats,
         orderType,
         search,
-        statusFilter,
-        dateFilter,
+        statuses,
+        deliveryStart,
+        deliveryEnd,
+        createdBy,
+        activeBucket,
         page,
         total,
         loadingMore,
@@ -104,8 +124,10 @@ class OrdersCubit extends Cubit<OrdersState> {
         orderType: state.orderType,
         page: page,
         search: state.search,
-        status: state.statusFilter,
-        dateFilter: state.dateFilter,
+        statuses: state.statuses,
+        deliveryStart: state.deliveryStart,
+        deliveryEnd: state.deliveryEnd,
+        createdBy: state.createdBy,
       );
 
   Future<void> load() async {
@@ -145,7 +167,7 @@ class OrdersCubit extends Cubit<OrdersState> {
   }
 
   Future<void> _loadStats() async {
-    final res = await _repo.getStats(_userId);
+    final res = await _repo.getStats(_userId, state.orderType);
     res.fold((_) {}, (s) => emit(state.copyWith(stats: s)));
   }
 
@@ -153,28 +175,61 @@ class OrdersCubit extends Cubit<OrdersState> {
     if (type == state.orderType) return;
     emit(state.copyWith(orderType: type));
     load();
+    _loadStats(); // stats are channel-scoped, so refresh them too
   }
 
   void onSearchChanged(String text) {
-    emit(state.copyWith(search: text));
+    // A manual search overrides any active KPI bucket.
+    emit(state.copyWith(search: text, clearActiveBucket: true));
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 350), load);
   }
 
-  void setStatusFilter(int? status) {
-    emit(status == null
-        ? state.copyWith(clearStatusFilter: true)
-        : state.copyWith(statusFilter: status));
+  /// Applies the filter-sheet selection in one shot (matches web semantics).
+  void applyFilters({
+    required List<int> statuses,
+    DateTime? deliveryStart,
+    DateTime? deliveryEnd,
+    required String createdBy,
+  }) {
+    emit(state.copyWith(
+      statuses: statuses,
+      deliveryStart: deliveryStart,
+      deliveryEnd: deliveryEnd,
+      clearDelivery: deliveryStart == null && deliveryEnd == null,
+      createdBy: createdBy,
+      clearActiveBucket: true,
+    ));
     load();
   }
 
-  void setDateFilter(String value) {
-    emit(state.copyWith(dateFilter: value));
+  /// A KPI pill → the same status/delivery predicate the card counts.
+  void applyBucket(
+    String key, {
+    required List<int> statuses,
+    DateTime? deliveryStart,
+    DateTime? deliveryEnd,
+  }) {
+    emit(state.copyWith(
+      search: '',
+      createdBy: '',
+      statuses: statuses,
+      deliveryStart: deliveryStart,
+      deliveryEnd: deliveryEnd,
+      clearDelivery: deliveryStart == null && deliveryEnd == null,
+      activeBucket: key,
+    ));
     load();
   }
 
   void clearFilters() {
-    emit(state.copyWith(search: '', clearStatusFilter: true, dateFilter: 'all'));
+    emit(state.copyWith(
+      search: '',
+      statuses: const [],
+      clearDelivery: true,
+      createdBy: '',
+      clearActiveBucket: true,
+    ));
     load();
   }
 
