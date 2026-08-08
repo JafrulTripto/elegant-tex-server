@@ -6,12 +6,19 @@ import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/orders/data/datasources/order_detail_remote_data_source.dart';
+import '../../features/orders/data/datasources/order_write_remote_data_source.dart';
 import '../../features/orders/data/datasources/orders_remote_data_source.dart';
+import '../../features/orders/data/datasources/reference_remote_data_source.dart';
 import '../../features/orders/data/repositories/order_detail_repository_impl.dart';
+import '../../features/orders/data/repositories/order_write_repository_impl.dart';
 import '../../features/orders/data/repositories/orders_repository_impl.dart';
+import '../../features/orders/data/repositories/reference_repository_impl.dart';
 import '../../features/orders/domain/repositories/order_detail_repository.dart';
+import '../../features/orders/domain/repositories/order_write_repository.dart';
 import '../../features/orders/domain/repositories/orders_repository.dart';
+import '../../features/orders/domain/repositories/reference_repository.dart';
 import '../../features/orders/presentation/cubit/order_detail_cubit.dart';
+import '../../features/orders/presentation/cubit/order_form_cubit.dart';
 import '../../features/orders/presentation/cubit/orders_cubit.dart';
 import '../../features/scan/presentation/cubit/scan_cubit.dart';
 import '../network/dio_client.dart';
@@ -49,6 +56,17 @@ Future<void> setupInjector() async {
 
   // Scan — reuses the order detail repository for lookup + status advance.
   sl.registerFactory<ScanCubit>(() => ScanCubit(sl<OrderDetailRepository>()));
+
+  // New / edit order form.
+  sl.registerLazySingleton<ReferenceRemoteDataSource>(
+    () => ReferenceRemoteDataSource(sl<DioClient>().dio),
+  );
+  sl.registerLazySingleton<ReferenceRepository>(() => ReferenceRepositoryImpl(sl()));
+  sl.registerLazySingleton<OrderWriteRemoteDataSource>(
+    () => OrderWriteRemoteDataSource(sl<DioClient>().dio),
+  );
+  sl.registerLazySingleton<OrderWriteRepository>(() => OrderWriteRepositoryImpl(sl()));
+  sl.registerFactory<OrderFormCubit>(() => OrderFormCubit(sl(), sl()));
 
   // A failed token refresh bounces the user to login.
   sl<DioClient>().onSessionExpired = () => sl<AuthCubit>().sessionExpired();

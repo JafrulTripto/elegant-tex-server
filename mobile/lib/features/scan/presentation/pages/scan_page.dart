@@ -107,7 +107,10 @@ class _ScanViewState extends State<_ScanView> {
       showDragHandle: true,
       builder: (sheetContext) => Padding(
         padding: EdgeInsets.only(
-          left: 16, right: 16, bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 16,
+          left: 16,
+          right: 16,
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom +
+              MediaQuery.of(sheetContext).viewPadding.bottom + 16,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

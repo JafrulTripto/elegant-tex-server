@@ -9,6 +9,7 @@ import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../domain/entities/order_list_item.dart';
 import '../cubit/orders_cubit.dart';
 import 'order_detail_page.dart';
+import 'order_form_page.dart';
 
 class OrdersPage extends StatelessWidget {
   const OrdersPage({super.key});
@@ -60,18 +61,69 @@ class _OrdersViewState extends State<_OrdersView> {
     return BlocBuilder<OrdersCubit, OrdersState>(
       builder: (context, state) {
         final cubit = context.read<OrdersCubit>();
-        return RefreshIndicator(
-          onRefresh: cubit.refresh,
-          child: CustomScrollView(
-            controller: _scrollCtrl,
-            slivers: [
-              SliverToBoxAdapter(child: _Header(state: state)),
-              ..._buildBody(context, state),
-            ],
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          floatingActionButton: _buildFab(context),
+          body: RefreshIndicator(
+            onRefresh: cubit.refresh,
+            child: CustomScrollView(
+              controller: _scrollCtrl,
+              slivers: [
+                SliverToBoxAdapter(child: _Header(state: state)),
+                ..._buildBody(context, state),
+              ],
+            ),
           ),
         );
       },
     );
+  }
+
+  Widget? _buildFab(BuildContext context) {
+    final session = context.read<AuthCubit>().state.session;
+    if (session == null) return null;
+    final canMarket = session.has(AppPermissions.createMarketplaceOrder);
+    final canMerchant = session.has(AppPermissions.createMerchantOrder);
+    if (!canMarket && !canMerchant) return null;
+    return FloatingActionButton.extended(
+      onPressed: () => _createOrder(context, canMarket, canMerchant),
+      icon: const Icon(Icons.add),
+      label: const Text('New order'),
+    );
+  }
+
+  Future<void> _createOrder(BuildContext context, bool canMarket, bool canMerchant) async {
+    int? orderType;
+    if (canMarket && canMerchant) {
+      orderType = await showModalBottomSheet<int>(
+        context: context,
+        showDragHandle: true,
+        builder: (_) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.storefront_outlined),
+                title: const Text('Marketplace order'),
+                onTap: () => Navigator.pop(context, 1),
+              ),
+              ListTile(
+                leading: const Icon(Icons.handshake_outlined),
+                title: const Text('Merchant order'),
+                onTap: () => Navigator.pop(context, 0),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      orderType = canMarket ? 1 : 0;
+    }
+    if (orderType == null || !context.mounted) return;
+    final created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => OrderFormPage.create(orderType: orderType!)),
+    );
+    if (created == true && context.mounted) context.read<OrdersCubit>().refresh();
   }
 
   List<Widget> _buildBody(BuildContext context, OrdersState state) {
@@ -379,7 +431,9 @@ class _FilterSheet extends StatelessWidget {
     return BlocBuilder<OrdersCubit, OrdersState>(
       builder: (context, state) {
         final cubit = context.read<OrdersCubit>();
-        return Padding(
+        return SafeArea(
+          top: false,
+          child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -435,6 +489,7 @@ class _FilterSheet extends StatelessWidget {
                 ],
               ),
             ],
+          ),
           ),
         );
       },

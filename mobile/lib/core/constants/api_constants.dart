@@ -25,4 +25,7 @@ class ApiConstants {
   static const String store = '/orders/store';
   static String update(int id) => '/orders/update/$id';
   static String delete(int id) => '/orders/delete/$id';
+
+  // Files
+  static const String uploadProductImage = '/files/uploadProductImage';
 }

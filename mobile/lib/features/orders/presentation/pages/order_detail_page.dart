@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/constants/app_permissions.dart';
 import '../../../../core/constants/order_status.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/utils/formatters.dart';
@@ -9,6 +10,7 @@ import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../domain/entities/order_detail.dart';
 import '../cubit/order_detail_cubit.dart';
 import '../widgets/status_change_sheet.dart';
+import 'order_form_page.dart';
 
 class OrderDetailPage extends StatelessWidget {
   const OrderDetailPage({super.key, required this.orderId});
@@ -32,7 +34,24 @@ class _DetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Order #$orderId')),
+      appBar: AppBar(
+        title: Text('Order #$orderId'),
+        actions: [
+          if (permissions.contains(AppPermissions.editOrder))
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: 'Edit order',
+              onPressed: () async {
+                final updated = await Navigator.of(context).push<bool>(
+                  MaterialPageRoute(builder: (_) => OrderFormPage.edit(orderId: orderId)),
+                );
+                if (updated == true && context.mounted) {
+                  context.read<OrderDetailCubit>().load();
+                }
+              },
+            ),
+        ],
+      ),
       body: BlocBuilder<OrderDetailCubit, OrderDetailState>(
         builder: (context, state) {
           switch (state.status) {
@@ -123,7 +142,10 @@ class _HeaderCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
-            _Stepper(currentStatus: order.status),
+            _Stepper(
+              currentStatus: order.status,
+              visited: _visitedStatuses(order),
+            ),
           ],
         ),
       ),
@@ -131,9 +153,25 @@ class _HeaderCard extends StatelessWidget {
   }
 }
 
+/// The status values the order actually passed through — the timeline entries
+/// plus the current status. Falls back to positional (every earlier status) for
+/// legacy orders that have no recorded history, so the stepper still fills in.
+Set<int> _visitedStatuses(OrderDetail order) {
+  final visited = order.timeline.map((t) => t.status).toSet()
+    ..add(order.status)
+    ..add(OrderStatus.draft.value); // every order starts as a draft
+  if (order.timeline.isEmpty) {
+    for (final s in OrderStatus.values) {
+      if (s.value <= order.status) visited.add(s.value);
+    }
+  }
+  return visited;
+}
+
 class _Stepper extends StatelessWidget {
-  const _Stepper({required this.currentStatus});
+  const _Stepper({required this.currentStatus, required this.visited});
   final int currentStatus;
+  final Set<int> visited;
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +184,7 @@ class _Stepper extends StatelessWidget {
           for (var i = 0; i < steps.length; i++) ...[
             _StepNode(
               step: steps[i],
-              done: steps[i].value < currentStatus,
+              done: visited.contains(steps[i].value) && steps[i].value != currentStatus,
               current: steps[i].value == currentStatus,
               muted: muted,
             ),
@@ -155,7 +193,11 @@ class _Stepper extends StatelessWidget {
                 width: 22,
                 height: 2,
                 margin: const EdgeInsets.only(bottom: 16),
-                color: steps[i].value < currentStatus ? const Color(0xFF10B981) : muted.withValues(alpha: 0.3),
+                // Green only when both endpoints were actually reached, so a
+                // skipped status breaks the chain instead of looking completed.
+                color: visited.contains(steps[i].value) && visited.contains(steps[i + 1].value)
+                    ? const Color(0xFF10B981)
+                    : muted.withValues(alpha: 0.3),
               ),
           ],
         ],

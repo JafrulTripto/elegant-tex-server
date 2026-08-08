@@ -15,7 +15,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Scan order QR codes to update their status.</string>
+	<string>Scan order QR codes and attach photos to orders.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Attach photos to orders from your library.</string>
 	<key>CFBundleName</key>
 	<string>elegant_tex_mobile</string>
 	<key>CFBundlePackageType</key>

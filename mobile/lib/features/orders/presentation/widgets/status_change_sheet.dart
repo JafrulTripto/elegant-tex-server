@@ -19,7 +19,10 @@ Future<bool> showStatusChangeSheet({
     showDragHandle: true,
     builder: (sheetContext) => Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
-      child: _StatusChangeSheet(current: current, options: options, onSubmit: onSubmit),
+      child: SafeArea(
+        top: false,
+        child: _StatusChangeSheet(current: current, options: options, onSubmit: onSubmit),
+      ),
     ),
   );
   return result ?? false;

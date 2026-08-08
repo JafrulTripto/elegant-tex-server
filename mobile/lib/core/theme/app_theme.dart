@@ -50,13 +50,29 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: isDark ? AppColors.darkSurface2 : AppColors.lightSurface2,
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        labelStyle: TextStyle(
+          color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+          fontSize: 14,
+        ),
+        floatingLabelStyle: const TextStyle(color: AppColors.primary, fontSize: 13),
+        hintStyle: TextStyle(color: isDark ? AppColors.darkMuted : AppColors.lightMuted),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: border.withValues(alpha: 0.5)),
         ),
       ),
       dividerColor: border,

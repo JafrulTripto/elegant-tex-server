@@ -5,7 +5,6 @@ import '../../core/constants/app_permissions.dart';
 import '../../core/constants/order_status.dart';
 import '../auth/domain/entities/user_session.dart';
 import '../auth/presentation/cubit/auth_cubit.dart';
-import '../orders/presentation/pages/new_order_page.dart';
 import '../orders/presentation/pages/orders_page.dart';
 import '../scan/presentation/pages/scan_page.dart';
 
@@ -37,17 +36,11 @@ class _HomeShellState extends State<HomeShell> {
         OrderStatus.mainFlow.map((s) => s.requiredPermission).whereType<String>(),
       );
 
-  bool get _canCreate =>
-      widget.session.has(AppPermissions.createMarketplaceOrder) ||
-      widget.session.has(AppPermissions.createMerchantOrder);
-
   List<_Tab> get _tabs => [
         const _Tab('Orders', Icons.receipt_long_outlined, Icons.receipt_long, OrdersPage()),
         if (_canScan)
           const _Tab('Scan', Icons.qr_code_scanner, Icons.qr_code_scanner, ScanPage(),
               isCamera: true),
-        if (_canCreate)
-          const _Tab('New', Icons.add_box_outlined, Icons.add_box, NewOrderPage()),
       ];
 
   @override
