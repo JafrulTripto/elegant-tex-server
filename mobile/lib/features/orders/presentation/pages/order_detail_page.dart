@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/constants/api_constants.dart';
 import '../../../../core/constants/app_permissions.dart';
 import '../../../../core/constants/order_status.dart';
 import '../../../../core/di/injector.dart';
@@ -79,7 +80,9 @@ class _Content extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      // Add the device's bottom inset so the last content clears the system
+      // navigation bar when 3-button navigation (not gestures) is in use.
+      padding: EdgeInsets.fromLTRB(16, 16, 16, 32 + MediaQuery.of(context).viewPadding.bottom),
       children: [
         _HeaderCard(order: order, permissions: permissions),
         const SizedBox(height: 16),
@@ -89,6 +92,12 @@ class _Content extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 10),
               child: _ProductCard(product: p),
             )),
+        if (order.imageIds.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          _SectionLabel('Attachments'),
+          const SizedBox(height: 8),
+          _Attachments(imageIds: order.imageIds),
+        ],
         const SizedBox(height: 6),
         _InfoCard(order: order),
         const SizedBox(height: 16),
@@ -173,35 +182,33 @@ class _Stepper extends StatelessWidget {
   final int currentStatus;
   final Set<int> visited;
 
+  static const Color _green = Color(0xFF10B981);
+
   @override
   Widget build(BuildContext context) {
     final steps = OrderStatus.values.take(6).toList(); // DRAFT..DELIVERED
     final muted = Theme.of(context).hintColor;
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          for (var i = 0; i < steps.length; i++) ...[
-            _StepNode(
+
+    // Each node fills an equal share of the width so labels never clip and the
+    // whole rail fits the card. Connector halves live inside adjacent nodes.
+    return Row(
+      children: [
+        for (var i = 0; i < steps.length; i++)
+          Expanded(
+            child: _StepNode(
               step: steps[i],
               done: visited.contains(steps[i].value) && steps[i].value != currentStatus,
               current: steps[i].value == currentStatus,
               muted: muted,
+              leftLine: i == 0
+                  ? null
+                  : (visited.contains(steps[i - 1].value) && visited.contains(steps[i].value)),
+              rightLine: i == steps.length - 1
+                  ? null
+                  : (visited.contains(steps[i].value) && visited.contains(steps[i + 1].value)),
             ),
-            if (i < steps.length - 1)
-              Container(
-                width: 22,
-                height: 2,
-                margin: const EdgeInsets.only(bottom: 16),
-                // Green only when both endpoints were actually reached, so a
-                // skipped status breaks the chain instead of looking completed.
-                color: visited.contains(steps[i].value) && visited.contains(steps[i + 1].value)
-                    ? const Color(0xFF10B981)
-                    : muted.withValues(alpha: 0.3),
-              ),
-          ],
-        ],
-      ),
+          ),
+      ],
     );
   }
 }
@@ -212,44 +219,62 @@ class _StepNode extends StatelessWidget {
     required this.done,
     required this.current,
     required this.muted,
+    required this.leftLine,
+    required this.rightLine,
   });
   final OrderStatus step;
   final bool done;
   final bool current;
   final Color muted;
+  // null = no line on that side (rail end); true = reached (green); false = muted.
+  final bool? leftLine;
+  final bool? rightLine;
 
   @override
   Widget build(BuildContext context) {
     final bg = done
-        ? const Color(0xFF10B981)
+        ? _Stepper._green
         : current
             ? step.color
             : muted.withValues(alpha: 0.25);
-    return SizedBox(
-      width: 56,
-      child: Column(
-        children: [
-          Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-            child: done
-                ? const Icon(Icons.check, size: 12, color: Colors.white)
-                : null,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            step.label,
-            style: TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.w600,
-              color: (done || current) ? null : muted,
+    final mutedLine = muted.withValues(alpha: 0.3);
+    Color lineColor(bool? on) => on == true ? _Stepper._green : mutedLine;
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: leftLine == null
+                  ? const SizedBox()
+                  : Container(height: 2, color: lineColor(leftLine)),
             ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+              child: done ? const Icon(Icons.check, size: 12, color: Colors.white) : null,
+            ),
+            Expanded(
+              child: rightLine == null
+                  ? const SizedBox()
+                  : Container(height: 2, color: lineColor(rightLine)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          step.label,
+          style: TextStyle(
+            fontSize: 9,
+            fontWeight: FontWeight.w600,
+            color: (done || current) ? null : muted,
           ),
-        ],
-      ),
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 }
@@ -406,6 +431,67 @@ class _PayRow extends StatelessWidget {
   }
 }
 
+class _Attachments extends StatelessWidget {
+  const _Attachments({required this.imageIds});
+  final List<int> imageIds;
+
+  @override
+  Widget build(BuildContext context) {
+    final border = Theme.of(context).dividerColor;
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: imageIds.map((id) {
+        final url = ApiConstants.fileUrl(id);
+        return GestureDetector(
+          onTap: () => _openPreview(context, url),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                border: Border.all(color: border),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Image.network(
+                url,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, progress) => progress == null
+                    ? child
+                    : const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                errorBuilder: (context, error, stack) =>
+                    Icon(Icons.broken_image_outlined, color: Theme.of(context).hintColor),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  void _openPreview(BuildContext context, String url) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (_) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(backgroundColor: Colors.black, foregroundColor: Colors.white),
+          body: Center(
+            child: InteractiveViewer(
+              child: Image.network(
+                url,
+                errorBuilder: (context, error, stack) =>
+                    const Icon(Icons.broken_image_outlined, color: Colors.white54, size: 48),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _Timeline extends StatelessWidget {
   const _Timeline({required this.order});
   final OrderDetail order;
@@ -437,18 +523,30 @@ class _Timeline extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 4,
                       children: [
-                        Text(s?.label ?? 'UNKNOWN',
-                            style: TextStyle(
-                                color: color, fontWeight: FontWeight.w700, fontSize: 11)),
-                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: color,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(s?.label ?? 'UNKNOWN',
+                              style: const TextStyle(
+                                  color: Colors.white, fontWeight: FontWeight.w700, fontSize: 11)),
+                        ),
                         Text(fmtDateTime(t.createdAt),
                             style: TextStyle(color: theme.hintColor, fontSize: 11)),
                       ],
                     ),
                     if ((t.comment ?? '').isNotEmpty)
-                      Text(t.comment!, style: theme.textTheme.bodySmall),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(t.comment!, style: theme.textTheme.bodySmall),
+                      ),
                     if ((t.userName ?? '').isNotEmpty)
                       Text('by ${t.userName}',
                           style: theme.textTheme.bodySmall

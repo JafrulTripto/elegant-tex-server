@@ -28,4 +28,8 @@ class ApiConstants {
 
   // Files
   static const String uploadProductImage = '/files/uploadProductImage';
+
+  /// Absolute URL for a stored file (image) by id. The serving endpoint is
+  /// public, so this works with a plain `Image.network`.
+  static String fileUrl(int id) => '$baseUrl/files/upload/$id';
 }

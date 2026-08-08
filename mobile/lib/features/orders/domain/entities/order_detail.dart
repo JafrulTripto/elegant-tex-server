@@ -67,6 +67,7 @@ class OrderDetail extends Equatable {
     required this.products,
     required this.customer,
     required this.timeline,
+    required this.imageIds,
   });
 
   final int id;
@@ -84,6 +85,7 @@ class OrderDetail extends Equatable {
   final List<OrderProduct> products;
   final OrderCustomer? customer;
   final List<OrderStatusChange> timeline;
+  final List<int> imageIds;
 
   bool get isMarketplace => customer != null;
 
@@ -103,6 +105,7 @@ class OrderDetail extends Equatable {
         products: products,
         customer: customer,
         timeline: timeline,
+        imageIds: imageIds,
       );
 
   @override
