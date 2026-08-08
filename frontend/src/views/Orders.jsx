@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Modal, Skeleton, DatePicker, Popover, Input, Button, Checkbox } from 'antd';
 import {
   SearchOutlined, EyeOutlined, EditOutlined, DeleteOutlined,
-  ShoppingOutlined, ClockCircleOutlined, SyncOutlined, CheckCircleOutlined,
+  SyncOutlined, CheckCircleOutlined,
   DownloadOutlined, CloseOutlined, ArrowRightOutlined, FilterOutlined, CalendarOutlined,
+  ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import dayjs from 'dayjs';
@@ -31,6 +32,13 @@ const hexToRgba = (hex, a) => {
   return `rgba(${parseInt(m[1], 16)},${parseInt(m[2], 16)},${parseInt(m[3], 16)},${a})`;
 };
 const statusMeta = (val) => OrderStatusEnum.find((s) => s.value === val) || { label: 'Unknown', color: '#94a3b8' };
+
+// Persisted (per-tab) Orders list view — filters/page/sort + last-opened order —
+// so navigating into a detail and back restores where you were.
+const VIEW_KEY = 'ordersView';
+const loadOrdersView = () => {
+  try { return JSON.parse(sessionStorage.getItem(VIEW_KEY)) || {}; } catch { return {}; }
+};
 
 // Order ID + Items + Ordered By + Submitted By + Date + Delivery + Total + Status + Action
 const HEADERS = [
@@ -58,22 +66,31 @@ function Orders() {
   const canChangeStatus = canChangeAnyStatus(permissions);
   const settable = settableStatuses(permissions);
 
+  // Restore the list view on return from a detail page (same tab session), so
+  // filters/page/sort and the last-opened order survive the navigation.
+  const v0 = useRef(loadOrdersView()).current;
+
   // -- List state --
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState([]);
   const [meta, setMeta] = useState({ total: 0, current: 1, pageSize: PAGE_SIZE });
-  const [stats, setStats] = useState({ total: 0, pending: 0, processing: 0, delivered: 0 });
+  const [stats, setStats] = useState({ total: 0, overdue: 0, dueToday: 0, inProduction: 0, readyToDeliver: 0 });
 
   // -- Filters / query state --
-  const [orderType, setOrderType] = useState('Marketplace');
+  const [orderType, setOrderType] = useState(v0.orderType || 'Marketplace');
   // Column-header filters (applied on confirm, like the old table): Order ID, Ordered By, Submitted By.
-  const [text, setText] = useState({ id: '', orderedBy: '', createdBy: '' });
-  const [statusFilter, setStatusFilter] = useState([]); // multi-select of status values
-  const [deliveryRange, setDeliveryRange] = useState(null); // [dayjs, dayjs] on delivery date
+  const [text, setText] = useState(v0.text || { id: '', orderedBy: '', createdBy: '' });
+  const [statusFilter, setStatusFilter] = useState(v0.statusFilter || []); // multi-select of status values
+  const [deliveryRange, setDeliveryRange] = useState(
+    v0.deliveryRange ? v0.deliveryRange.map((d) => (d ? dayjs(d) : null)) : null,
+  ); // [dayjs, dayjs] on delivery date
   const [openFilterKey, setOpenFilterKey] = useState(null); // which header filter popover is open
-  const [sortField, setSortField] = useState(null);
-  const [sortOrder, setSortOrder] = useState(null); // 'asc' | 'desc'
-  const [page, setPage] = useState(1);
+  const [sortField, setSortField] = useState(v0.sortField || null);
+  const [sortOrder, setSortOrder] = useState(v0.sortOrder || null); // 'asc' | 'desc'
+  const [page, setPage] = useState(v0.page || 1);
+  const [activeCard, setActiveCard] = useState(v0.activeCard || null); // which KPI bucket is applied
+  const [lastViewedId, setLastViewedId] = useState(v0.lastViewedId ?? null); // row to re-highlight
+  const lastViewedRef = useRef(null);
 
   // -- Selection --
   const [selected, setSelected] = useState({});
@@ -92,8 +109,10 @@ function Orders() {
     if (text.createdBy) params.createdBy = text.createdBy;
     if (statusFilter.length) params.status = statusFilter.join(',');
     if (deliveryRange && deliveryRange.length === 2) {
-      params.startDate = dayjs(deliveryRange[0]).format('YYYY-MM-DD');
-      params.endDate = dayjs(deliveryRange[1]).format('YYYY-MM-DD');
+      // Either bound may be null for an open-ended range (e.g. Overdue = up to
+      // yesterday with no lower bound).
+      if (deliveryRange[0]) params.startDate = dayjs(deliveryRange[0]).format('YYYY-MM-DD');
+      if (deliveryRange[1]) params.endDate = dayjs(deliveryRange[1]).format('YYYY-MM-DD');
     }
     if (sortField && sortOrder) { params.sortField = sortField; params.sortOrder = sortOrder; }
     return Object.entries(params)
@@ -124,15 +143,32 @@ function Orders() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const res = await axiosClient.get(`/orders/getStats/${user.id}`);
+      // Scope KPIs to the active channel so the numbers match the table.
+      const res = await axiosClient.get(`/orders/getStats/${user.id}?orderType=${orderType.toUpperCase()}`);
       setStats(res.data);
     } catch (error) {
       console.error('Failed to fetch stats', error);
     }
-  }, [axiosClient, user.id]);
+  }, [axiosClient, user.id, orderType]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
   useEffect(() => { fetchStats(); }, [fetchStats]);
+
+  // Persist the view so a detail round-trip restores it. dayjs → ISO for JSON.
+  useEffect(() => {
+    sessionStorage.setItem(VIEW_KEY, JSON.stringify({
+      orderType, text, statusFilter,
+      deliveryRange: deliveryRange ? deliveryRange.map((d) => (d ? dayjs(d).toISOString() : null)) : null,
+      sortField, sortOrder, page, activeCard, lastViewedId,
+    }));
+  }, [orderType, text, statusFilter, deliveryRange, sortField, sortOrder, page, activeCard, lastViewedId]);
+
+  // After rows load, scroll the last-opened order into view.
+  useEffect(() => {
+    if (!loading && lastViewedId != null && lastViewedRef.current) {
+      lastViewedRef.current.scrollIntoView({ block: 'center' });
+    }
+  }, [loading, lastViewedId]);
 
   // Keyboard: Esc closes the panel / clears selection.
   useEffect(() => {
@@ -149,14 +185,24 @@ function Orders() {
   // -- Filter handlers (reset to page 1) --
   const resetPage = () => setPage(1);
   const changeTab = (type) => { setOrderType(type); setSelected({}); resetPage(); };
-  const applyText = (field, v) => { setText((t) => ({ ...t, [field]: v })); resetPage(); setOpenFilterKey(null); };
-  const applyStatus = (vals) => { setStatusFilter(vals); resetPage(); setOpenFilterKey(null); };
-  const applyDelivery = (range) => { setDeliveryRange(range); resetPage(); setOpenFilterKey(null); };
-  const clearOne = (fn) => { fn(); resetPage(); setOpenFilterKey(null); };
+  const applyText = (field, v) => { setText((t) => ({ ...t, [field]: v })); setActiveCard(null); resetPage(); setOpenFilterKey(null); };
+  const applyStatus = (vals) => { setStatusFilter(vals); setActiveCard(null); resetPage(); setOpenFilterKey(null); };
+  const applyDelivery = (range) => { setDeliveryRange(range); setActiveCard(null); resetPage(); setOpenFilterKey(null); };
+  const clearOne = (fn) => { fn(); setActiveCard(null); resetPage(); setOpenFilterKey(null); };
   const clearFilters = () => {
     setText({ id: '', orderedBy: '', createdBy: '' });
     setStatusFilter([]);
     setDeliveryRange(null);
+    setActiveCard(null);
+    resetPage();
+  };
+  // KPI card → table filter. Sets the same status/delivery predicate the card
+  // counts, clears text filters, marks the card active, and resets to page 1.
+  const goToBucket = (key, { status, range = null }) => {
+    setText({ id: '', orderedBy: '', createdBy: '' });
+    setStatusFilter(status);
+    setDeliveryRange(range);
+    setActiveCard(key);
     resetPage();
   };
   const hasActiveFilters = !!(text.id || text.orderedBy || text.createdBy || statusFilter.length || deliveryRange);
@@ -200,7 +246,7 @@ function Orders() {
   // -- Row actions --
   const handleNewOrder = (type) => navigate('/orders/orderForm', { state: { orderType: type, update: false } });
   const handleEdit = (record) => navigate('/orders/editOrderForm', { state: { orderType: record.orderType, update: true, order: record } });
-  const openFullPage = (id) => navigate(`/orders/${id}`);
+  const openFullPage = (id) => { setLastViewedId(id); navigate(`/orders/${id}`); };
   const handleDelete = (record) => modal.confirm({
     title: 'Delete order?',
     content: `Are you sure you want to delete order #${record.id}?`,
@@ -292,12 +338,18 @@ function Orders() {
   };
 
   // -- Derived view data --
+  // Actionable triage KPIs — each clicks through to the matching table filter
+  // (see docs/orders-triage-stats-plan.md). OPEN = committed, non-terminal
+  // (BOOKING, APPROVED, PRODUCTION, QA, READY); DRAFT excluded.
+  const OPEN_STATUSES = [9, 2, 3, 4, 5];
   const kpis = [
-    { label: 'Total Orders', value: stats.total, tint: '#3b82f6', icon: <ShoppingOutlined /> },
-    { label: 'Pending', value: stats.pending, tint: '#f59e0b', icon: <ClockCircleOutlined /> },
-    { label: 'Processing', value: stats.processing, tint: '#06b6d4', icon: <SyncOutlined /> },
-    { label: 'Delivered', value: stats.delivered, tint: '#10b981', icon: <CheckCircleOutlined /> },
+    { key: 'overdue', label: 'Overdue', value: stats.overdue, tint: '#ef4444', icon: <ExclamationCircleOutlined />, filter: { status: OPEN_STATUSES, range: [null, dayjs().subtract(1, 'day')] } },
+    { key: 'dueToday', label: 'Due today', value: stats.dueToday, tint: '#f59e0b', icon: <CalendarOutlined />, filter: { status: OPEN_STATUSES, range: [dayjs(), dayjs()] } },
+    { key: 'inProduction', label: 'In production', value: stats.inProduction, tint: '#6366f1', icon: <SyncOutlined />, filter: { status: [2, 3, 4] } },
+    { key: 'readyToDeliver', label: 'Ready to deliver', value: stats.readyToDeliver, tint: '#10b981', icon: <CheckCircleOutlined />, filter: { status: [5] } },
   ];
+  // Clicking the already-active card toggles its filter off.
+  const onKpiClick = (k) => (activeCard === k.key ? clearFilters() : goToBucket(k.key, k.filter));
   const tabs = [{ key: 'Marketplace', label: 'Marketplace' }];
   if (permissions.includes('VIEW_MERCHANTS')) tabs.push({ key: 'Merchant', label: 'Merchant' });
 
@@ -316,7 +368,7 @@ function Orders() {
         <div>
           <div className="text-[22px] font-bold text-slate-900 dark:text-white">Orders</div>
           <div className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5">
-            {stats.total.toLocaleString()} orders across marketplace and merchant channels
+            {stats.total.toLocaleString()} {orderType.toLowerCase()} orders
           </div>
         </div>
         <div className="flex items-center gap-2.5">
@@ -342,8 +394,15 @@ function Orders() {
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-        {kpis.map((k) => (
-          <div key={k.label} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col gap-2.5">
+        {kpis.map((k) => {
+          const isActive = activeCard === k.key;
+          return (
+          <div key={k.label} onClick={() => onKpiClick(k)} role="button" tabIndex={0}
+            aria-pressed={isActive}
+            aria-label={isActive ? `Clear filter: ${k.label}` : `Filter orders: ${k.label}`}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onKpiClick(k); } }}
+            style={isActive ? { borderColor: k.tint, boxShadow: `0 0 0 1px ${k.tint}` } : undefined}
+            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col gap-2.5 cursor-pointer transition-colors hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[#007AFF]/40">
             <div className="flex items-center gap-2">
               <span
                 className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center text-[13px]"
@@ -351,12 +410,18 @@ function Orders() {
                 {k.icon}
               </span>
               <span className="text-[12.5px] text-slate-500 dark:text-slate-400 font-semibold">{k.label}</span>
+              {isActive && (
+                <span className="ml-auto text-[11px] font-semibold flex items-center gap-1" style={{ color: k.tint }}>
+                  Filtered <CloseOutlined className="text-[9px]" />
+                </span>
+              )}
             </div>
             <div className="text-[24px] font-bold text-slate-900 dark:text-white font-mono">
               {Number(k.value || 0).toLocaleString()}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Main panel */}
@@ -386,6 +451,13 @@ function Orders() {
               );
             })}
           </div>
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="mb-2 h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-300 text-[12.5px] font-semibold cursor-pointer flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white">
+              <CloseOutlined className="text-[10px]" /> Clear filters
+            </button>
+          )}
         </div>
 
         {/* Bulk action bar — only when a selection exists */}
@@ -481,11 +553,17 @@ function Orders() {
             {showRows && orders.map((o) => {
               const st = statusMeta(o.status);
               const avatarBg = AVATARS[o.id % AVATARS.length];
+              const isLastViewed = o.id === lastViewedId;
               return (
                 <div
                   key={o.id}
-                  className="grid border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors"
-                  style={{ gridTemplateColumns: GRID }}>
+                  ref={isLastViewed ? lastViewedRef : null}
+                  className={`grid border-b border-slate-200 dark:border-slate-700 transition-colors ${
+                    isLastViewed
+                      ? 'bg-blue-50/70 dark:bg-blue-500/[0.08]'
+                      : 'hover:bg-slate-50 dark:hover:bg-slate-700/40'
+                  }`}
+                  style={{ gridTemplateColumns: GRID, ...(isLastViewed ? { boxShadow: 'inset 3px 0 0 #007AFF' } : {}) }}>
                   <div className="py-3 px-2 flex items-center justify-center">
                     <input type="checkbox" checked={!!selected[o.id]} onChange={() => toggleSelect(o.id)} className="w-[15px] h-[15px] accent-[#007AFF]" />
                   </div>
