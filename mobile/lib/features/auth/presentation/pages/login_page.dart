@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/branding/elegant_tex_logo.dart';
 import '../cubit/auth_cubit.dart';
 
 class LoginPage extends StatefulWidget {
@@ -55,11 +56,9 @@ class _LoginPageState extends State<LoginPage> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text('Elegant Tex',
-                            style: theme.textTheme.headlineMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center),
-                        const SizedBox(height: 4),
+                        const ElegantTexLogo(
+                            direction: Axis.vertical, markHeight: 62, tagline: true),
+                        const SizedBox(height: 16),
                         Text('Sign in to continue',
                             style: theme.textTheme.bodyMedium
                                 ?.copyWith(color: theme.hintColor),
