@@ -9,6 +9,8 @@ import useAxiosClient from "../axios-client.js";
 import { useStateContext } from "../contexts/ContextProvider";
 import OrderInvoice from "../components/OrderInvoice/OrderInvoice";
 import OrderQrLabel from "../components/OrderInvoice/OrderQrLabel";
+import OrderQrCode from "../components/OrderQrCode";
+import { orderDeepLink } from "../utils/orderQr";
 import { extractOrderNumber } from "../components/Util/OrderNumberFormatter";
 import { OrderStatusEnum, settableStatuses, canChangeAnyStatus } from "../utils/enums/OrderStatusEnum";
 
@@ -313,6 +315,14 @@ const Order = () => {
                             <div className="flex justify-between text-[12.5px] text-slate-900 dark:text-white mt-1"><span>Delivery</span><span>{fmtBDT(order.payment?.deliveryCharge)}</span></div>
                             <div className="h-px bg-slate-200 dark:bg-slate-700 my-2" />
                             <div className="flex justify-between text-[15px] font-bold text-slate-900 dark:text-white"><span>Total</span><span>{fmtBDT(order.payment?.totalAmount)}</span></div>
+                        </div>
+                        <div className="h-px bg-slate-200 dark:bg-slate-700" />
+                        <div className="flex flex-col items-center">
+                            <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 self-start">Order QR</div>
+                            <div className="p-2.5 bg-white rounded-xl border border-slate-200 dark:border-slate-700">
+                                <OrderQrCode value={orderDeepLink(order.id)} size={132} />
+                            </div>
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 text-center">Scan to open · advances status</div>
                         </div>
                     </div>
                 </div>
