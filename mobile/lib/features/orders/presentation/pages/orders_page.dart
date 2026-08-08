@@ -250,8 +250,12 @@ class _Header extends StatelessWidget {
   void _openFilterSheet(BuildContext context, OrdersCubit cubit) {
     showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       showDragHandle: true,
-      builder: (_) => BlocProvider.value(value: cubit, child: const _FilterSheet()),
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
+        child: BlocProvider.value(value: cubit, child: const _FilterSheet()),
+      ),
     );
   }
 }
@@ -263,11 +267,38 @@ class _StatsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = state.stats;
+    final cubit = context.read<OrdersCubit>();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    const open = [9, 2, 3, 4, 5]; // BOOKING, APPROVED, PRODUCTION, QA, READY
+
+    // Each pill applies the same status/delivery predicate its count uses;
+    // tapping the active pill again clears it (matches web).
+    Widget pill(String key, String label, int value, IconData icon, Color color,
+        {required List<int> statuses, DateTime? start, DateTime? end}) {
+      final active = state.activeBucket == key;
+      return _StatPill(
+        label: label,
+        value: value,
+        icon: icon,
+        color: color,
+        active: active,
+        onTap: () => active
+            ? cubit.clearFilters()
+            : cubit.applyBucket(key, statuses: statuses, deliveryStart: start, deliveryEnd: end),
+      );
+    }
+
     final pills = [
-      _StatPill('Total', s.total, Icons.receipt_long, const Color(0xFF3B82F6)),
-      _StatPill('Pending', s.pending, Icons.schedule, const Color(0xFFF59E0B)),
-      _StatPill('Processing', s.processing, Icons.sync, const Color(0xFF06B6D4)),
-      _StatPill('Delivered', s.delivered, Icons.check_circle, const Color(0xFF10B981)),
+      pill('overdue', 'Overdue', s.overdue, Icons.error_outline, const Color(0xFFEF4444),
+          statuses: open, end: yesterday),
+      pill('dueToday', 'Due today', s.dueToday, Icons.event, const Color(0xFFF59E0B),
+          statuses: open, start: today, end: today),
+      pill('inProduction', 'Production', s.inProduction, Icons.sync, const Color(0xFF6366F1),
+          statuses: const [2, 3, 4]),
+      pill('readyToDeliver', 'Ready', s.readyToDeliver, Icons.check_circle, const Color(0xFF10B981),
+          statuses: const [5]),
     ];
     return Column(
       children: [
@@ -280,45 +311,66 @@ class _StatsGrid extends StatelessWidget {
 }
 
 class _StatPill extends StatelessWidget {
-  const _StatPill(this.label, this.value, this.icon, this.color);
+  const _StatPill({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+    this.active = false,
+    this.onTap,
+  });
   final String label;
   final int value;
   final IconData icon;
   final Color color;
+  final bool active;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-      decoration: BoxDecoration(
-        color: theme.cardColor,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.dividerColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: active ? color : theme.dividerColor, width: active ? 1.4 : 1),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 18, height: 18,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Icon(icon, size: 11, color: color),
+              Row(
+                children: [
+                  Container(
+                    width: 18, height: 18,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Icon(icon, size: 11, color: color),
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(label.toUpperCase(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelSmall
+                            ?.copyWith(color: theme.hintColor, fontWeight: FontWeight.w700)),
+                  ),
+                  if (active) Icon(Icons.close, size: 13, color: color),
+                ],
               ),
-              const SizedBox(width: 6),
-              Text(label.toUpperCase(),
-                  style: theme.textTheme.labelSmall
-                      ?.copyWith(color: theme.hintColor, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 4),
+              Text('$value',
+                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
             ],
           ),
-          const SizedBox(height: 4),
-          Text('$value',
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-        ],
+        ),
       ),
     );
   }
@@ -423,76 +475,155 @@ class _StatusPill extends StatelessWidget {
   }
 }
 
-class _FilterSheet extends StatelessWidget {
+class _FilterSheet extends StatefulWidget {
   const _FilterSheet();
 
   @override
+  State<_FilterSheet> createState() => _FilterSheetState();
+}
+
+class _FilterSheetState extends State<_FilterSheet> {
+  late Set<int> _statuses;
+  DateTime? _deliveryStart;
+  DateTime? _deliveryEnd;
+  late TextEditingController _createdBy;
+
+  @override
+  void initState() {
+    super.initState();
+    final s = context.read<OrdersCubit>().state;
+    _statuses = {...s.statuses};
+    _deliveryStart = s.deliveryStart;
+    _deliveryEnd = s.deliveryEnd;
+    _createdBy = TextEditingController(text: s.createdBy);
+  }
+
+  @override
+  void dispose() {
+    _createdBy.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate({required bool isStart}) async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: (isStart ? _deliveryStart : _deliveryEnd) ?? now,
+      firstDate: DateTime(now.year - 3),
+      lastDate: DateTime(now.year + 3),
+    );
+    if (picked == null) return;
+    setState(() {
+      if (isStart) {
+        _deliveryStart = picked;
+      } else {
+        _deliveryEnd = picked;
+      }
+    });
+  }
+
+  void _apply() {
+    context.read<OrdersCubit>().applyFilters(
+          statuses: _statuses.toList()..sort(),
+          deliveryStart: _deliveryStart,
+          deliveryEnd: _deliveryEnd,
+          createdBy: _createdBy.text.trim(),
+        );
+    Navigator.pop(context);
+  }
+
+  void _clear() {
+    context.read<OrdersCubit>().clearFilters();
+    Navigator.pop(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocBuilder<OrdersCubit, OrdersState>(
-      builder: (context, state) {
-        final cubit = context.read<OrdersCubit>();
-        return SafeArea(
-          top: false,
-          child: Padding(
+    final theme = Theme.of(context);
+    return SafeArea(
+      top: false,
+      child: SingleChildScrollView(
+        child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Filters', style: Theme.of(context).textTheme.titleMedium),
+              Text('Filters', style: theme.textTheme.titleMedium),
               const SizedBox(height: 16),
               const Text('Status'),
-              const SizedBox(height: 6),
-              DropdownButtonFormField<int?>(
-                initialValue: state.statusFilter,
-                isExpanded: true,
-                items: [
-                  const DropdownMenuItem<int?>(value: null, child: Text('All statuses')),
-                  ...OrderStatus.values.map((s) =>
-                      DropdownMenuItem<int?>(value: s.value, child: Text(s.label))),
-                ],
-                onChanged: cubit.setStatusFilter,
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: OrderStatus.values.map((s) {
+                  final on = _statuses.contains(s.value);
+                  return FilterChip(
+                    label: Text(s.label),
+                    selected: on,
+                    onSelected: (v) => setState(() {
+                      if (v) {
+                        _statuses.add(s.value);
+                      } else {
+                        _statuses.remove(s.value);
+                      }
+                    }),
+                  );
+                }).toList(),
               ),
-              const SizedBox(height: 14),
-              const Text('Date range'),
-              const SizedBox(height: 6),
-              DropdownButtonFormField<String>(
-                initialValue: state.dateFilter,
-                isExpanded: true,
-                items: const [
-                  DropdownMenuItem(value: 'all', child: Text('All time')),
-                  DropdownMenuItem(value: '7', child: Text('Last 7 days')),
-                  DropdownMenuItem(value: '30', child: Text('Last 30 days')),
+              const SizedBox(height: 16),
+              const Text('Delivery date'),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(child: _dateField('From', _deliveryStart, () => _pickDate(isStart: true),
+                      onClear: _deliveryStart == null ? null : () => setState(() => _deliveryStart = null))),
+                  const SizedBox(width: 10),
+                  Expanded(child: _dateField('To', _deliveryEnd, () => _pickDate(isStart: false),
+                      onClear: _deliveryEnd == null ? null : () => setState(() => _deliveryEnd = null))),
                 ],
-                onChanged: (v) => cubit.setDateFilter(v ?? 'all'),
+              ),
+              const SizedBox(height: 16),
+              const Text('Submitted by'),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _createdBy,
+                decoration: const InputDecoration(hintText: 'Name…', isDense: true),
               ),
               const SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        cubit.clearFilters();
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Clear'),
-                    ),
+                    child: OutlinedButton(onPressed: _clear, child: const Text('Clear')),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     flex: 2,
-                    child: FilledButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Done'),
-                    ),
+                    child: FilledButton(onPressed: _apply, child: const Text('Apply')),
                   ),
                 ],
               ),
             ],
           ),
-          ),
-        );
-      },
+        ),
+      ),
+    );
+  }
+
+  Widget _dateField(String label, DateTime? value, VoidCallback onTap, {VoidCallback? onClear}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          isDense: true,
+          suffixIcon: onClear != null
+              ? IconButton(icon: const Icon(Icons.close, size: 18), onPressed: onClear)
+              : const Icon(Icons.event, size: 18),
+        ),
+        child: Text(value == null ? 'Any' : fmtDate(value)),
+      ),
     );
   }
 }

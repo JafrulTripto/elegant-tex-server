@@ -30,6 +30,10 @@ class OrderDetailModel {
       timeline: (j['orderStatusChanges'] as List? ?? const [])
           .map((c) => _statusChange(c as Map<String, dynamic>))
           .toList(),
+      imageIds: (j['images'] as List? ?? const [])
+          .map((img) => img is Map ? asInt(img['id'], -1) : asInt(img, -1))
+          .where((id) => id > 0)
+          .toList(),
     );
   }
 

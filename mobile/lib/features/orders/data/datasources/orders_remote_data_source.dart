@@ -15,8 +15,10 @@ class OrdersRemoteDataSource {
         ? ApiConstants.marketplaceOrders(userId)
         : ApiConstants.merchantOrders;
 
+    final fmt = DateFormat('yyyy-MM-dd');
     final params = <String, dynamic>{'page': q.page};
-    if (q.status != null) params['status'] = q.status.toString();
+    if (q.statuses.isNotEmpty) params['status'] = q.statuses.join(',');
+    if (q.createdBy.trim().isNotEmpty) params['createdBy'] = q.createdBy.trim();
 
     final term = q.search.trim();
     if (term.isNotEmpty) {
@@ -28,13 +30,9 @@ class OrdersRemoteDataSource {
       }
     }
 
-    if (q.dateFilter != 'all') {
-      final days = int.tryParse(q.dateFilter) ?? 0;
-      final fmt = DateFormat('yyyy-MM-dd');
-      params['orderDateStart'] =
-          fmt.format(DateTime.now().subtract(Duration(days: days)));
-      params['orderDateEnd'] = fmt.format(DateTime.now());
-    }
+    // Delivery-date range (matches web's delivery filter). Either bound optional.
+    if (q.deliveryStart != null) params['startDate'] = fmt.format(q.deliveryStart!);
+    if (q.deliveryEnd != null) params['endDate'] = fmt.format(q.deliveryEnd!);
 
     final res = await _dio.get(path, queryParameters: params);
     final body = res.data as Map<String, dynamic>;
@@ -49,8 +47,12 @@ class OrdersRemoteDataSource {
     );
   }
 
-  Future<OrderStatsModel> getStats(int userId) async {
-    final res = await _dio.get(ApiConstants.stats(userId));
+  Future<OrderStatsModel> getStats(int userId, String orderType) async {
+    // Scope to the active channel so the numbers match the list.
+    final res = await _dio.get(
+      ApiConstants.stats(userId),
+      queryParameters: {'orderType': orderType},
+    );
     return OrderStatsModel.fromJson(res.data as Map<String, dynamic>);
   }
 }

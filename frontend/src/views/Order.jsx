@@ -9,6 +9,8 @@ import useAxiosClient from "../axios-client.js";
 import { useStateContext } from "../contexts/ContextProvider";
 import OrderInvoice from "../components/OrderInvoice/OrderInvoice";
 import OrderQrLabel from "../components/OrderInvoice/OrderQrLabel";
+import OrderQrCode from "../components/OrderQrCode";
+import { orderDeepLink } from "../utils/orderQr";
 import { extractOrderNumber } from "../components/Util/OrderNumberFormatter";
 import { OrderStatusEnum, settableStatuses, canChangeAnyStatus } from "../utils/enums/OrderStatusEnum";
 
@@ -134,11 +136,11 @@ const Order = () => {
     });
 
     return (
-        <div className="max-w-6xl mx-auto p-4 md:p-6">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 flex flex-col gap-4" style={{ boxShadow: CARD_SHADOW }}>
+        <div className="max-w-6xl mx-auto w-full p-4 md:p-6 h-full min-h-0 flex flex-col">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 md:p-5 flex flex-col gap-3.5 flex-1 min-h-0" style={{ boxShadow: CARD_SHADOW }}>
 
                 {/* Header */}
-                <div className="flex flex-wrap justify-between gap-3.5">
+                <div className="flex flex-wrap justify-between gap-3.5 flex-shrink-0">
                     <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2.5 flex-wrap">
                             <span className="text-xl font-bold text-slate-900 dark:text-white">Order #{order.id}</span>
@@ -172,25 +174,25 @@ const Order = () => {
                     </div>
                 </div>
 
-                {/* Status stepper */}
-                <div className="flex items-center overflow-x-auto py-1">
-                    {steps.map((st, i) => (
-                        <div key={i} className="flex items-center flex-shrink-0">
-                            <div className="flex flex-col items-center gap-1.5 min-w-[64px]">
-                                <div className="w-[22px] h-[22px] rounded-full text-white flex items-center justify-center text-[10px] font-bold" style={{ background: st.circleBg }}>{st.mark}</div>
-                                <div className={`text-[10.5px] font-semibold whitespace-nowrap ${st.active ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`}>{st.label}</div>
-                            </div>
-                            {st.hasLine && <div className="w-[34px] h-0.5 mb-4 mx-0.5 flex-shrink-0" style={{ background: st.lineDone ? '#10b981' : '#e2e8f0' }} />}
+                {/* Two-column body — split starts right under the header so the
+                    summary/QR panel rises to align with the stepper. */}
+                <div className="flex flex-col lg:flex-row gap-5 items-stretch lg:flex-1 lg:min-h-0">
+
+                    {/* Left: stepper + tabbed content */}
+                    <div className="flex-1 min-w-0 lg:min-w-[320px] flex flex-col lg:min-h-0">
+                        {/* Status stepper */}
+                        <div className="flex items-center overflow-x-auto py-1 mb-3 flex-shrink-0">
+                            {steps.map((st, i) => (
+                                <div key={i} className="flex items-center flex-shrink-0">
+                                    <div className="flex flex-col items-center gap-1.5 min-w-[64px]">
+                                        <div className="w-[22px] h-[22px] rounded-full text-white flex items-center justify-center text-[10px] font-bold" style={{ background: st.circleBg }}>{st.mark}</div>
+                                        <div className={`text-[10.5px] font-semibold whitespace-nowrap ${st.active ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`}>{st.label}</div>
+                                    </div>
+                                    {st.hasLine && <div className="w-[34px] h-0.5 mb-4 mx-0.5 flex-shrink-0" style={{ background: st.lineDone ? '#10b981' : '#e2e8f0' }} />}
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
-
-                {/* Two-column body */}
-                <div className="flex gap-5 flex-wrap items-start">
-
-                    {/* Left: tabbed content */}
-                    <div className="flex-1 min-w-[320px] flex flex-col">
-                        <div className="flex gap-1 bg-slate-50 dark:bg-slate-900 rounded-[10px] p-[3px] w-fit mb-3">
+                        <div className="flex gap-1 bg-slate-50 dark:bg-slate-900 rounded-[10px] p-[3px] w-fit mb-3 flex-shrink-0">
                             {[{ k: 'items', l: 'Items' }, { k: 'timeline', l: 'History' }].map(t => (
                                 <div key={t.k} onClick={() => setActiveTab(t.k)}
                                     className={`px-4 py-2 rounded-lg text-[12.5px] font-semibold cursor-pointer transition-colors ${activeTab === t.k ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}>
@@ -198,6 +200,7 @@ const Order = () => {
                                 </div>
                             ))}
                         </div>
+                        <div className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-1">
 
                         {activeTab === 'items' && (
                             <div className="flex flex-col gap-2.5">
@@ -278,13 +281,13 @@ const Order = () => {
                                 }) : <div className="text-[12.5px] text-slate-400 py-4">No history yet.</div>}
                             </div>
                         )}
-
+                        </div>
                     </div>
 
                     {/* Right: summary panel */}
-                    <div className="w-[280px] flex-shrink-0 min-w-[240px] bg-slate-50 dark:bg-slate-900 rounded-[14px] p-4 flex flex-col gap-3">
+                    <div className="w-full lg:w-[280px] flex-shrink-0 lg:min-w-[240px] bg-slate-50 dark:bg-slate-900 rounded-[14px] p-3.5 flex flex-col gap-2.5 lg:min-h-0 lg:overflow-y-auto">
                         <div>
-                            <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5">{isMerchant ? 'Merchant' : 'Customer'}</div>
+                            <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{isMerchant ? 'Merchant' : 'Customer'}</div>
                             {isMerchant ? (
                                 <>
                                     <div className="text-[13.5px] font-bold text-slate-900 dark:text-white">{order.orderable?.name}</div>
@@ -302,17 +305,25 @@ const Order = () => {
                         </div>
                         <div className="h-px bg-slate-200 dark:bg-slate-700" />
                         <div>
-                            <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5">Delivery</div>
+                            <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Delivery</div>
                             <div className="flex justify-between text-[12.5px] text-slate-900 dark:text-white"><span>Channel</span><span className="font-semibold">{order.deliveryChannel?.name || '—'}</span></div>
                             <div className="flex justify-between text-[12.5px] text-slate-900 dark:text-white mt-1"><span>Date</span><span className="font-semibold">{dayjs(order.deliveryDate).format('MMM D, YYYY')}</span></div>
                         </div>
                         <div className="h-px bg-slate-200 dark:bg-slate-700" />
                         <div>
-                            <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5">Payment</div>
+                            <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Payment</div>
                             <div className="flex justify-between text-[12.5px] text-slate-900 dark:text-white"><span>Subtotal</span><span>{fmtBDT(order.payment?.amount)}</span></div>
                             <div className="flex justify-between text-[12.5px] text-slate-900 dark:text-white mt-1"><span>Delivery</span><span>{fmtBDT(order.payment?.deliveryCharge)}</span></div>
-                            <div className="h-px bg-slate-200 dark:bg-slate-700 my-2" />
+                            <div className="h-px bg-slate-200 dark:bg-slate-700 my-1.5" />
                             <div className="flex justify-between text-[15px] font-bold text-slate-900 dark:text-white"><span>Total</span><span>{fmtBDT(order.payment?.totalAmount)}</span></div>
+                        </div>
+                        <div className="h-px bg-slate-200 dark:bg-slate-700" />
+                        <div className="flex flex-col items-center">
+                            <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5 self-start">Order QR</div>
+                            <div className="p-2 bg-white rounded-xl border border-slate-200 dark:border-slate-700">
+                                <OrderQrCode value={orderDeepLink(order.id)} size={104} />
+                            </div>
+                            <div className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1.5 text-center">Scan to open · advances status</div>
                         </div>
                     </div>
                 </div>

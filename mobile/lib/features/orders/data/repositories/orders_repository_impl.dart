@@ -23,9 +23,9 @@ class OrdersRepositoryImpl implements OrdersRepository {
   }
 
   @override
-  Future<Either<Failure, OrderStats>> getStats(int userId) async {
+  Future<Either<Failure, OrderStats>> getStats(int userId, String orderType) async {
     try {
-      return Right(await _remote.getStats(userId));
+      return Right(await _remote.getStats(userId, orderType));
     } on DioException catch (e) {
       return Left(mapDioError(e));
     } catch (e) {
