@@ -185,7 +185,7 @@ class OrderController extends Controller
     return response()->json(['message' => 'Order team updated successfully.']);
   }
 
-  public function getStats($userId)
+  public function getStats($userId, Request $request)
   {
       $user = User::findOrFail($userId);
       $query = Order::query();
@@ -194,11 +194,31 @@ class OrderController extends Controller
       // everyone else is scoped to their own team.
       $this->applyTeamScope($query, $user);
 
+      // Scope to the active channel so the KPIs match the list the user is
+      // looking at. Omitting orderType counts across both channels.
+      $orderType = strtoupper((string) $request->input('orderType', ''));
+      if ($orderType === 'MARKETPLACE') {
+          $query->whereHasMorph('orderable', [Marketplace::class]);
+      } elseif ($orderType === 'MERCHANT') {
+          $query->whereHasMorph('orderable', [Merchant::class]);
+      }
+
+      $today = now()->toDateString();
+      $open = OrderStatus::open();
+
+      // Actionable triage buckets (see docs/orders-triage-stats-plan.md). Each
+      // mirrors a filter the list endpoint already supports, so a KPI count
+      // equals the rows you land on when the card is clicked.
       $stats = [
           'total' => (clone $query)->count(),
-          'pending' => (clone $query)->whereIn('status', [OrderStatus::DRAFT->value, OrderStatus::BOOKING->value])->count(),
-          'processing' => (clone $query)->whereIn('status', [OrderStatus::APPROVED->value, OrderStatus::PRODUCTION->value, OrderStatus::QA->value, OrderStatus::READY->value])->count(),
-          'delivered' => (clone $query)->where('status', OrderStatus::DELIVERED->value)->count(),
+          'overdue' => (clone $query)->whereIn('status', $open)->whereDate('delivery_date', '<', $today)->count(),
+          'dueToday' => (clone $query)->whereIn('status', $open)->whereDate('delivery_date', '=', $today)->count(),
+          'inProduction' => (clone $query)->whereIn('status', [
+              OrderStatus::APPROVED->value,
+              OrderStatus::PRODUCTION->value,
+              OrderStatus::QA->value,
+          ])->count(),
+          'readyToDeliver' => (clone $query)->where('status', OrderStatus::READY->value)->count(),
       ];
 
       return response()->json($stats);

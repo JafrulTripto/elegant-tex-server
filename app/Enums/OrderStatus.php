@@ -25,6 +25,35 @@ enum OrderStatus: int
   }
 
   /**
+   * Statuses that have left the active pipeline — an order here needs no further
+   * production/delivery work.
+   *
+   * @return array<int>
+   */
+  public static function terminal(): array
+  {
+    return [self::DELIVERED->value, self::RETURNED->value, self::CANCELLED->value];
+  }
+
+  /**
+   * Open/active statuses: committed but not yet terminal. DRAFT is excluded — a
+   * draft is not yet a committed order. Used to scope the Orders triage KPIs
+   * (Overdue / Due today).
+   *
+   * @return array<int>
+   */
+  public static function open(): array
+  {
+    return [
+      self::BOOKING->value,
+      self::APPROVED->value,
+      self::PRODUCTION->value,
+      self::QA->value,
+      self::READY->value,
+    ];
+  }
+
+  /**
    * The permission required to move an order *into* this status, or null when
    * only the umbrella CHANGE_STATUS applies. Mapped by the target status — the
    * canonical source of truth for the transition-scoped model (ADR 0004).
