@@ -15,7 +15,7 @@ import Permission from '../components/Util/Permission.jsx';
 import ExportOrderExcel from '../components/Order/ExportOrderExcel';
 import OrderInvoice from '../components/OrderInvoice/OrderInvoice';
 import { OrderTypeEnum } from '../utils/enums/OrderTypeEnum.js';
-import { OrderStatusEnum } from '../utils/enums/OrderStatusEnum';
+import { OrderStatusEnum, settableStatuses, canChangeAnyStatus } from '../utils/enums/OrderStatusEnum';
 
 const API = process.env.REACT_APP_API_BASE_URL;
 const PAGE_SIZE = 10;
@@ -55,7 +55,8 @@ function Orders() {
   const axiosClient = useAxiosClient();
   const { user, permissions, darkMode } = useStateContext();
   const navigate = useNavigate();
-  const canChangeStatus = permissions.includes('CHANGE_STATUS');
+  const canChangeStatus = canChangeAnyStatus(permissions);
+  const settable = settableStatuses(permissions);
 
   // -- List state --
   const [loading, setLoading] = useState(true);
@@ -398,7 +399,7 @@ function Orders() {
               {canChangeStatus && (
                 <select defaultValue="" onChange={bulkSetStatus} className={selectClass} style={{ colorScheme: darkMode ? 'dark' : 'light' }}>
                   <option value="">Set status…</option>
-                  {OrderStatusEnum.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                  {settable.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
                 </select>
               )}
               <Permission required={'DELETE_ORDER'}>
@@ -566,6 +567,7 @@ function Orders() {
             ) : (
               <OrderPanel
                 order={panelOrder}
+                settable={settable}
                 canChangeStatus={canChangeStatus}
                 onClose={closePanel}
                 onChangeStatus={changePanelStatus}
@@ -583,8 +585,13 @@ function Orders() {
 }
 
 // -- Detail panel body --
-function OrderPanel({ order, canChangeStatus, onClose, onChangeStatus, onOpenFullPage, darkMode }) {
+function OrderPanel({ order, settable = [], canChangeStatus, onClose, onChangeStatus, onOpenFullPage, darkMode }) {
   const st = statusMeta(order.status);
+  // Always show the order's current status, even if the user can't set it, plus
+  // the statuses they may move it to.
+  const statusOptions = settable.some((s) => s.value === order.status)
+    ? settable
+    : [statusMeta(order.status), ...settable];
   const isMerchant = !order.customer;
   const products = order.products || [];
   const timeline = [...(order.orderStatusChanges || [])].reverse();
@@ -615,7 +622,7 @@ function OrderPanel({ order, canChangeStatus, onClose, onChangeStatus, onOpenFul
           disabled={!canChangeStatus}
           className="h-[30px] rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-[12.5px] font-bold px-2 outline-none disabled:cursor-not-allowed cursor-pointer"
           style={{ color: st.color, colorScheme: darkMode ? 'dark' : 'light' }}>
-          {OrderStatusEnum.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+          {statusOptions.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
       </div>
 

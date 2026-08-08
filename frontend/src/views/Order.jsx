@@ -2,14 +2,15 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Button, Image, Input, Modal, Select, Skeleton, Tag } from 'antd';
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, QrcodeOutlined } from '@ant-design/icons';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import dayjs from 'dayjs';
 import useAxiosClient from "../axios-client.js";
 import { useStateContext } from "../contexts/ContextProvider";
 import OrderInvoice from "../components/OrderInvoice/OrderInvoice";
+import OrderQrLabel from "../components/OrderInvoice/OrderQrLabel";
 import { extractOrderNumber } from "../components/Util/OrderNumberFormatter";
-import { OrderStatusEnum } from "../utils/enums/OrderStatusEnum";
+import { OrderStatusEnum, settableStatuses, canChangeAnyStatus } from "../utils/enums/OrderStatusEnum";
 
 const fmtBDT = (n) => `৳${(Math.round(Number(n) || 0)).toLocaleString('en-US')}`;
 const MAIN_FLOW = [1, 2, 3, 4, 5, 6]; // DRAFT → DELIVERED
@@ -21,7 +22,7 @@ const Order = () => {
     const { permissions } = useStateContext();
     const canPull = permissions?.includes('PULL_FROM_STOCK');
     const canReturn = permissions?.includes('RETURN_ORDER');
-    const canChangeStatus = permissions?.includes('CHANGE_STATUS');
+    const canChangeStatus = canChangeAnyStatus(permissions);
     const ELIGIBLE_STATUSES = [1, 2, 9]; // DRAFT, APPROVED, BOOKING
 
     const [order, setOrder] = useState({});
@@ -97,20 +98,38 @@ const Order = () => {
     }
 
     const statusInfo = OrderStatusEnum.find(s => s.value === order.status) || OrderStatusEnum[0];
+    // Status modal offers only the statuses the user may set (ADR 0004), always
+    // including the current one so it displays.
+    const settableForModal = settableStatuses(permissions);
+    const statusModalOptions = (settableForModal.some(s => s.value === order.status)
+        ? settableForModal
+        : [statusInfo, ...settableForModal]).map(s => ({ value: s.value, label: s.label }));
     const isMerchant = !order.customer;
     const products = order.products || [];
     const timeline = [...(order.orderStatusChanges || [])].reverse();
+    // Statuses the order actually passed through — history entries plus the current
+    // status. Falls back to positional for legacy orders with no recorded history,
+    // so a skipped status (e.g. Approved → Delivered) is not shown as completed.
+    const historyStatuses = (order.orderStatusChanges || []).map(t => t.status);
+    const visited = new Set(historyStatuses);
+    visited.add(order.status);
+    visited.add(1); // DRAFT — every order starts as a draft
+    if (historyStatuses.length === 0) {
+        MAIN_FLOW.forEach(val => { if (val <= order.status) visited.add(val); });
+    }
     const steps = MAIN_FLOW.map((val, i) => {
-        const info = OrderStatusEnum.find(s => s.value === val);
-        const done = val < order.status;
+        const done = visited.has(val) && val !== order.status;
         const current = val === order.status;
+        const info = OrderStatusEnum.find(s => s.value === val);
         return {
             label: info.label,
             mark: done ? '✓' : String(i + 1),
             circleBg: done ? '#10b981' : current ? info.color : '#cbd5e1',
             active: done || current,
             hasLine: i < MAIN_FLOW.length - 1,
-            lineDone: done,
+            // Green only when both endpoints were reached, so a skipped status
+            // breaks the connector chain instead of looking completed.
+            lineDone: visited.has(val) && visited.has(MAIN_FLOW[i + 1]),
         };
     });
 
@@ -133,14 +152,24 @@ const Order = () => {
                             {order.orderable?.name || '—'} · {dayjs(order.createdAt).format('MMM D, YYYY')}
                         </div>
                     </div>
-                    <PDFDownloadLink document={<OrderInvoice order={order} />} fileName={`order-${order.id}-${dayjs().unix()}.pdf`}>
-                        {({ loading }) => (
-                            <Button icon={<DownloadOutlined />} loading={loading}
-                                className="!h-[38px] !border-[1.5px] !border-dashed !border-[#007AFF] !text-[#007AFF] !bg-transparent !font-bold self-start">
-                                Download PDF
-                            </Button>
-                        )}
-                    </PDFDownloadLink>
+                    <div className="flex gap-2 self-start">
+                        <PDFDownloadLink document={<OrderInvoice order={order} />} fileName={`order-${order.id}-${dayjs().unix()}.pdf`}>
+                            {({ loading }) => (
+                                <Button icon={<DownloadOutlined />} loading={loading}
+                                    className="!h-[38px] !border-[1.5px] !border-dashed !border-[#007AFF] !text-[#007AFF] !bg-transparent !font-bold">
+                                    Download PDF
+                                </Button>
+                            )}
+                        </PDFDownloadLink>
+                        <PDFDownloadLink document={<OrderQrLabel order={order} />} fileName={`order-${order.id}-label.pdf`}>
+                            {({ loading }) => (
+                                <Button icon={<QrcodeOutlined />} loading={loading}
+                                    className="!h-[38px] !border-[1.5px] !border-dashed !border-slate-300 dark:!border-slate-600 !text-slate-600 dark:!text-slate-300 !bg-transparent !font-bold">
+                                    QR label
+                                </Button>
+                            )}
+                        </PDFDownloadLink>
+                    </div>
                 </div>
 
                 {/* Status stepper */}
@@ -162,7 +191,7 @@ const Order = () => {
                     {/* Left: tabbed content */}
                     <div className="flex-1 min-w-[320px] flex flex-col">
                         <div className="flex gap-1 bg-slate-50 dark:bg-slate-900 rounded-[10px] p-[3px] w-fit mb-3">
-                            {[{ k: 'items', l: 'Items' }, { k: 'timeline', l: 'History' }, { k: 'attachments', l: 'Attachments' }].map(t => (
+                            {[{ k: 'items', l: 'Items' }, { k: 'timeline', l: 'History' }].map(t => (
                                 <div key={t.k} onClick={() => setActiveTab(t.k)}
                                     className={`px-4 py-2 rounded-lg text-[12.5px] font-semibold cursor-pointer transition-colors ${activeTab === t.k ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}>
                                     {t.l}
@@ -206,6 +235,26 @@ const Order = () => {
                                         </div>
                                     </div>
                                 ))}
+
+                                {/* Attachments */}
+                                <div className="mt-2">
+                                    <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Attachments</div>
+                                    {(order.images && order.images.length) ? (
+                                        <div className="flex flex-wrap gap-2.5">
+                                            {order.images.map(img => (
+                                                <Image
+                                                    key={img.id}
+                                                    width={132}
+                                                    height={132}
+                                                    src={`${API}/files/upload/${img.id}`}
+                                                    className="!border !border-slate-200 dark:!border-slate-700"
+                                                    style={{ objectFit: 'cover', borderRadius: 10 }}
+                                                    preview={{ mask: 'View' }}
+                                                />
+                                            ))}
+                                        </div>
+                                    ) : <div className="text-[12.5px] text-slate-400">No attachments.</div>}
+                                </div>
                             </div>
                         )}
 
@@ -230,23 +279,6 @@ const Order = () => {
                             </div>
                         )}
 
-                        {activeTab === 'attachments' && (
-                            (order.images && order.images.length) ? (
-                                <div className="flex flex-wrap gap-2.5">
-                                    {order.images.map(img => (
-                                        <Image
-                                            key={img.id}
-                                            width={132}
-                                            height={132}
-                                            src={`${API}/files/upload/${img.id}`}
-                                            className="!border !border-slate-200 dark:!border-slate-700"
-                                            style={{ objectFit: 'cover', borderRadius: 10 }}
-                                            preview={{ mask: 'View' }}
-                                        />
-                                    ))}
-                                </div>
-                            ) : <div className="text-[12.5px] text-slate-400 py-4">No attachments.</div>
-                        )}
                     </div>
 
                     {/* Right: summary panel */}
@@ -289,7 +321,7 @@ const Order = () => {
             {/* Status modal */}
             <Modal title="Update order status" open={statusModalOpen} onOk={confirmStatusChange} onCancel={() => setStatusModalOpen(false)} okText="Update status">
                 <div className="flex flex-col gap-3 mt-2">
-                    <Select value={pendingStatus} onChange={setPendingStatus} options={OrderStatusEnum.map(s => ({ value: s.value, label: s.label }))} />
+                    <Select value={pendingStatus} onChange={setPendingStatus} options={statusModalOptions} />
                     <Input.TextArea rows={3} placeholder="Comment (optional)" value={statusComment} onChange={(e) => setStatusComment(e.target.value)} />
 
                     {pendingStatus === 8 && [3, 4, 5].includes(order.status) && (
